@@ -2,13 +2,85 @@
 const getMicBtn = document.querySelector("#select-mike");
 const audioElement = document.querySelector("audio#trackplayer");
 const playButton = document.getElementById("playBtn");
+const rx1 = document.getElementById("rx1");
+
+
+const DEFAULT_BIQUAD_GAIN_FACTORS = [
+    6, 27, 33, 51,
+     54, 54, 51, 45,
+      36, 30, 27, 24, 
+      21, 18, 15, 15,
+      20, 20, 20, 20,20
+ ]
+
+//https://sound.stackexchange.com/a/38389
+const SIXTEEN_BAND_FREQUENCY_RANGE=[
+    19.999, 25.170, 31.687, 39.893, 
+    50.224, 63.229, 79.603, 100.22, 
+    126.17, 158.84, 1.9997, 251.76, 
+    316.95, 399.03, 502.36, 632.46, 
+    796.23, 1002.4, 1262.0, 1588.8, 2000.3
+];
+
+
 const audioCtx = new AudioContext();
-var analyzer;
 
-var distortion = audioCtx.createWaveShaper();
 var gainNode = audioCtx.createGain();
+const volumeControl = document.querySelector('[data-action="volume"]');
+volumeControl && volumeControl.addEventListener('input',function ()
+{
+    log(" volumn changed to " + this.value);
+    gainNode.gain.value = this.value;
+},false);
 
-const rx1 = document.getElementById("rx1")
+
+
+var cursor = gainNode;
+const beqContainer = document.getElementById("beq_container");
+
+var biquadFilters = SIXTEEN_BAND_FREQUENCY_RANGE.forEach( (freq,index) =>{
+    var filter = audioCtx.createBiquadFilter();
+    var gain = DEFAULT_BIQUAD_GAIN_FACTORS [ index];
+    gain = 1;
+
+    filter.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    filter.gain.setValueAtTime(gain, audioCtx.currentTime);
+
+    filter.type = index === 0  ? "lowshelf" : (index === 15 ? "highshelf" : "peaking");
+    log("set gain to "+gain);
+    var control = document.createElement("input");
+    var label = document.createElement("label");
+   
+    label.innerHTML=freq+" Hz";
+    var attrs = {type:'range', min:0, max:60, value:gain, step:0.1, index:index};
+
+    for(let k in attrs) control.setAttribute(k, attrs[k]);
+
+    control.addEventListener("input", (e) => {
+        gain = e.target.value;
+        e.target.attrs['index'];
+        log('setting beq '+index+" to "+gain);
+        filter.gain.value= filter.gain.setValueAtTime(gain, audioCtx.currentTime);
+    });
+
+    var li = document.createElement("li");
+    li.appendChild(control);
+    li.appendChild(label);
+
+    beqContainer.appendChild(li);
+
+    cursor.connect(filter);
+    cursor = filter;
+});
+
+
+
+var analyser = audioCtx.createAnalyser();
+analyser.minDecibels = -90;
+analyser.maxDecibels = -10;
+analyser.smoothingTimeConstant = 0.85;
+cursor.connect(analyser);
+analyser.connect(audioCtx.destination);
 
 var audioInput = "trackplayer";
 getMicBtn.addEventListener("click",function (e)
@@ -29,12 +101,6 @@ getMicBtn.addEventListener("click",function (e)
         log("mic off")
     }
 })
-const volumeControl = document.querySelector('[data-action="volume"]');
-volumeControl.addEventListener('input',function ()
-{
-    log(" volumn changed to " + this.value);
-    gainNode.gain.value = this.value;
-},false);
 
 playButton.addEventListener("click",onPlayClicked);
 
@@ -54,16 +120,6 @@ async function init()
     }
 
     track.connect(gainNode);
-    
-
-    analyser = audioCtx.createAnalyser();
-    analyser.minDecibels = -90;
-    analyser.maxDecibels = -10;
-    analyser.smoothingTimeConstant = 0.85;
-    gainNode.connect(analyser);
-
-
-    analyser.connect(audioCtx.destination);
     visualize();
 }
 
@@ -84,11 +140,7 @@ function visualize(){
 
     var draw = function(){
         animeTimer = requestAnimationFrame(draw);
-
-
         analyser.getByteTimeDomainData(dataArray);
-  
-
         canvasCtx.fillStyle = 'rgb(200, 200, 200)';
         canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
 
@@ -121,28 +173,9 @@ function visualize(){
     }
 
     draw();
-
-
-
-
 }
-const DEFAULT_BIQUAD_FILTER_GAINS = [2,9,11,17,18,18,17,15,12,10,9,8,7,6,5,5];
-const NODES_NUM = 16;
-function getBandBiquadFiltersForAudioContext(audioCtx,gains)
-{
-    //https://subscription.packtpub.com/book/web_development/9781782168799/1/ch01lvl1sec12/building-an-equalizer-using-biquadfilternode-advanced
-    var tempFilter = audioCtx.createBiquadFilter();
-    var freqMin = tempFilter.frequency.minValue
-        + EQ_FREQ_MARGIN;
-    var freqMax = tempFilter.frequency.maxValue
-        - EQ_FREQ_MARGIN;
-    var freqStep = (freqMax - freqMin) / (NODES_NUM - 1);
 
-    var filters = [];
-    for (let i in gains) {
-        let filter = audioCtx.createBiquadFilter();
-    }
-}
+
 function onPlayClicked(e)
 {
 

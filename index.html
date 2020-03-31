@@ -14,20 +14,30 @@
 
     <button  data-playing="false" id='select-mike' role="switch">Select Microphone</button>
 
+    <br>Master Volume:
+    <input type="range" id="volume" class="control-volume" min="0" max="2" value="1" list="gain-vals" step="0.01" data-action="volume" />
 
-    <input type="range" id="volume" class="control-volume" min="0" max="20" value="1" list="gain-vals" step="0.01"
-        data-action="volume" />
     <datalist id="gain-vals">
         <option value="0" label="min">
         <option value="20" label="max">
     </datalist>
 
-    <audio id='trackplayer' src="./samples/song.mp3" crossorigin="anonymous"></audio>
+    <br>
+    <div id='beq_container'>
 
-    <audio id="microphone"></audio>
+    </div>
+
+
+
     <div id='canvas_wrapper'>
         <canvas width=640 height=100></canvas>
     </div>
+
+<div style='display:none'>
+    <audio id='trackplayer' src="./samples/song.mp3" crossorigin="anonymous"></audio>
+
+    <audio id="microphone"></audio>
+</div>
 
     <script src='./polyfills.js'></script>
 
