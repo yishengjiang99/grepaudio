@@ -1,3 +1,4 @@
 # grepaudio
 
-ghetto wasm dsp with hopefully adaptive frequency response for the mildly to moderately hearing impaired and poor.
+ghetto WASM-based DSP hopefully adaptive frequency response
+for the mildly to moderately hearing impaired and poor.
