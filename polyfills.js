@@ -27,7 +27,7 @@ window.logErr=function(text){
     window.log(text);
 
 }
-window.include = function(filename)
+window.require_once = function(filename)
 {
     var head = document.getElementsByTagName('head')[0];
 
@@ -38,23 +38,24 @@ window.include = function(filename)
     head.appendChild(script)
 }
 
-grepaudio = {}
 
-grepaudio.getMic = function(audioContext){
-    return new Promise((resolve, reject)=>{
-        if (navigator.getUserMedia){
-
-            navigator.getUserMedia({audio:true}, 
-              function(stream) {
-                 resolve(audioContext.createMediaStreamSource(stream));
-              },
-              function(e) {
-               reject(e);
-              }
-            );
-    
-        } else {
-            reject(new Error("User doesn't have mike."))
-        }
-    })
-}
+window.onerror = function (msg, url, lineNo, columnNo, error) {
+    var string = msg.toLowerCase();
+    var substring = "script error";
+    debugger;
+    if (string.indexOf(substring) > -1){
+      alert('Script Error: See Browser Console for Detail');
+    } else {
+      var message = [
+        'Message: ' + msg,
+        'URL: ' + url,
+        'Line: ' + lineNo,
+        'Column: ' + columnNo,
+        'Error object: ' + JSON.stringify(error)
+      ].join(' - ');
+  
+      logErr(message);
+    }
+  
+    return true;
+  };
