@@ -16,14 +16,16 @@ window.AudioContext = (function ()
 const consoleDiv =  document.getElementById("console");
 window.log=function(text){
     if(!consoleDiv) console.log(text);
-    consoleDiv.innerHTML+="<br>"+text;
-    consoleDiv.scrollHeight = consoleDiv.scrollTop;
+    else{
+        consoleDiv.innerHTML+="<br>"+text;
+        consoleDiv.scrollTop = consoleDiv.scrollTop;  
+    }
 }
-window.logErr=function(e){
+window.logErr=function(text){
     if(!consoleDiv) console.log(text);
     text = "<font color=red>"+text+"</font>";
-    consoleDiv.innerHTML+="<br>"+text;
-    consoleDiv.scrollHeight = consoleDiv.scrollTop;
+    window.log(text);
+
 }
 window.include = function(filename)
 {

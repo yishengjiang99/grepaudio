@@ -22,6 +22,7 @@ const SIXTEEN_BAND_FREQUENCY_RANGE=[
     796.23, 1002.4, 1262.0, 1588.8, 2000.3
 ];
 
+var num_nodex = DEFAULT_BIQUAD_GAIN_FACTORS.length;
 
 const audioCtx = new AudioContext();
 
@@ -37,31 +38,30 @@ volumeControl && volumeControl.addEventListener('input',function ()
 
 var cursor = gainNode;
 const beqContainer = document.getElementById("beq_container");
-
-var biquadFilters = SIXTEEN_BAND_FREQUENCY_RANGE.forEach( (freq,index) =>{
+var biquadFilters = SIXTEEN_BAND_FREQUENCY_RANGE.map( (freq,index) =>{
     var filter = audioCtx.createBiquadFilter();
     var gain = DEFAULT_BIQUAD_GAIN_FACTORS [ index];
-    gain = 1;
+    gain = 5;
 
     filter.frequency.setValueAtTime(freq, audioCtx.currentTime);
     filter.gain.setValueAtTime(gain, audioCtx.currentTime);
-
-    filter.type = index === 0  ? "lowshelf" : (index === 15 ? "highshelf" : "peaking");
     log("set gain to "+gain);
+    filter.type = index === 0  ? "lowshelf" : (index === num_nodex-1 ? "highshelf" : "peaking");
+
+    cursor.connect(filter);
+    cursor = filter;
+    return filter;
+});
+
+biquadFilters.forEach((filter, index)=>{
     var control = document.createElement("input");
     var label = document.createElement("label");
-   
+    var freq = SIXTEEN_BAND_FREQUENCY_RANGE [ index];
+    
     label.innerHTML=freq+" Hz";
-    var attrs = {type:'range', min:0, max:60, value:gain, step:0.1, index:index};
+    var attrs = {type:'range', min:0, max:60, value:filter.gain.value, step:0.1, index:index};
 
     for(let k in attrs) control.setAttribute(k, attrs[k]);
-
-    control.addEventListener("input", (e) => {
-        gain = e.target.value;
-        e.target.attrs['index'];
-        log('setting beq '+index+" to "+gain);
-        filter.gain.value= filter.gain.setValueAtTime(gain, audioCtx.currentTime);
-    });
 
     var li = document.createElement("li");
     li.appendChild(control);
@@ -69,8 +69,13 @@ var biquadFilters = SIXTEEN_BAND_FREQUENCY_RANGE.forEach( (freq,index) =>{
 
     beqContainer.appendChild(li);
 
-    cursor.connect(filter);
-    cursor = filter;
+    control.addEventListener("input", (e) => {
+        gain = parseFloat(e.target.value);
+        index = parseInt(e.target.getAttribute('index'));
+        
+        log('setting beq '+index+" to "+gain);
+        filter.gain.setValueAtTime(gain, audioCtx.currentTime);
+    });
 });
 
 
