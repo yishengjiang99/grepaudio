@@ -6,12 +6,10 @@ const rx1 = document.getElementById("rx1");
 
 
 const DEFAULT_BIQUAD_GAIN_FACTORS = [
-    6, 27, 33, 51,
-     54, 54, 51, 45,
-      36, 30, 27, 24, 
-      21, 18, 15, 15,
-      20, 20, 20, 20,20
- ]
+    1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1
+  ]
 
 //https://sound.stackexchange.com/a/38389
 const SIXTEEN_BAND_FREQUENCY_RANGE=[
@@ -38,14 +36,14 @@ volumeControl && volumeControl.addEventListener('input',function ()
 
 var cursor = gainNode;
 const beqContainer = document.getElementById("beq_container");
+const beqSliderTemplate = document.getElementById("beq_template");
+
 var biquadFilters = SIXTEEN_BAND_FREQUENCY_RANGE.map( (freq,index) =>{
     var filter = audioCtx.createBiquadFilter();
     var gain = DEFAULT_BIQUAD_GAIN_FACTORS [ index];
-    gain = 5;
 
     filter.frequency.setValueAtTime(freq, audioCtx.currentTime);
     filter.gain.setValueAtTime(gain, audioCtx.currentTime);
-    log("set gain to "+gain);
     filter.type = index === 0  ? "lowshelf" : (index === num_nodex-1 ? "highshelf" : "peaking");
 
     cursor.connect(filter);
@@ -54,14 +52,19 @@ var biquadFilters = SIXTEEN_BAND_FREQUENCY_RANGE.map( (freq,index) =>{
 });
 
 biquadFilters.forEach((filter, index)=>{
-    var control = document.createElement("input");
+    var control = beqSliderTemplate.cloneNode(true);
+
     var label = document.createElement("label");
+    
     var freq = SIXTEEN_BAND_FREQUENCY_RANGE [ index];
     
     label.innerHTML=freq+" Hz";
-    var attrs = {type:'range', min:0, max:60, value:filter.gain.value, step:0.1, index:index};
 
-    for(let k in attrs) control.setAttribute(k, attrs[k]);
+    control.value = DEFAULT_BIQUAD_GAIN_FACTORS [ index];
+
+    control.min = 0;
+    control.max = 2;
+    control.index = index;
 
     var li = document.createElement("li");
     li.appendChild(control);
@@ -71,10 +74,10 @@ biquadFilters.forEach((filter, index)=>{
 
     control.addEventListener("input", (e) => {
         gain = parseFloat(e.target.value);
-        index = parseInt(e.target.getAttribute('index'));
-        
-        log('setting beq '+index+" to "+gain);
+        index = parseInt(e.target.index);
         filter.gain.setValueAtTime(gain, audioCtx.currentTime);
+                
+        log('setting beq '+index+" to "+gain);
     });
 });
 
@@ -141,6 +144,8 @@ function visualize(){
     analyser.fftSize = 2048;
     var bufferLength = analyser.fftSize;
     var dataArray = new Uint8Array(bufferLength);
+    analyser.getByteTimeDomainData(dataArray);
+
     canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
 
     var draw = function(){
@@ -157,10 +162,14 @@ function visualize(){
         var sliceWidth = WIDTH * 1.0 / bufferLength;
         var x = 0;
         var sum=0;
+        var ys=[];
+
         for(var i = 0; i < bufferLength; i++) {
 
           var v = dataArray[i] / 128.0;
           var y = v * HEIGHT/2;
+
+          ys.push(y);
           if(i === 0) {
             canvasCtx.moveTo(x, y);
           } else {
@@ -173,7 +182,7 @@ function visualize(){
 
         canvasCtx.lineTo(canvas.width, canvas.height/2);
         canvasCtx.stroke();
-        rx1.innerHTML=sum+"";
+        rx1.innerHTML=Math.min.apply(Math, dataArray)  +"-"+Math.max.apply(Math, dataArray);
 
     }
 
