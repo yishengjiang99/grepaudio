@@ -52,6 +52,7 @@ async function init()
         throw new Error("track not found");
         return;
     }
+
     track.connect(gainNode);
     
 
@@ -84,7 +85,6 @@ function visualize(){
     var draw = function(){
         animeTimer = requestAnimationFrame(draw);
 
-        canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
 
         analyser.getByteTimeDomainData(dataArray);
   
@@ -102,7 +102,7 @@ function visualize(){
         var sum=0;
         for(var i = 0; i < bufferLength; i++) {
 
-          var v = dataArray[i] / 32.0;
+          var v = dataArray[i] / 128.0;
           var y = v * HEIGHT/2;
           if(i === 0) {
             canvasCtx.moveTo(x, y);
