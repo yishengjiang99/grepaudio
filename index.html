@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <div id='console'
+        style='bottom:0px;height:200px; width:100vw; position:fixed; background-color: black; color:white; overflow-y: scroll;'>
+    </div>
+
+    <div id='rx1'></div>
+    
+    <button data-playing="false" id='playBtn' class="tape-controls-play" role="switch" aria-checked="false">
+        <span>Play/Pause</span>
+    </button>
+
+    <button  data-playing="false" id='select-mike' role="switch">Select Microphone</button>
+
+
+    <input type="range" id="volume" class="control-volume" min="0" max="20" value="1" list="gain-vals" step="0.01"
+        data-action="volume" />
+    <datalist id="gain-vals">
+        <option value="0" label="min">
+        <option value="20" label="max">
+    </datalist>
+
+    <audio id='trackplayer' src="./song.mp3" crossorigin="anonymous"></audio>
+
+    <audio id="microphone"></audio>
+    <div id='canvas_wrapper'>
+        <canvas width=640 height=100></canvas>
+    </div>
+
+    <script src='./javascripts/polyfills.js'></script>
+
+    <script src='./javascripts/frequencyResponse.js'></script>
+
+
+</body>
+
+</html>
