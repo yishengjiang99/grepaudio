@@ -2,12 +2,7 @@
 <html>
 
 <head>
-    <style>
-        .canvas_wrapper {
-            width: 320px;
-            height: 200px;
-        }
-    </style>
+ <link href='style.css' rel='css/stylesheet'>
 </head>
 
 <body>
@@ -15,7 +10,7 @@
 
     <table>
         <tr>
-            <td>
+            <td rowspan=3 valign=top>
                 <div>
                     <button data-playing="false" id='playBtn' class="tape-controls-play" role="switch"
                         aria-checked="false">
@@ -35,32 +30,31 @@
                     <option value="0" label="min">
                     <option value="20" label="max">
                 </datalist>
-            </td>
-            <td>
-                <div class='canvas_wrapper'><canvas id='input_time'></canvas></div>
-            </td>
-            <td>
-                <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
+
+                <div id='beq_container'></div>
             </td>
         </tr>
         <tr>
-            <td>
-                <div id='beq_container'>
+            <td><div class='canvas_wrapper'><canvas id='input_time'></canvas></div> </td>
+            <td><div class='canvas_wrapper'><canvas id='input_freq'></canvas></div></td>
+        
+        </tr>
+        <tr>
+            <td><div class='canvas_wrapper'><canvas id='output_time'></canvas></div></td>
+            <td><div class='canvas_wrapper'><canvas id='output_freq'></canvas></div></td>
+        </tr>
+    
+        <tr>
+            <td colspan=4>
+                <div id='biquad_response'></div>
 
-                </div>
             </td>
-            <td>
-
-                <div class='canvas_wrapper'><canvas id='output_time'></canvas></div>
-            </td>
-            <td>
-                <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
-            </td>
+        </tr>
 
         <tr>
-            <td colspan=2>
+            <td colspan=4>
                 <div id='console'
-                    style='height:200px;bottom:0px;min-height:200px; width:100vw; position:fixed; background-color: black; color:white; overflow-y: scroll;'>
+                    style='height:200px;bottom:20px;min-height:200px; width:100vw; position:fixed; background-color: black; color:white; overflow-y: scroll;'>
                 </div>
 
             </td>

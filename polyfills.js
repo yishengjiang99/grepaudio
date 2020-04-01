@@ -22,6 +22,7 @@ window.log=function(text){
     }
 }
 window.logErr=function(text){
+    if (typeof text === 'object') text = JSON.stringify(text, null,'\n');
     if(!consoleDiv) console.log(text);
     text = "<font color=red>"+text+"</font>";
     window.log(text);
@@ -48,7 +49,6 @@ window.require_once = function(filename)
 window.onerror = function (msg, url, lineNo, columnNo, error) {
     var string = msg.toLowerCase();
     var substring = "script error";
-    debugger;
     if (string.indexOf(substring) > -1){
       alert('Script Error: See Browser Console for Detail');
     } else {
