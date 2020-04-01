@@ -131,6 +131,8 @@ var audioInput = "trackplayer";
 
 getMicBtn.addEventListener("click",function (e)
 {
+    alert("broken");
+    return;
     audioInput = "usermedia";
     if (this.dataset.playing == "false") {
         this.dataset.playing = "true";
