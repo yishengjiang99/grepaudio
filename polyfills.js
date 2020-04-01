@@ -29,13 +29,19 @@ window.logErr=function(text){
 }
 window.require_once = function(filename)
 {
-    var head = document.getElementsByTagName('head')[0];
+    return new Promise((resolve,reject)=>{
+        var head = document.getElementsByTagName('head')[0];
 
-    var script = document.createElement('script');
-    script.src = filename;
-    script.type = 'text/javascript';
-
-    head.appendChild(script)
+        var script = document.createElement('script');
+        script.src = filename;
+        script.async=false 
+        script.defer=false
+        script.type = 'text/javascript';
+    
+        head.appendChild(script);
+        script.addEventListener("load", resolve);
+        script.addEventListener("error", reject);
+    })
 }
 
 

@@ -4,8 +4,8 @@
 <head>
     <style>
         .canvas_wrapper {
-            width: 640px;
-            height: 420px;
+            width: 320px;
+            height: 200px;
         }
     </style>
 </head>
@@ -13,10 +13,9 @@
 <body>
 
 
-    <table border=1>
+    <table>
         <tr>
             <td>
-
                 <div>
                     <button data-playing="false" id='playBtn' class="tape-controls-play" role="switch"
                         aria-checked="false">
@@ -76,13 +75,12 @@
         <audio id='trackplayer' src="./samples/song.mp3" crossorigin="anonymous"></audio>
 
         <audio id="microphone"></audio>
-
-        <input type="range" id="beq_template" class="control-volume" min="0" max="60" value="1" list="gain-vals"
-            step="0.1" data-action="volume" />
     </div>
-
+    <script type='module'>
+        </script>
     <script src='./polyfills.js'></script>
-
+    <script src='./biquadFilters.js'></script>
+    <script src='./visualize.js'></script>
     <script src='./frequencyResponse.js'></script>
 
 
