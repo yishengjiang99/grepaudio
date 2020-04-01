@@ -1,0 +1,22 @@
+{
+  "name": "grepaudio",
+  "version": "1.0.0",
+  "description": "audio dps",
+  "main": "index.js",
+  "scripts": {
+    "test": "test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yishengjiang99/grepaudio.git"
+  },
+  "keywords": [
+    "audio"
+  ],
+  "author": "Yisheng Jiang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yishengjiang99/grepaudio/issues"
+  },
+  "homepage": "https://github.com/yishengjiang99/grepaudio#readme"
+}
