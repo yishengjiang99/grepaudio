@@ -4,20 +4,13 @@ const audioElement = document.querySelector("audio#trackplayer");
 const playButton = document.getElementById("playBtn");
 const rx1 = document.getElementById("rx1");
 
-
-const DEFAULT_BIQUAD_GAIN_FACTORS = Array(16).fill(0);
-
-//https://sound.stackexchange.com/a/38389
-const SIXTEEN_BAND_FREQUENCY_RANGE = new Float32Array([20,50,100,156,220,311,440,622,880,1250,1750,2500,3500,5000,10000,20000]);
-
-
-
-var num_nodex = DEFAULT_BIQUAD_GAIN_FACTORS.length;
+var num_nodex =12;
 
 const audioCtx = new AudioContext();
 
 var audioTagSource,audioMicSource;
-var audioSource;
+var placeholder = audioCtx.createOscillator();
+var audioSource = placeholder;
 var audioInput = "trackplayer";
 
 //gain node
@@ -31,15 +24,12 @@ volumeControl && volumeControl.addEventListener('input',function ()
 
 
 //biquad filters 
-var freq_bands = SIXTEEN_BAND_FREQUENCY_RANGE;
-var gains = DEFAULT_BIQUAD_GAIN_FACTORS;
-var bandswidths = Array(16).fill(0.3);
+var freq_bands = nyquist_hzs(audioCtx.sampleRate,num_nodex);
+var gains = Array(16).fill(0);
+var bandwidths = Array(16).fill(8);
 
 const beqContainer = document.getElementById("beq_container");
-var biquadFilters = biquad_filter_list(freq_bands,gains,bandswidths, beqContainer);
-
-
-
+var biquadFilters = biquad_filter_list(freq_bands,gains,bandwidths, beqContainer);
 var outputAnalyzer = audioCtx.createAnalyser();
 outputAnalyzer.minDecibels = -90;
 outputAnalyzer.maxDecibels = -10;
@@ -50,8 +40,95 @@ inputAnalyzer.minDecibels = -90;
 inputAnalyzer.maxDecibels = -10;
 inputAnalyzer.smoothingTimeConstant = 0.85;
 
+link_audio_graph();
+update_eq_ui();
+
+async function start()
+{
+    if(audioSource) audioSource.disconnect();
+    if (audioInput == "trackplayer") {
+
+        audioTagSource = audioTagSource || audioCtx.createMediaElementSource(audioElement);
+        audioSource = audioTagSource;
+    } else if (audioInput == 'usermedia') {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioMicSource = audioCtx.createMediaStreamSource(stream);
+       
+        audioSource = audioMicSource;
+    }
+
+
+    if (!audioSource) {
+        throw new Error("track not found");
+        return;
+    }
+
+    audioSource.connect(inputAnalyzer);
+    update_eq_ui();
+    stopped = false;
+    animationTimers = [
+        visualize('#input_time',inputAnalyzer,"time"),
+        visualize('#input_freq',inputAnalyzer,"frequency"),
+        visualize('#output_time',outputAnalyzer,"time"),
+        visualize('#output_freq',outputAnalyzer,"frequency")
+    ];
+
+}
+
+function update_eq_ui(){
+    var freqs= nyquist_hzs(audioCtx.sampleRate,num_nodex);
+    var aggregated_amps = aggregate_frequency_response(biquadFilters,freqs);
+    var eq_ui =  document.getElementById("eq_ui");
+    eq_ui.innerHTML = `freq response at nyquist sample rates
+    <table>
+    ${aggregated_amps.map( (amp,i)=>{
+        var meter = "<meter min='0' max='60' value='"+amp+"'></meter>"
+        return "<tr><td>"+Math.round(freqs[i],2)+" Hz </td><td> "+meter+"</td><td> "+amp+"</td></tr>"
+    }).join("")}
+    </table>`
+}
+
+
+function link_audio_graph()
+{    
+    var c = audioSource;
+
+    [inputAnalyzer,gainNode].concat(biquadFilters).concat([outputAnalyzer,audioCtx.destination]).forEach(node =>
+    {
+        c.connect(node);
+        c = node;
+    })
+}
+
+var animationTimers = [];
+
+var stopped = false;
+
+function disconnectSourceAndAnimation()
+{
+    audioSource.disconnect();
+    outputAnalyzer.disconnect();
+    animationTimers.forEach(t => cancelAnimationFrame(t));
+    stopped = true;
+}
+
+
+function nyquist_hzs(sampleRate,noctaves){
+    var nyquist = 0.5 * sampleRate;
+    frequencyHz= new Float32Array(noctaves);
+    for (var i = 0; i < noctaves; ++i) {
+        var f = i / noctaves;
+        f = nyquist * Math.pow(2.0, noctaves * (f - 1.0));
+        frequencyHz[i] = f;
+    }
+    return frequencyHz;
+
+}
+
+//ui buttons
 
 var audioInput = "trackplayer";
+
 getMicBtn.addEventListener("click",function (e)
 {
     audioInput = "usermedia";
@@ -92,84 +169,3 @@ playButton.addEventListener("click",function (e)
     this.setAttribute('aria-checked',state ? "false" : "true");
     log(audioCtx.state + " audio state")
 });
-
-async function start()
-{
-    if (audioInput == "trackplayer") {
-
-        audioTagSource = audioTagSource || audioCtx.createMediaElementSource(audioElement);
-        audioSource = audioTagSource;
-    } else if (audioInput == 'usermedia') {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioSource = audioCtx.createMediaStreamSource(stream);
-    }
-
-    if (!audioSource) {
-        throw new Error("track not found");
-        return;
-    }
-    link_audio_graph();
-    equalizer_biquad_vals_changed();
-    stopped = false;
-    animationTimers = [
-        visualize('#input_time',inputAnalyzer,"time"),
-        visualize('#input_freq',inputAnalyzer,"frequency"),
-        visualize('#output_time',outputAnalyzer,"time"),
-        visualize('#output_freq',outputAnalyzer,"frequency")
-    ];
-
-}
-
-function equalizer_biquad_vals_changed(){
-    var freqs= nyquist_hzs();
-    var aggregated_amps = aggregate_frequency_response(biquadFilters,freqs);
-
-    var summary = "freq at nyquist hz:<br>sample rate"+audioCtx.sampleRate;
-    summary += aggregated_amps.map( (amp,i)=>{
-        return "<br>"+freqs[i]+": "+amp;
-    }).join("")
-    document.getElementById("biquad_response").innerHTML = summary;
-
-}
-function link_audio_graph()
-{    
-    var c = audioSource;
-
-    [inputAnalyzer,gainNode].concat(biquadFilters).concat([outputAnalyzer,audioCtx.destination]).forEach(node =>
-    {
-        c.connect(node);
-        c = node;
-    })
-}
-
-var animationTimers = [];
-
-var stopped = false;
-
-function disconnectSourceAndAnimation()
-{
-    audioSource.disconnect();
-    outputAnalyzer.disconnect();
-    animationTimers.forEach(t => cancelAnimationFrame(t));
-    stopped = true;
-}
-
-
-function nyquist_hzs(){
-    var nyquist = 0.5 * audioCtx.sampleRate;
-    // First get response.
-    const noctaves = 12;
-    frequencyHz= new Float32Array(noctaves);
-
-
-    for (var i = 0; i < noctaves; ++i) {
-        var f = i / noctaves;
-        
-        // Convert to log frequency scale (octaves).
-        f = nyquist * Math.pow(2.0, noctaves * (f - 1.0));
-        
-        frequencyHz[i] = f;
-    }
-    return frequencyHz;
-
-}

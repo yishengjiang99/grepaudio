@@ -6,34 +6,30 @@
 </head>
 
 <body>
-
-
     <table>
         <tr>
-            <td rowspan=3 valign=top>
+            <td colspan=2 valign=top>
                 <div>
                     <button data-playing="false" id='playBtn' class="tape-controls-play" role="switch"
                         aria-checked="false">
                         <span id='playbtn'>Play </span>
                     </button>
-                    <span id='rx1'></span>
+                   
                 </div>
                 <div>
                     <button data-playing="false" id='select-mike' role="switch">Select Microphone</button>
                 </div>
 
-                <br>Master Volume:
+                <br>Master Volume: <span id='rx1'></span>
                 <input type="range" id="volume" class="control-volume" min="0" max="2" value="1" list="gain-vals"
                     step="0.01" data-action="volume" />
-
-                <datalist id="gain-vals">
-                    <option value="0" label="min">
-                    <option value="20" label="max">
-                </datalist>
-
-                <div id='beq_container'></div>
+              
             </td>
+
         </tr>
+        <tr>
+            <td>Slider controls: <div id='beq_container'></div></td>
+            <td><span id='eq_ui'></span></td>
         <tr>
             <td><div class='canvas_wrapper'><canvas id='input_time'></canvas></div> </td>
             <td><div class='canvas_wrapper'><canvas id='input_freq'></canvas></div></td>
@@ -42,13 +38,6 @@
         <tr>
             <td><div class='canvas_wrapper'><canvas id='output_time'></canvas></div></td>
             <td><div class='canvas_wrapper'><canvas id='output_freq'></canvas></div></td>
-        </tr>
-    
-        <tr>
-            <td colspan=4>
-                <div id='biquad_response'></div>
-
-            </td>
         </tr>
 
         <tr>
@@ -61,14 +50,10 @@
         </tr>
     </table>
 
-
-
-
-
     <div style='display:none'>
         <audio id='trackplayer' src="./samples/song.mp3" crossorigin="anonymous"></audio>
-
         <audio id="microphone"></audio>
+        <template ></template>
     </div>
     <script type='module'>
         </script>
