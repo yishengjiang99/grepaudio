@@ -134,4 +134,3 @@ function disconnectSourceAndAnimation()
     animationTimers.forEach(t => cancelAnimationFrame(t));
     stopped = true;
 }
-
