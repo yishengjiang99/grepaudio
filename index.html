@@ -7,68 +7,80 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>rt</title>
     <link rel="stylesheet" href="style.css">
-
-    <script src='../polyfills.js'></script>
 </head>
-<body>
-    <div id="app"></div>
-    <script src="/build/bundle.js"></script>
+<link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet"
+    type="text/css" />
 
+<link href="//cdn.muicss.com/mui-0.10.1/css/mui.min.css" rel="stylesheet" type="text/css" />
+<script src="//cdn.muicss.com/mui-0.10.1/js/mui.min.js"></script>
+</head>
+
+<body style='margin-left:20px'>
+    <h3>Mix Sounds</h3>
     <table>
         <tr>
-            <td colspan=2 valign=top>
-                <div>
-                    <button data-playing="false" id='playBtn' class="tape-controls-play" role="switch"
+            <td valign=top>
+                <p> <button data-playing="false" id='playBtn' class="tape-controls-play" role="switch"
                         aria-checked="false">
                         <span id='playbtn'>Play </span>
-                    </button>
-                   
-                </div>
-                <div>
-                    <button data-playing="false" id='select-mike' role="switch">Select Microphone</button>
-                </div>
-
-                <br>Master Volume: <span id='rx1'></span>
-                <input type="range" id="volume" class="control-volume" min="0" max="2" value="1" list="gain-vals"
-                    step="0.01" data-action="volume" />
-              
+                    </button></p>
             </td>
-
+            <td valign=top>
+                <p> <button data-playing="false" id='playBtn' class="tape-controls-play" role="switch"
+                        aria-checked="false">
+                        <button data-playing="false" id='select-mike' role="switch">Select Microphone</button>
+                    </button></p>
+            </td>
+            <td>
+                <p> Master Volume: <span id='rx1'></span>
+                    <input type="range" id="volume" class="control-volume" min="0" max="2" value="1" list="gain-vals"
+                        step="0.01" data-action="volume" /></p>
+            </td>
         </tr>
         <tr>
-            <td>Slider controls: <div id='beq_container'></div></td>
-            <td><span id='eq_ui'></span></td>
-        <tr>
-            <td><div class='canvas_wrapper'><canvas id='input_time'></canvas></div> </td>
-            <td><div class='canvas_wrapper'><canvas id='input_freq'></canvas></div></td>
-        
-        </tr>
-        <tr>
-            <td><div class='canvas_wrapper'><canvas id='output_time'></canvas></div></td>
-            <td><div class='canvas_wrapper'><canvas id='output_freq'></canvas></div></td>
-        </tr>
-
-        <tr>
-            <td colspan=4>
-                <div id='console'
-                    style='height:200px;bottom:20px;min-height:200px; width:100vw; position:fixed; background-color: black; color:white; overflow-y: scroll;'>
-                </div>
+            <td rowspan=2>
+                <p> Master Volume: <span id='rx1'></span>
+                    <input type="range" id="volume" class="control-volume" min="0" max="2" value="1" list="gain-vals"
+                        step="0.01" data-action="volume" /></p>
+                <h4>Slider controls: </h4>
+                <table id='beq_container'>
+                </table>
+            </td>
+            <td>
+                <h4>time domain </h4>
+                <span class='canvas_wrapper'><canvas id='input_time'></canvas></span>
+                <span class='canvas_wrapper'><canvas id='input_freq'></canvas></span>
 
             </td>
+  
+   
+
+        </tr>
+        <tr>
+            <td>
+                <div class='canvas_wrapper'><canvas id='output_time'></canvas></div>
+                <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
+            </td>
+
         </tr>
     </table>
-
-    <div style='display:none'>
-        <audio id='trackplayer' src="./samples/song.mp3" crossorigin="anonymous"></audio>
-        <audio id="microphone"></audio>
-        <template ></template>
+    <div id='console'
+        style='height:200px;bottom:20px;min-height:200px; width:100vw; position:fixed; background-color: black; color:white; overflow-y: scroll;'>
     </div>
-    <script type='module'>
-        </script>
-    <script src='./polyfills.js'></script>
-    <script src='./biquadFilters.js'></script>
-    <script src='./visualize.js'></script>
-    <script src='./equalizer.js'></script>
+</body>
+
+
+
+<div style='display:none'>
+    <audio id='trackplayer' src="./samples/song.mp3" crossorigin="anonymous"></audio>
+    <audio id="microphone"></audio>
+</div>
+<script type='module'>
+</script>
+<script src='./polyfills.js'></script>
+<script src='./biquadFilters.js'></script>
+<script src='./visualize.js'></script>
+<script src='./equalizer.js'></script>
 
 
 </body>

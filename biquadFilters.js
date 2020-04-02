@@ -1,3 +1,4 @@
+var biquadFilters; 
 function biquad_filter_list(freq_bands,gain_factors, bandwidths, beqContainer)
 {
     biquadFilters = [];
@@ -16,69 +17,41 @@ function biquad_filter_list(freq_bands,gain_factors, bandwidths, beqContainer)
         biquadFilters.push(filter);
 
     }
+    beqContainer.innerHTML = "";
 
     beqContainer !== null && biquadFilters.forEach((filter,index) =>
     {
         var freq = freq_bands[index];
-        
-        
-        var label = document.createElement("span");
-        label.innerHTML = Math.round(freq,1)+ " Hz";
+        var row=`<tr>
+        <td><span>${freq} Hz</span></td>
+        <td><input id='g_input_${index}' value='${filter.gain.value}' onchange='updateGain()'  data-index="${index}" type="range" min="0" max="60" step="0.1"></td>
+        <td><span id='gain_val_${index}'>${filter.gain.value}</span></td>
+        <td><input value='${filter.Q.value}'  onchange='updateRange()' data-index="${index}" type="range" min="0" max="60" step="0.1"></td>
+        <td><span id='qval_${index}'>${filter.Q.value}</span></td>
+        <td><meter id='freq_resp_meter_${index}' type="range" min="0" max="60" step="0.1"></td>
+        </tr>`
 
-        var control = document.createElement("input");
-        control.type = "range";
-        control.value = filter.gain.value;
-        control.min = 0;
-        control.max = 60;
-        control.index = index;
-
-        var valueLabel = document.createElement("span");
-        valueLabel.innerHTML = filter.gain.value;
-        control.addEventListener("input",(e) =>
-        {
-            gain = parseFloat(e.target.value);
-            index = parseInt(e.target.index);
-            filter.gain.setValueAtTime(gain,audioCtx.currentTime);
-            valueLabel.innerHTML = gain;
-
-            log('setting beq ' + index + " to " + gain);
-            update_eq_ui();
-
-        });
-
-        var qvLabel = document.createElement("span");
-        qvLabel.innerHTML = filter.Q.value;
-
-        var qslider = document.createElement("input");
-        qslider.type = 'range';
-        qslider.value = filter.Q.value;
-        qslider.min = 0;
-        qslider.max = 60;
-        qslider.step= 0.1;
-        qslider.index = index;
-        qslider.addEventListener("input",(e) =>
-        {
-            bw = parseFloat(e.target.value);
-            index = parseInt(e.target.index);
-            filter.Q.setValueAtTime(bw,audioCtx.currentTime);
-            qvLabel.innerHTML = bw;
-            update_eq_ui();
-        });
-
-
-        var li = document.createElement("div");
-        li.appendChild(label);
-        li.appendChild(control);
-        li.appendChild(valueLabel);
-
-        li.appendChild(qslider);
-        li.appendChild(qvLabel)
-
-        beqContainer.appendChild(li);
+        beqContainer.innerHTML += row;
     });
 
     return biquadFilters;
 }
+
+function updateGain(e){
+   var index = parseInt( event.target.dataset.index );
+   document.getElementById(`gain_val_${index}`).innerHTML = event.target.value;
+   biquadFilters[index].gain.setValueAtTime(event.target.value, audioCtx.currentTime);
+   update_eq_ui();
+}
+
+function updateRange(e){
+    var index = parseInt( event.target.dataset.index  );
+    document.getElementById(`qval_${index}`).innerHTML = event.target.value;
+
+    biquadFilters[index].Q.setValueAtTime(event.target.value, audioCtx.currentTime);
+    update_eq_ui();
+ }
+ 
 
 
 function aggregate_frequency_response(filters, frequency_list){

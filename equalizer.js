@@ -78,14 +78,9 @@ async function start()
 function update_eq_ui(){
     var freqs= nyquist_hzs(audioCtx.sampleRate,num_nodex);
     var aggregated_amps = aggregate_frequency_response(biquadFilters,freqs);
-    var eq_ui =  document.getElementById("eq_ui");
-    eq_ui.innerHTML = `freq response at nyquist sample rates
-    <table>
-    ${aggregated_amps.map( (amp,i)=>{
-        var meter = "<meter min='0' max='60' value='"+amp+"'></meter>"
-        return "<tr><td>"+Math.round(freqs[i],2)+" Hz </td><td> "+meter+"</td><td> "+amp+"</td></tr>"
-    }).join("")}
-    </table>`
+    aggregated_amps.forEach( (amp,index)=>{
+        document.getElementById(`freq_resp_meter_${index}`).value = amp;
+    });
 }
 
 
