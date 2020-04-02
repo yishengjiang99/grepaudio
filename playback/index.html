@@ -7,49 +7,79 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>rt</title>
     <link rel="stylesheet" href="style.css">
-    
+
     <script src='../polyfills.js'></script>
 
 
 </head>
 
 <body>
-    
-    <button id='track' src='./../samples/lana.mp3'>samples/lana.mp3</button>
+    <div id=rx1></div>
+    <div id=rx2></div>
+    <div class='btn'>
+        <a id=btn> diaup </a><br>
+        <a id=btn2> load via tag </a><br>
 
-    <div id='console'></div>
+        <a id=stop>stop </a>
+    </div>
+    <div id=audiotag></div>
+
+    <div id='console'> </div>
 </body>
 <script type='module'>
-     import bufferReader from "../lib/bufferReader.js";
+    import bufferReader from "../lib/bufferReader.js";
 
-     const track = document.getElementById("track");
-     const ctx = new AudioContext();
-     
-    document.onclick=async function(e){
-        try{
-            log("read_url start: "+ctx.currentTime);
+    const track = document.getElementById("track");
+    const ctx = new AudioContext();
+    const rx1 = document.getElementById("rx1")
+    const rx2 = document.getElementById("rx2")
+
+    const bt1 = document.getElementById("btn");
+    const bt2 = document.getElementById("btn2");
+    const stopbtn = document.getElementById("stop");
+    bt1.onclick = async function (e) {
+        try
+        {
+            log("read_url start: " + ctx.currentTime);
 
             var url = e.target.attributes.src;
 
-            let ab_source = await bufferReader.read_url("./../samples/lana.mp3",{audioCtx: ctx});
-            log("read_url finish: "+ctx.currentTime);
+            let ab_source = await bufferReader.read_url("./../samples/toxic.mp3",{ audioCtx: ctx });
+            log("read_url finish: " + ctx.currentTime);
 
             ab_source.connect(ctx.destination);
             ab_source.start();
-            log("start at "+ctx.currentTime);
-          
-        }catch(e){
+            log("start at " + ctx.currentTime);
+            bufferReader.context_monitor(1000,info => {
+                rx1.innerHTML = Object.keys(info).map(k => `${k}:${info[k]}`).join("<br>")
+            });
+
+        } catch (e)
+        {
             logErr(e.message);;
             throw e;
 
         }
     }
+    var tag_source;
+    bt2.onclick = async function (e) {
 
-    function log(txt){
-        document.getElementById("console").innerHTML += "<br>"+txt;
+        tag_source = await bufferReader.load_via_tag("../samples/toxic.mp3",'audiotag',ctx);
+        tag_source.start();
+        bufferReader.context_monitor(1000,info => {
+            rx2.innerHTML = Object.keys(info).map(k => `${k}:${info[k]}`).join("<br>")
+        });
     }
 
-   
+    stopbtn.onclick = function () {
+        tag_source.pause();
+    }
+
+    // function log(txt){
+    //     document.getElementById("console").innerHTML += "<br>"+txt;
+    // }
+
+
 
 </script>
 

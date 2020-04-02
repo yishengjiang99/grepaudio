@@ -2,3 +2,19 @@ body{
     background-color:black;
     color:white;
 }
+.btn{
+    font-size: xx-large;
+    left:40vw;
+    top:30vh;
+    position:fixed;
+}
+#rx1{
+    left:80vw;
+    top:31vh;
+    position:fixed; 
+}
+#rx2{
+    left:80vw;
+    top:61vh;
+    position:fixed; 
+}

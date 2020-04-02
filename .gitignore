@@ -1,0 +1,7 @@
+node_modules/
+xh/
+etc/cert.pem
+etc/csr.pem
+etc/key.pem
+.DS_Store
+dist

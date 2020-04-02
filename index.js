@@ -1,22 +1,13 @@
-const https = require('https');
-const fs = require('fs');
+import React from "react";
+import ReactDOM from "react-dom";
+import Button from "@material-ui/core/Button";
 
-const options = {
-  key: fs.readFileSync('etc/key.pem'),
-  cert: fs.readFileSync('etc/cert.pem')
-};
+function App() {
+  return (
+    <Button variant="contained" color="primary">
+      Hello World
+    </Button>
+  );
+}
 
-https.createServer(options, function (req, res) {
-  res.writeHead(200);
-  console.log("reading "+ req.url);
-  if(req.url=="/") req.url= "/index.html";
-  fs.readFile(__dirname +req.url,  function (err,data) {
-    if (err) {
-      res.writeHead(404);
-      res.end(JSON.stringify(err));
-      return;
-    }
-    res.writeHead(200);
-    res.end(data);
-  });
-}).listen(8000);
+ReactDOM.render(<App />, document.querySelector("#app"));

@@ -13,9 +13,12 @@ window.AudioContext = (function ()
     return window.webkitAudioContext || window.AudioContext || window.mozAudioContext;
 })();
 
-const consoleDiv =  document.getElementById("console");
 window.log=function(text){
-    if(!consoleDiv) console.log(text);
+    var consoleDiv =  document.getElementById("console");
+    if(consoleDiv !== null) {
+        console.log(text);
+        return;
+    }
     else{
         consoleDiv.innerHTML+="<br>"+text;
         consoleDiv.scrollTop = consoleDiv.scrollTop;  
@@ -23,8 +26,6 @@ window.log=function(text){
 }
 window.logErr=function(text){
     if (typeof text === 'object') text = JSON.stringify(text, null,'\n');
-    if(!consoleDiv) console.log(text);
-    text = "<font color=red>"+text+"</font>";
     window.log(text);
 
 }
