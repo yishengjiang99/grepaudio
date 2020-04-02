@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>rt</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <script src='../polyfills.js'></script>
+
+
+</head>
+
+<body>
+    
+    <button id='track' src='./../samples/lana.mp3'>samples/lana.mp3</button>
+
+    <div id='console'></div>
+</body>
+<script type='module'>
+     import bufferReader from "../lib/bufferReader.js";
+
+     const track = document.getElementById("track");
+     const ctx = new AudioContext();
+     
+    document.onclick=async function(e){
+        try{
+            log("read_url start: "+ctx.currentTime);
+
+            var url = e.target.attributes.src;
+
+            let ab_source = await bufferReader.read_url("./../samples/lana.mp3",{audioCtx: ctx});
+            log("read_url finish: "+ctx.currentTime);
+
+            ab_source.connect(ctx.destination);
+            ab_source.start();
+            log("start at "+ctx.currentTime);
+          
+        }catch(e){
+            logErr(e.message);;
+            throw e;
+
+        }
+    }
+
+    function log(txt){
+        document.getElementById("console").innerHTML += "<br>"+txt;
+    }
+
+   
+
+</script>
+
+</html>
