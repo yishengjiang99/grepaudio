@@ -65,3 +65,4 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
   
     return true;
   };
+
