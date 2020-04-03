@@ -2,6 +2,8 @@ import BiquadFilters from './biquadFilters.js'
 
 import io_samplers from './io_samplers.js'
 import bufferReader from "./lib/bufferReader.js";
+import DynamicCompressionModule from './compression.js';
+
 import './polyfills.js'
 
 const getMicBtn = document.querySelector("#select-mike");
@@ -29,6 +31,9 @@ volumeControl && volumeControl.addEventListener('input',function ()
     gainNode.gain.value = this.value;
 },false);
 
+var compressors = DynamicCompressionModule(audioCtx);
+var compressorDiv = document.getElementById("compressor_container");
+compressors.attach_form(compressorDiv);
 
 
 

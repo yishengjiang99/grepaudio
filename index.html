@@ -35,13 +35,11 @@
                     </button></p>
             </td>
             <td valign=top>
-                <p> <button data-playing="false" id='playBtn' class="tape-controls-play" role="switch"
-                        aria-checked="false">
-                        <button data-playing="false" id='select-mike' role="switch">Select Microphone</button>
-                    </button></p>
+                <audio controls id='trackplayer' src="./samples/song.mp3" crossorigin="anonymous"></audio>
+
             </td>
             <td>
-                <audio controls id='trackplayer' src="./samples/song.mp3" crossorigin="anonymous"></audio>
+             
             </td>
         </tr>
         <tr>
@@ -52,6 +50,12 @@
                 <h4>Slider controls: </h4>
                 <table id='beq_container'>
                 </table>
+            </td>
+            <td rowspan=2>
+                <h4>Compressors</4>
+                    <div id=compressor_container>
+                        
+                    </div>
             </td>
             <td>
                 <h4>time domain </h4>
