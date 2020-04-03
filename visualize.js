@@ -1,86 +1,68 @@
-function visualize(canvasId,analyser,domain)
-{
+export function line_chart(canvasId){
     var canvas = document.querySelector(canvasId);
     var canvasCtx = canvas.getContext("2d");
     canvas.setAttribute('width',canvas.parentElement.clientWidth);
     canvas.setAttribute('height',canvas.parentElement.clientHeight);
-    WIDTH = canvas.width;
-    HEIGHT = canvas.height;
+    var WIDTH = canvas.width;
+    var HEIGHT = canvas.height;
     canvasCtx.clearRect(0,0,WIDTH,HEIGHT);
+    canvasCtx.lineWidth = 2;
+    canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
 
-    if (domain == 'time') {
-        analyser.fftSize = 2048;
-        var bufferLength = 2048;
-        var dataArray = new Uint8Array(bufferLength);
-        var sliceWidth = WIDTH * 1.0 / bufferLength * 5;
-        var drawTime = function ()
-        {
-            t = requestAnimationFrame(drawTime);
-            analyser.getByteTimeDomainData(dataArray);
-            canvasCtx.fillStyle = 'rgb(200, 200, 200)';
-            canvasCtx.fillRect(0,0,WIDTH,HEIGHT);
+    function drawFrame(dataArray){
+        var bufferLength = dataArray.length;
+        canvasCtx.fillStyle = 'rgb(200, 200, 200)';
+        canvasCtx.fillRect(0,0,WIDTH,HEIGHT);
 
-            canvasCtx.lineWidth = 2;
-            canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+        canvasCtx.beginPath();  
 
-            canvasCtx.beginPath();
+        var x = 0;
+        var sliceWidth = Math.floor(WIDTH/bufferLength)+1;
+        for (var i = 0; i < bufferLength; i++) {
 
-            var x = 0;
+            var v = dataArray[i] / 280.0;
+            var y = v * HEIGHT / 2;
 
-            for (var i = 0; i < bufferLength; i++) {
-
-                var v = dataArray[i] / 280.0;
-                var y = v * HEIGHT / 2;
-
-                if (i === 0) {
-                    canvasCtx.moveTo(x,y);
-                } else {
-                    canvasCtx.lineTo(x,y);
-                }
-
-                x += sliceWidth;
+            if (i === 0) {
+                canvasCtx.moveTo(x,y);
+            } else {
+                canvasCtx.lineTo(x,y);
             }
 
-            canvasCtx.lineTo(canvas.width,canvas.height / 2);
-            canvasCtx.stroke();
+            x += sliceWidth;
+        }
 
-        };
-        drawTime();
-    } else {
-        analyser.fftSize = 256;
-        var bufferLengthAlt = analyser.frequencyBinCount;
-        var dataArrayAlt = new Uint8Array(bufferLengthAlt);
+        canvasCtx.lineTo(canvas.width, canvas.height / 2);
+        canvasCtx.stroke();
 
-        canvasCtx.clearRect(0,0,WIDTH,HEIGHT);
-        var drawAlt = function ()
-        {
-            drawVisual = requestAnimationFrame(drawAlt);
-            if (stopped) return;
-
-            analyser.getByteFrequencyData(dataArrayAlt);
-
-            canvasCtx.fillStyle = 'rgb(0, 0, 0)';
-            canvasCtx.fillRect(0,0,WIDTH,HEIGHT);
-
-            var barWidth = (WIDTH / bufferLengthAlt) * 2.5;
-            var barHeight;
-            var x = 0;
-
-            for (var i = 0; i < bufferLengthAlt; i++) {
-                barHeight = dataArrayAlt[i];
-
-                canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)';
-                canvasCtx.fillRect(x,HEIGHT - barHeight / 2,barWidth,barHeight / 2);
-
-                x += barWidth + 1;
-            }
-        };
-
-        drawAlt();
     }
-    return t;
-}
 
+    function drawBars(dataArray){
+        var bufferLength = dataArray.length;
+     
+
+        canvasCtx.fillStyle = 'rgb(0, 0, 0)';
+        canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+
+        var barWidth = (WIDTH / bufferLength) * 2.5;
+        var barHeight;
+        var x = 0;
+
+        for(var i = 0; i < bufferLength; i++) {
+          barHeight = dataArray[i];
+
+          canvasCtx.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
+          canvasCtx.fillRect(x,HEIGHT-barHeight/2,barWidth,barHeight/2);
+
+          x += barWidth + 1;
+        }
+        
+    }
+    return {
+        canvas,canvasCtx,WIDTH,HEIGHT,
+        drawFrame,drawBars
+    }  
+}
 function drawFancyCurve(canvas, frequencyHz, dbResponses)
 {
     canvas.setAttribute('width',canvas.parentElement.clientWidth);

@@ -1,17 +1,24 @@
+import BiquadFilters from './biquadFilters.js'
+
+import io_samplers from './io_samplers.js'
+import bufferReader from "./lib/bufferReader.js";
+import './polyfills.js'
 
 const getMicBtn = document.querySelector("#select-mike");
-const audioElement = document.querySelector("audio#trackplayer");
+const audioTag = document.querySelector("audio");
 const playButton = document.getElementById("playBtn");
+
+
 const rx1 = document.getElementById("rx1");
-
+const logrx1 = (txt) => rx1.innerHTML=txt;
 var num_nodex =12;
-
 const audioCtx = new AudioContext();
 
-var audioTagSource,audioMicSource;
-var placeholder = audioCtx.createOscillator();
-var audioSource = placeholder;
-var audioInput = "trackplayer";
+var sinewave = audioCtx.createOscillator();
+var mediaTagSource  = audioCtx.createMediaElementSource(audioTag);
+
+var userStream;
+var audioSource = sinewave;
 
 //gain node
 var gainNode = audioCtx.createGain();
@@ -23,94 +30,137 @@ volumeControl && volumeControl.addEventListener('input',function ()
 },false);
 
 
+
+
 //biquad filters 
 var freq_bands = nyquist_hzs(audioCtx.sampleRate,num_nodex);
 var gains = Array(16).fill(0);
 var bandwidths = Array(16).fill(8);
 
 const beqContainer = document.getElementById("beq_container");
-var biquadFilters = biquad_filter_list(freq_bands,gains,bandwidths, beqContainer);
-var outputAnalyzer = audioCtx.createAnalyser();
-outputAnalyzer.minDecibels = -90;
-outputAnalyzer.maxDecibels = -10;
-outputAnalyzer.smoothingTimeConstant = 0.85
+var biquadFilters = BiquadFilters.get_list(audioCtx, freq_bands,gains,bandwidths);
+BiquadFilters.link_ui(beqContainer);
 
-var inputAnalyzer = audioCtx.createAnalyser();
-inputAnalyzer.minDecibels = -90;
-inputAnalyzer.maxDecibels = -10;
-inputAnalyzer.smoothingTimeConstant = 0.85;
+var analyzerNodeList = io_samplers(audioCtx, 2048);
+
+audioCtx.onstatechange= function(ev){
+    switch(ev.target.state){
+        case "running": analyzerNodeList.sample_time_domain(audioCtx); break;
+        default: logrx1('ctx state'+ev.target.state);break;
+    }
+}
 
 link_audio_graph();
 update_eq_ui();
 
-async function start()
+const inputSelect = document.getElementById("inputselect")
+
+var isPlaying = false;
+playButton.addEventListener("click", async function (e)
 {
-    if(audioSource) audioSource.disconnect();
-    if (audioInput == "trackplayer") {
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
 
-        audioTagSource = audioTagSource || audioCtx.createMediaElementSource(audioElement);
-        audioSource = audioTagSource;
-    } else if (audioInput == 'usermedia') {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioMicSource = audioCtx.createMediaStreamSource(stream);
-       
-        audioSource = audioMicSource;
     }
+    if(isPlaying==true){
+        this.innerText="start";
+   
+        sinewave.stop();
+        audioTag.pause();
 
-
-    if (!audioSource) {
-        throw new Error("track not found");
+        isPlaying=false;
         return;
     }
 
-    audioSource.connect(inputAnalyzer);
-    update_eq_ui();
-    stopped = false;
-    animationTimers = [
-        visualize('#input_time',inputAnalyzer,"time"),
-        visualize('#input_freq',inputAnalyzer,"frequency"),
-        visualize('#output_time',outputAnalyzer,"time"),
-        visualize('#output_freq',outputAnalyzer,"frequency")
-    ];
+    var start_ = () => audioSource.start();
 
+    switch(inputSelect.value){
+        case "sine": 
+            audioSource = sinewave; 
+            start_ = () => audioSource.start();
+            break;
+        case "song": 
+
+            audioSource = mediaTagSource;
+             start_ = () => audioTag.play();
+            break;
+
+        case 'mic':
+            userStream = navigator.mediaDevices.getUserMedia ({audio: true, video: false});
+            break;
+
+         default: 
+            audioSource=sinewave;
+            break;
+    }
+
+
+
+    isPlaying=true;
+    this.innerText="pause";
+
+    link_audio_graph();
+    update_eq_ui();
+    start_();
+});
+
+window.onload = function(e){
+    var list = document.getElementsByClassName('update_gain');
+    for(const l of list){
+        l.addEventListener("change",(event)=>{
+            var index = parseInt( event.target.dataset.index );
+            document.getElementById(`gain_val_${index}`).innerHTML = event.target.value;
+            biquadFilters[index].gain.setValueAtTime(event.target.value, audioCtx.currentTime);
+            update_eq_ui();
+        })
+    }
+
+    list = document.getElementsByClassName('update_q');
+    for(const l of list){
+        l.addEventListener("change",(event)=>{
+            var index = parseInt( event.target.dataset.index );
+            document.getElementById(`qval_${index}`).innerHTML = event.target.value;
+            biquadFilters[index].Q.setValueAtTime(event.target.value, audioCtx.currentTime);
+            update_eq_ui();
+        })
+    }
 }
+
+
+function link_audio_graph()
+{    
+    audioSource.connect(analyzerNodeList.inputAnalyzer);
+    analyzerNodeList.inputAnalyzer.connect(gainNode);
+    var cursor = gainNode;
+    biquadFilters.forEach(filter=>{
+        cursor.connect(filter);
+        cursor=filter;
+    })
+    cursor.connect(analyzerNodeList.outputAnalyzer);
+    analyzerNodeList.outputAnalyzer.connect(audioCtx.destination);
+}
+
 
 function update_eq_ui(){
     var freqs= nyquist_hzs(audioCtx.sampleRate,num_nodex);
-    var aggregated_amps = aggregate_frequency_response(biquadFilters,freqs);
+    var aggregated_amps = BiquadFilters.aggregate_frequency_response(biquadFilters,freqs);
     aggregated_amps.forEach( (amp,index)=>{
         document.getElementById(`freq_resp_meter_${index}`).value = amp;
     });
 }
 
 
-function link_audio_graph()
-{    
-    var c = audioSource;
-
-    [inputAnalyzer,gainNode].concat(biquadFilters).concat([outputAnalyzer,audioCtx.destination]).forEach(node =>
-    {
-        c.connect(node);
-        c = node;
-    })
-}
-
-var animationTimers = [];
-
-var stopped = false;
-
 function disconnectSourceAndAnimation()
 {
-    audioSource.disconnect();
-    outputAnalyzer.disconnect();
-    animationTimers.forEach(t => cancelAnimationFrame(t));
-    stopped = true;
+
+    analyzerNodeList.disconnect();
+    var stopped = true;
 }
 
 
 function nyquist_hzs(sampleRate,noctaves){
     var nyquist = 0.5 * sampleRate;
-    frequencyHz= new Float32Array(noctaves);
+    var frequencyHz= new Float32Array(noctaves);
     for (var i = 0; i < noctaves; ++i) {
         var f = i / noctaves;
         f = nyquist * Math.pow(2.0, noctaves * (f - 1.0));
@@ -122,47 +172,3 @@ function nyquist_hzs(sampleRate,noctaves){
 
 //ui buttons
 
-var audioInput = "trackplayer";
-
-getMicBtn.addEventListener("click",function (e)
-{
-    alert("broken");
-    return;
-    audioInput = "usermedia";
-    if (this.dataset.playing == "false") {
-        this.dataset.playing = "true";
-        start();
-    } else {
-        stream.getTracks().forEach(function (track)
-        {
-            track.stop();
-        });
-        this.dataset.playing = "false";
-        disconnectSourceAndAnimation();
-    }
-})
-
-playButton.addEventListener("click",function (e)
-{
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-
-    if (this.dataset.playing === 'false') {
-        this.dataset.playing = 'true';
-        audioElement.play();
-        start();
-        this.innerText = "pause"
-
-        // if track is playing pause it
-    } else if (this.dataset.playing === 'true') {
-        audioElement.pause();
-        this.dataset.playing = 'false';
-        disconnectSourceAndAnimation();
-        this.innerText = "play"
-    }
-
-    let state = this.getAttribute('aria-checked') === "true" ? true : false;
-    this.setAttribute('aria-checked',state ? "false" : "true");
-    log(audioCtx.state + " audio state")
-});
