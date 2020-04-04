@@ -3,185 +3,159 @@ import BiquadFilters from './biquadFilters.js'
 import io_samplers from './io_samplers.js'
 import bufferReader from "./lib/bufferReader.js";
 import DynamicCompressionModule from './compression.js';
-
+import PlayableAudioSource from './audio_source.js';
 import './polyfills.js'
+const NYQUIST_SAMPLE_RATE_x2 = 441000;
+const NUM_FREQUENCY_BANDS = 16;
 
+
+
+let audioCtx, pre_amp, post_amp;
+var biquadFilters, compressors; //list of 16
+let analyzerNodeList;
+
+let audioTagSource, micTagSource, white_noise, sinewave;
+
+
+let activeInputSource;
+let userMediaStreamSource;
+
+
+let volumeSamplers = [];
+let letancySamplers = [];
+
+
+
+const startBtn = document.getElementById("start");
 const getMicBtn = document.querySelector("#select-mike");
-const audioTag = document.querySelector("audio");
+const audioTag = document.querySelector("audio#trackplayer");
 const playButton = document.getElementById("playBtn");
-
-
 const rx1 = document.getElementById("rx1");
-const logrx1 = (txt) => rx1.innerHTML=txt;
-var num_nodex =12;
-const audioCtx = new AudioContext();
-
-var sinewave = audioCtx.createOscillator();
-var mediaTagSource  = audioCtx.createMediaElementSource(audioTag);
-
-var userStream;
-var micSource;
-var audioSource = sinewave;
-
-//gain node
-var gainNode = audioCtx.createGain();
-const volumeControl = document.querySelector('[data-action="volume"]');
-volumeControl && volumeControl.addEventListener('input',function ()
-{
-    log(" volumn changed to " + this.value);
-    gainNode.gain.value = this.value;
-},false);
-
-var compressors = DynamicCompressionModule(audioCtx);
-compressors.addDefault();
-
-var compressorDiv = document.getElementById("compressor_container");
-compressors.attach_form(compressorDiv);
-
-
-//biquad filters 
-var freq_bands = nyquist_hzs(audioCtx.sampleRate,num_nodex);
-var gains = Array(16).fill(0);
-var bandwidths = Array(16).fill(8);
-
-const beqContainer = document.getElementById("beq_container");
-var biquadFilters = BiquadFilters.get_list(audioCtx, freq_bands,gains,bandwidths);
-BiquadFilters.link_ui(beqContainer);
-
-var analyzerNodeList = io_samplers(audioCtx, 2048);
-
-audioCtx.onstatechange= function(ev){
-    switch(ev.target.state){
-        case "running": analyzerNodeList.sample_time_domain(audioCtx); break;
-        default: logrx1('ctx state'+ev.target.state);break;
-    }
-}
-
-
-link_audio_graph();
-update_eq_ui();
-
+const volumeControl = document.getElementById("volume");
+const volumeControl2 =document.getElementById("volume2");
+const compressorDiv = document.getElementById("compressor_container");
 const inputSelect = document.getElementById("inputselect")
+const list = document.getElementsByClassName('update_gain');
+const eq_ui_container = document.getElementById('eq_ui_container');
+const eq_update_form =document.getElementById('eq_update_form');
+const eq_ui_row_template = document.getElementById("eq_ui_row_template");
+const logrx1 = (txt) => rx1.innerHTML=txt;  
 
-var isPlaying = false;
-playButton.addEventListener("click", async function (e)
-{
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
 
-    if(isPlaying==true){
-        this.innerText="start";
-   
-        if(sinewave.state=='running') sinewave.stop();
-        if(micDiv.isPlaying) micDiv.pause();
+startBtn.onclick=initializeContext;
 
-        isPlaying=false;
-        return;
-     
-    }
+volumeControl.addEventListener('input', ()=>pre_amp.gain.value = event.target.value);
+volumeControl2.addEventListener('input', ()=>post_amp.gain.value = event.target.value);
+getMicBtn.onclick = () => getAudioDevice().then(source => set_audio_input(source));
 
-    var start_ =null;
-    switch(inputSelect.value){
-        case "sine": 
-            sinewave =  audioCtx.createOscillator(); 
-            audioSource = sinewave;
-            start_ = () => audioSource.start();
-            break;
-        case "song": 
 
-            audioSource = mediaTagSource;
-             start_ = () => audioTag.play();
-            break;
 
-        case 'mic':
-            audioSource = await getAudioDevice(audioCtx);
-            start_ = () => micdiv.play();
-            break;
-         default: 
-            audioSource=sinewave;
-            break;
-    }
-    isPlaying=true;
-    this.innerText="pause";
 
-    link_audio_graph();
-    update_eq_ui();
-    start_();
-});
-
-window.onload = function(e){
-    var list = document.getElementsByClassName('update_gain');
-    for(const l of list){
-        l.addEventListener("change",(event)=>{
-            var index = parseInt( event.target.dataset.index );
-            document.getElementById(`gain_val_${index}`).innerHTML = event.target.value;
-            biquadFilters[index].gain.setValueAtTime(event.target.value, audioCtx.currentTime);
-            update_eq_ui();
-        })
-    }
-
-    list = document.getElementsByClassName('update_q');
-    for(const l of list){
-        l.addEventListener("change",(event)=>{
-            var index = parseInt( event.target.dataset.index );
-            document.getElementById(`qval_${index}`).innerHTML = event.target.value;
-            biquadFilters[index].Q.setValueAtTime(event.target.value, audioCtx.currentTime);
-            update_eq_ui();
-        })
-    }
+function start(){
+    audioCtx = null;
+    initializeContext();
 }
 
+let hz_bands;
+function initializeContext(){
+    if(!audioCtx) {
+        audioCtx = new AudioContext();
+    }
 
-async function getAudioDevice(ctx) {
-  if (!navigator.mediaDevices) {
-    throw new Error("web rtc not available")
-  }
-  try{
-    var stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    audioCtx.onstatechange= function(ev){
+        switch(ev.target.state){
+            case "running": analyzerNodeList.run_samples(audioCtx); break;
+            default: logrx1('ctx state'+ev.target.state);break;
+        }
+        return false;
+    }
+       hz_bands = nyquist_hzs(audioCtx.sampleRate, NUM_FREQUENCY_BANDS);
 
-   var micdiv = document.getElementById("microphone")
-    micdiv.srcObject = stream;
-    micdiv.onloadedmetadata = function(e) {
-        micdiv.muted = true;
-    };
-    micSource =audioCtx.createMediaStreamSource(stream);
-    return micSource;
-  }catch(e){
-    throw e;
-  }
-}
+     sinewave = audioCtx.createOscillator();
+     pre_amp = audioCtx.createGain();
+     post_amp = audioCtx.createGain();
 
-function link_audio_graph()
-{    
-    audioSource.connect(analyzerNodeList.inputAnalyzer);
-    analyzerNodeList.inputAnalyzer.connect(gainNode);
-    var cursor = gainNode;
-    biquadFilters.forEach(filter=>{
-        cursor.connect(filter);
-        cursor=filter;
-    })
-    cursor.connect(analyzerNodeList.outputAnalyzer);
+    var mod_compressor = DynamicCompressionModule(audioCtx);
+        mod_compressor.addDefaults(NUM_FREQUENCY_BANDS);
+        compressors = mod_compressor.list;
+
+    var gains = Array(16).fill(0);
+    var bandwidths = Array(16).fill(8);
+    biquadFilters = BiquadFilters.get_list(audioCtx, hz_bands ,gains,bandwidths);
+
+
+    analyzerNodeList = io_samplers(audioCtx, 2048);
+
+
+
+
+    activeInputSource=audioTagSource;
+
+    audioTagSource = audioCtx.createMediaElementSource(audioTag);
+    audioTagSource.connect(analyzerNodeList.inputAnalyzer);
+
+
+    //activeInputSource.connect(analyzerNodeList.inputAnalyzer);
+
+
+    analyzerNodeList.inputAnalyzer.connect(pre_amp);
+    var c = pre_amp;
+    for(let i =0; i<biquadFilters.length; i++){
+        c.connect(biquadFilters[i]);
+        c = biquadFilters[i];
+    }
+
+    for(let i =0; i<compressors.length; i++){
+        c.connect(compressors[i]);
+        c = compressors[i];
+
+    }
+    c.connect(post_amp);
+    post_amp.connect(analyzerNodeList.outputAnalyzer);
     analyzerNodeList.outputAnalyzer.connect(audioCtx.destination);
+
+    init_eq_controls();
 }
-
-
-function update_eq_ui(){
-    var freqs= nyquist_hzs(audioCtx.sampleRate,num_nodex);
-    var aggregated_amps = BiquadFilters.aggregate_frequency_response(biquadFilters,freqs);
-    aggregated_amps.forEach( (amp,index)=>{
-        document.getElementById(`freq_resp_meter_${index}`).value = amp;
+function init_eq_controls(){
+ 
+    audioTag.addEventListener("canplay", console.log);
+    audioTag.addEventListener("canplay|loadedmetadata|play|ended", console.log);
+    hz_bands.forEach( (hz, i)=>{
+        var row = eq_ui_row_template.content.cloneNode(true);
+        row.querySelector(".hz_label").innerHTML = hz;
+        row.querySelectorAll("input").forEach( (input, index)=> {
+            input.addEventListener('input', e=> {
+                onEQConfigUpdate(index, e);
+            })
+        })
+        eq_ui_container.append(row);
     });
 }
 
+function onEQConfigUpdate(i, e){
+    if(audioCtx === null ) initializeContext();   
+    var value = e.target.value;
+    switch(name){
+        case "gain":  
+            biquadFilters[i].gain.setValueAtTime(value, audioCtx.currentTime+1); break;
+        case "q":    
+             biquadFilters[i].q.setValueAtTime(value, audioCtx.currentTime+1); break;
+        case "threshold":
+        case "ratio":
+        case "knee":
+        case "attack":
+        case "release": 
+            DynamicCompressionModule.getAttributeValue(compressor[i], name).setValueAtTime(value, audioCtx.currentTime+1);
+            break;
+        default: /*wtf*/ break;
+    }
+    var frps= BiquadFilters.aggregate_frequency_response(biquadFilters, hz_bands);
 
-function disconnectSourceAndAnimation()
-{
 
-    analyzerNodeList.disconnect();
-    var stopped = true;
+    frps.forEach( (amp,index)=>{ 
+        document.getElementsByClassName("freq_resp_meter")[index].value = amp;
+    });
 }
-
 
 function nyquist_hzs(sampleRate,noctaves){
     var nyquist = 0.5 * sampleRate;
@@ -191,8 +165,7 @@ function nyquist_hzs(sampleRate,noctaves){
         f = nyquist * Math.pow(2.0, noctaves * (f - 1.0));
         frequencyHz[i] = f;
     }
-    return frequencyHz;
+    return frequencyHz
 }
 
-//ui buttons
 

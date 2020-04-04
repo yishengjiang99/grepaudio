@@ -13,55 +13,52 @@
 </head>
 
 <body style='margin-left:20px'>
-    <div id=display>    <h3>Mix Sounds</h3>
-     <span id='rx1'>rx</span>
+    <div id=display>   
+     <h3>Mix Sounds   <span id='rx1'></span></h3>
     <table>
         <tr>
             <td>
-
-                <span>
-                <select id='inputselect'>
-                    <option value='sine'>sine wave</option>
-                    <option value='sqr'>square wave</option>
-                    <option value='mic'>mic</option>
-                    <option value='song'>song</option>
-                </select>
-                    <button data-playing="false" id='playBtn' class="tape-controls-play" role="switch"
-                        aria-checked="false">
-                        <span id='playbtn'>Play </span>
-                    </button></span>
+               <audio controls id='trackplayer' src="./samples/song.mp3"></audio>
             </td>
-            <td colspan=2>
-                <span>mp3 player: <audio controls id='trackplayer' src="./samples/song.mp3" crossorigin="anonymous"></audio></span>
-                <span>mic audio:<audio controls id="microphone"></audio></span>
+            <td>
+                  <div> pre-amp Volume:&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="range" 
+                        id="volume" 
+                        class="control-volume" 
+                        min="-1" max="4" value="1" 
+                        list="gain-vals"
+                        step="0.01" 
+                        oninput="event.target.nextElementSibling.innerText=event.target.value"
+                        data-action="volume" />
+                    <label>1</label></div>
+
+                   <div> second amp Volume:
+                    <input type="range" 
+                        id="volume2" 
+                        class="control-volume" 
+                        min="0" max="3" value="1" 
+                        list="gain-vals"
+                        step="0.01" 
+                        oninput="event.target.nextElementSibling.innerText=event.target.value"
+                        data-action="volume" />
+                    <label>1</label>
+                    <button id='select-mike'>use mic</button>
+        <button id='start'>Click to initialize audio ctx</button>
+                    </div>
             </td>
    
         </tr>
         <tr>
-            <td rowspan=2>
-                <span> Master Volume:
-                    <input type="range" id="volume" class="control-volume" min="0" max="2" value="1" list="gain-vals"
-                        step="0.01" data-action="volume" />
-                </span>
-                <h4>Slider controls: </h4>
-                <table id='beq_container'>
-                </table>
-            </td>
-            <td valign=top>
-                <h4>Compressors</h4>
-                    <div id=compressor_container>
-
-                    </div>
-                 </h4>
+            <td rowspan=2 colspan=2>
+                <form id='eq_update_form'> <table id='eq_ui_container'>
+        
+                </table></form>
             </td>
             <td>
-                <h4>time domain </h4>
                 <span class='canvas_wrapper'><canvas id='input_time'></canvas></span>
                 <span class='canvas_wrapper'><canvas id='input_freq'></canvas></span>
 
             </td>
-  
-   
 
         </tr>
         <tr>
@@ -72,11 +69,33 @@
 
         </tr>
     </table></div>
-    <div id='console'></div>
+
 </body>
 
+<template id='eq_ui_row_template'>
+ <tr>
+        <td><span class='hz_label'></span></td>
+        <td><input name="gain"  value="0" data-index="0" type="range" min="0" max="60" step="0.1"></td>
+        <td><span class='gain_label' for='update_gain'></span></td>
+        <td><input name="q" value="8" data-index="0" type="range" min="0" max="13" step="0.1"></td>
+        <td><span  class="q_label"></span></td>
+        <td><meter class="freq_resp_meter" type="range" min="0" max="60" step="0.1"></meter></td>
 
-<script type='module' src='./equalizer.js'></script>
+
+        <td><input name="threshold" step="0.1" tag="0" type="range" value="-24" placeholder="threshold" max="0" min="-100"> </td>
+        <td><span  class="threshold_label"></span></td>
+
+        <td><input size="3" name="knee" step="0.1" tag="0" type="numeric" value="30" placeholder="knee" max="40" min="0"> </td>
+        <td><input size="3" name="ratio" step="0.1" tag="0" type="numeric" value="12" placeholder="ratio" max="20" min="1"> </td>
+        <td><input size="3" name="attack" step="0.1" tag="0" type="numeric" value="0" placeholder="attack" max="1" min="0"> </td>
+        <td><input size="3" name="release" step="0.1" tag="0" type="numeric" value="0.25" placeholder="release" max="20" min="1"> </td>
+ </tr>
+</template>
+
+<script type='module' src='./equalizer.js'>
+
+</script>
+
 <script>
 var con = new SimpleConsole({
 	placeholder: ">",
@@ -92,7 +111,8 @@ var con = new SimpleConsole({
 });
 
 // add the console to the page
-document.getElementById("console").appendChild(con.element);
+document.body.append(con.element);
+
 window.log = con.log;;
 window.logErr = con.logError;
 // show any uncaught errors (errors may be unrelated to the console usage)

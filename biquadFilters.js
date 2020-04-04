@@ -21,29 +21,6 @@ function get_list(audioCtx, freq_bands, gain_factors, bandwidths){
     return biquadFilters;
 }
 
-function link_ui(beqContainer){
-    if(beqContainer === null) throw new Error('beq container is null');
-    
-    biquadFilters.forEach((filter,index) =>
-    {
-        var freq = Math.round(freq_bands_[index],2);
-        var row=`
-        <td><span>${freq} Hz</span></td>
-        <td><input class='update_gain' id='g_input_${index}' value='${filter.gain.value}' data-index="${index}" type="range" min="0" max="60" step="0.1"></td>
-        <td><span id='gain_val_${index}'>&nbsp;&nbsp;&nbsp;&nbsp;${filter.gain.value}&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
-        <td><input class='update_q' value='${filter.Q.value}' data-index="${index}" type="range" min="0" max="13" step="0.1"></td>
-        <td><span id='qval_${index}'>${filter.Q.value}&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
-        <td><meter id='freq_resp_meter_${index}' type="range" min="0" max="60" step="0.1"></td>
-        </tr>`
-
-        beqContainer.innerHTML += row;
-    });
-    return biquadFilters;
-}
-
-
-
-
 
 function aggregate_frequency_response(filters, frequency_list){
     frequency_list = frequency_list || SIXTEEN_BAND_FREQUENCY_RANGE;
@@ -66,6 +43,5 @@ function aggregate_frequency_response(filters, frequency_list){
 export default {
     biquadFilters: biquadFilters,
     get_list,
-    link_ui,
     aggregate_frequency_response
 }
