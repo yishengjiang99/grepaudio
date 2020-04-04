@@ -1,11 +1,17 @@
 #console {
-    bottom: 0px;
+    bottom: 20px;
     min-height: 200px;
     min-width: 100vw;
     position: fixed;
     background-color: black;
     color: white;
     overflow-y: scroll;
+    max-height:200px;
+    margin-bottom:20px;;
+    
+}
+#console-put{
+  width:
 }
 .body{
   position:fixed;
@@ -19,7 +25,15 @@ body {
   position:fixed;
   overflow:hidden;
 }
-
+table{
+    display: table-row-group;
+  vertical-align: top;
+  border-color: inherit;
+  
+}
+td{
+  vertical-align:top;
+}
 html,
 body,
 input,

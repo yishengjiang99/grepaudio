@@ -6,23 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>rt</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet"
-    type="text/css" />
-
-<link href="//cdn.muicss.com/mui-0.10.1/css/mui.min.css" rel="stylesheet" type="text/css" />
-<script src="//cdn.muicss.com/mui-0.10.1/js/mui.min.js"></script>
+    <link rel="stylesheet" href="style.css">   
+    <link rel="stylesheet" href="./lib/vendors/simple-console.css">
+<script src="./lib/vendors/simple-console.js"></script>
+ 
 </head>
 
 <body style='margin-left:20px'>
-    <h3>Mix Sounds</h3>
-    
+    <div id=display>    <h3>Mix Sounds</h3>
+     <span id='rx1'>rx</span>
     <table>
         <tr>
-            <td valign=top>
-   
-                <p>
+            <td>
+
+                <span>
                 <select id='inputselect'>
                     <option value='sine'>sine wave</option>
                     <option value='sqr'>square wave</option>
@@ -32,30 +29,30 @@
                     <button data-playing="false" id='playBtn' class="tape-controls-play" role="switch"
                         aria-checked="false">
                         <span id='playbtn'>Play </span>
-                    </button></p>
+                    </button></span>
             </td>
-            <td valign=top>
-                <audio controls id='trackplayer' src="./samples/song.mp3" crossorigin="anonymous"></audio>
-
+            <td colspan=2>
+                <span>mp3 player: <audio controls id='trackplayer' src="./samples/song.mp3" crossorigin="anonymous"></audio></span>
+                <span>mic audio:<audio controls id="microphone"></audio></span>
             </td>
-            <td>
-             
-            </td>
+   
         </tr>
         <tr>
             <td rowspan=2>
-                <p> Master Volume: <span id='rx1'></span>
+                <span> Master Volume:
                     <input type="range" id="volume" class="control-volume" min="0" max="2" value="1" list="gain-vals"
-                        step="0.01" data-action="volume" /></p>
+                        step="0.01" data-action="volume" />
+                </span>
                 <h4>Slider controls: </h4>
                 <table id='beq_container'>
                 </table>
             </td>
-            <td rowspan=2>
-                <h4>Compressors</4>
+            <td valign=top>
+                <h4>Compressors</h4>
                     <div id=compressor_container>
-                        
+
                     </div>
+                 </h4>
             </td>
             <td>
                 <h4>time domain </h4>
@@ -74,20 +71,33 @@
             </td>
 
         </tr>
-    </table>
+    </table></div>
     <div id='console'></div>
 </body>
 
 
-
-<div style='display:none'>
-
-    <audio id="microphone"></audio>
-</div>
-
-
 <script type='module' src='./equalizer.js'></script>
+<script>
+var con = new SimpleConsole({
+	placeholder: ">",
+	handleCommand: function(command){
+		try {
+			con.log(eval(command));
+		} catch(error) {
+			con.log(error);
+		}
+	},
+	autofocus: true, // if the console is to be the primary interface of the page
+	storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
+});
 
+// add the console to the page
+document.getElementById("console").appendChild(con.element);
+window.log = con.log;;
+window.logErr = con.logError;
+// show any uncaught errors (errors may be unrelated to the console usage)
+con.handleUncaughtErrors();
+</script>
 
 </body>
 

@@ -20,6 +20,7 @@ var sinewave = audioCtx.createOscillator();
 var mediaTagSource  = audioCtx.createMediaElementSource(audioTag);
 
 var userStream;
+var micSource;
 var audioSource = sinewave;
 
 //gain node
@@ -32,9 +33,10 @@ volumeControl && volumeControl.addEventListener('input',function ()
 },false);
 
 var compressors = DynamicCompressionModule(audioCtx);
+compressors.addDefault();
+
 var compressorDiv = document.getElementById("compressor_container");
 compressors.attach_form(compressorDiv);
-
 
 
 //biquad filters 
@@ -55,6 +57,7 @@ audioCtx.onstatechange= function(ev){
     }
 }
 
+
 link_audio_graph();
 update_eq_ui();
 
@@ -65,23 +68,24 @@ playButton.addEventListener("click", async function (e)
 {
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
-
     }
+
     if(isPlaying==true){
         this.innerText="start";
    
-        sinewave.stop();
-        audioTag.pause();
+        if(sinewave.state=='running') sinewave.stop();
+        if(micDiv.isPlaying) micDiv.pause();
 
         isPlaying=false;
         return;
+     
     }
 
-    var start_ = () => audioSource.start();
-
+    var start_ =null;
     switch(inputSelect.value){
         case "sine": 
-            audioSource = sinewave; 
+            sinewave =  audioCtx.createOscillator(); 
+            audioSource = sinewave;
             start_ = () => audioSource.start();
             break;
         case "song": 
@@ -91,16 +95,13 @@ playButton.addEventListener("click", async function (e)
             break;
 
         case 'mic':
-            userStream = navigator.mediaDevices.getUserMedia ({audio: true, video: false});
+            audioSource = await getAudioDevice(audioCtx);
+            start_ = () => micdiv.play();
             break;
-
          default: 
             audioSource=sinewave;
             break;
     }
-
-
-
     isPlaying=true;
     this.innerText="pause";
 
@@ -131,6 +132,25 @@ window.onload = function(e){
     }
 }
 
+
+async function getAudioDevice(ctx) {
+  if (!navigator.mediaDevices) {
+    throw new Error("web rtc not available")
+  }
+  try{
+    var stream = await navigator.mediaDevices.getUserMedia({audio:true});
+
+   var micdiv = document.getElementById("microphone")
+    micdiv.srcObject = stream;
+    micdiv.onloadedmetadata = function(e) {
+        micdiv.muted = true;
+    };
+    micSource =audioCtx.createMediaStreamSource(stream);
+    return micSource;
+  }catch(e){
+    throw e;
+  }
+}
 
 function link_audio_graph()
 {    
@@ -172,7 +192,6 @@ function nyquist_hzs(sampleRate,noctaves){
         frequencyHz[i] = f;
     }
     return frequencyHz;
-
 }
 
 //ui buttons

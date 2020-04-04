@@ -1,16 +1,22 @@
 function DynamicCompressionModule(audioCtx)
 {
     var ctx = audioCtx;
-    var compressors = [null, null,null];
+    var compressors =[null,null];
 
     var attributes =[
+         ['threshold', .25, 0, 1],
+         ['knee', 30, 0, 40],
+         ['ratio', 12, 1, 20],
         ['attack', 0.03, 0, 1],
-        ['knee', 30, 0, 40], //db
-        ['ratio', 12, 1, 20],
-        ['release', 12, 1, 20],
-        ['threshold', .25, 0, 1]
-    ]
+        ['release', 12, 1, 20]];
 
+  
+    function addDefault(){
+
+        if(compressors[0]==null) compressors.push(ctx.createDynamicsCompressor());
+        return compressors[0]
+
+    }
     function getAttributeValue(cp, attrname){
         switch(attrname){
             case "threshold": return cp.threshold;
@@ -22,50 +28,52 @@ function DynamicCompressionModule(audioCtx)
         }
     }
     var attach_form = function(container){
+
         var form = document.createElement("form");
 
         var table ="<table><tr><td></td><td>threshold</td><td>knee</td><td>ratio</td><td>release<td></tr>";
-
 
         compressors.forEach( (compressor, index) =>{
             var row =`<tr><td>${index}</td>`
             attributes.forEach( attr=> {
                 var name = attr[0];
-                var val = compressors[index] !== null && getAttributeValue(compressor, attrname) || attr[1];
-                row += `<td><input 
-                step="0.1" 
-                tag="${index}" 
-                type='range' val='${val}' placeholder='${name}' max='${attr[3]}' min='${attr[2]}' /> </td>`
+                var value = compressors[index] !== null && getAttributeValue(compressor, name).value; 
+                var val = value !== null ? parseInt(value*100)/100 :  "inactive";
+                var inputType = name=='threshold' ? "range" : "numeric";
+                
+                row += `<td><input size=3 ${val === null ? "inactive" :""} name='${name}' step="0.1"  tag="${index}" 
+                type='${inputType}' value='${val}' placeholder='${name}' max='${attr[3]}' min='${attr[2]}' /> </td>`
+                
+
             });
             row += "</tr>";
             table += row;
-           
-
         })
         table += "</table>";
 
 
-        container.innerHTML = table;
+        form.innerHTML = table;
 
-        document.onload = function(){
-            form.querySelector("input").addEventListener("change",e=>{
-                var attrname = e.target.getAttribute("name");
-                var index = parseInt(e.target.getAttribute("tag"));
-                var cp = compressors[index];
-                var val = e.target.value;
-                switch(attrname){
-                    case "threshold": cp.threshold.setValueAtTime(val, audioCtx.currentTime); break;
-                    case "knee": cp.knee.setValueAtTime(val, audioCtx.currentTime); break;
-                    case "ratio": cp.ratio.setValueAtTime(val, audioCtx.currentTime); break;
-                    case "attack": cp.attack.setValueAtTime(val, audioCtx.currentTime); break;
-                    case "release": cp.release.setValueAtTime(val, audioCtx.currentTime); break;
-                    default: throw new Error("Unknown prop");
+        container.appendChild(form);
+
+        form.oninput = e =>{
+            log("on change");
+            var attrname = e.target.getAttribute("name");
+            var index = parseInt(e.target.getAttribute("tag"));
+            if( compressors[index] === null)  compressors[index] = ctx.createDynamicsCompressor();
+           var cp = compressors[index];
+            var val = e.target.value;
+            switch(attrname){
+                case "threshold": cp.threshold.setValueAtTime(val, audioCtx.currentTime); break;
+                case "knee": cp.knee.setValueAtTime(val, audioCtx.currentTime); break;
+                case "ratio": cp.ratio.setValueAtTime(val, audioCtx.currentTime); break;
+                case "attack": cp.attack.setValueAtTime(val, audioCtx.currentTime); break;
+                case "release": cp.release.setValueAtTime(val, audioCtx.currentTime); break;
+                default: throw new Error("Unknown prop "+attrname);
                 }
-            })
+
         }
-
     }
-
 
 
 
@@ -96,8 +104,11 @@ function DynamicCompressionModule(audioCtx)
         list: compressors,
         addCompressor,
         attach_form,
-        list_connect
+        list_connect,
+        addDefault
     }
 }
 
 export default DynamicCompressionModule;
+
+

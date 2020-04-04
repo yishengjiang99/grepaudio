@@ -14,16 +14,12 @@ function io_samplers(ctx, fftSize){
     inputAnalyzer.maxDecibels = -10;
     inputAnalyzer.smoothingTimeConstant = 0;
     inputAnalyzer.fftSize = fftSize;
-
-
-    var timer;
-
-    var canvas1 =line_chart("#input_time");
-    var canvas2 =line_chart("#output_time");
-    var canvas3 =line_chart("#input_freq");
-    var canvas4 =line_chart("#output_freq");
-
     function sample_time_domain(ctx){
+         var timer;
+        var canvas1 =line_chart("#input_time");
+        var canvas2 =line_chart("#output_time");
+        var canvas3 =line_chart("#input_freq");
+        var canvas4 =line_chart("#output_freq");
        function sample(){
 
             var dataArrayIn = new Uint8Array(fftSize);
@@ -34,7 +30,6 @@ function io_samplers(ctx, fftSize){
             outputAnalyzer.getByteTimeDomainData(dataArrayOut);
             canvas1.drawFrame(dataArrayIn);
             canvas2.drawFrame(dataArrayOut);
-
 
             var dataArrayIn2 = new Uint8Array(256);
             var dataArrayOut2 = new Uint8Array(256);
@@ -63,4 +58,5 @@ function io_samplers(ctx, fftSize){
     
 }
 
-export default io_samplers;
+
+export default io_samplers

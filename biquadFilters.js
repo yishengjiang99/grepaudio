@@ -1,5 +1,6 @@
 var biquadFilters = [];
 var freq_bands_; 
+
 function get_list(audioCtx, freq_bands, gain_factors, bandwidths){
     freq_bands_ = freq_bands;
     var num_nodex = freq_bands.count;
