@@ -1,171 +1,171 @@
+import BiquadFilters from './biquadFilters.js'
 
+import io_samplers from './io_samplers.js'
+import bufferReader from "./lib/bufferReader.js";
+import DynamicCompressionModule from './compression.js';
+import PlayableAudioSource from './audio_source.js';
+import './polyfills.js'
+const NYQUIST_SAMPLE_RATE_x2 = 441000;
+const NUM_FREQUENCY_BANDS = 16;
+
+
+
+let audioCtx, pre_amp, post_amp;
+var biquadFilters, compressors; //list of 16
+let analyzerNodeList;
+
+let audioTagSource, micTagSource, white_noise, sinewave;
+
+
+let activeInputSource;
+let userMediaStreamSource;
+
+
+let volumeSamplers = [];
+let letancySamplers = [];
+
+
+
+const startBtn = document.getElementById("start");
 const getMicBtn = document.querySelector("#select-mike");
-const audioElement = document.querySelector("audio#trackplayer");
+const audioTag = document.querySelector("audio#trackplayer");
 const playButton = document.getElementById("playBtn");
 const rx1 = document.getElementById("rx1");
-
-var num_nodex =12;
-
-const audioCtx = new AudioContext();
-
-var audioTagSource,audioMicSource;
-var placeholder = audioCtx.createOscillator();
-var audioSource = placeholder;
-var audioInput = "trackplayer";
-
-//gain node
-var gainNode = audioCtx.createGain();
-const volumeControl = document.querySelector('[data-action="volume"]');
-volumeControl && volumeControl.addEventListener('input',function ()
-{
-    log(" volumn changed to " + this.value);
-    gainNode.gain.value = this.value;
-},false);
+const volumeControl = document.getElementById("volume");
+const volumeControl2 =document.getElementById("volume2");
+const compressorDiv = document.getElementById("compressor_container");
+const inputSelect = document.getElementById("inputselect")
+const list = document.getElementsByClassName('update_gain');
+const eq_ui_container = document.getElementById('eq_ui_container');
+const eq_update_form =document.getElementById('eq_update_form');
+const eq_ui_row_template = document.getElementById("eq_ui_row_template");
+const logrx1 = (txt) => rx1.innerHTML=txt;  
 
 
-//biquad filters 
-var freq_bands = nyquist_hzs(audioCtx.sampleRate,num_nodex);
-var gains = Array(16).fill(0);
-var bandwidths = Array(16).fill(8);
+startBtn.onclick=initializeContext;
 
-const beqContainer = document.getElementById("beq_container");
-var biquadFilters = biquad_filter_list(freq_bands,gains,bandwidths, beqContainer);
-var outputAnalyzer = audioCtx.createAnalyser();
-outputAnalyzer.minDecibels = -90;
-outputAnalyzer.maxDecibels = -10;
-outputAnalyzer.smoothingTimeConstant = 0.85
+volumeControl.addEventListener('input', ()=>pre_amp.gain.value = event.target.value);
+volumeControl2.addEventListener('input', ()=>post_amp.gain.value = event.target.value);
+getMicBtn.onclick = () => getAudioDevice().then(source => set_audio_input(source));
 
-var inputAnalyzer = audioCtx.createAnalyser();
-inputAnalyzer.minDecibels = -90;
-inputAnalyzer.maxDecibels = -10;
-inputAnalyzer.smoothingTimeConstant = 0.85;
 
-link_audio_graph();
-update_eq_ui();
 
-async function start()
-{
-    if(audioSource) audioSource.disconnect();
-    if (audioInput == "trackplayer") {
 
-        audioTagSource = audioTagSource || audioCtx.createMediaElementSource(audioElement);
-        audioSource = audioTagSource;
-    } else if (audioInput == 'usermedia') {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioMicSource = audioCtx.createMediaStreamSource(stream);
-       
-        audioSource = audioMicSource;
+function start(){
+    audioCtx = null;
+    initializeContext();
+}
+
+let hz_bands;
+function initializeContext(){
+    if(!audioCtx) {
+        audioCtx = new AudioContext();
     }
 
+    audioCtx.onstatechange= function(ev){
+        switch(ev.target.state){
+            case "running": analyzerNodeList.run_samples(audioCtx); break;
+            default: logrx1('ctx state'+ev.target.state);break;
+        }
+        return false;
+    }
+       hz_bands = nyquist_hzs(audioCtx.sampleRate, NUM_FREQUENCY_BANDS);
 
-    if (!audioSource) {
-        throw new Error("track not found");
-        return;
+     sinewave = audioCtx.createOscillator();
+     pre_amp = audioCtx.createGain();
+     post_amp = audioCtx.createGain();
+
+    var mod_compressor = DynamicCompressionModule(audioCtx);
+        mod_compressor.addDefaults(NUM_FREQUENCY_BANDS);
+        compressors = mod_compressor.list;
+
+    var gains = Array(16).fill(0);
+    var bandwidths = Array(16).fill(8);
+    biquadFilters = BiquadFilters.get_list(audioCtx, hz_bands ,gains,bandwidths);
+
+
+    analyzerNodeList = io_samplers(audioCtx, 2048);
+
+
+
+
+    activeInputSource=audioTagSource;
+
+    audioTagSource = audioCtx.createMediaElementSource(audioTag);
+    audioTagSource.connect(analyzerNodeList.inputAnalyzer);
+
+
+    //activeInputSource.connect(analyzerNodeList.inputAnalyzer);
+
+
+    analyzerNodeList.inputAnalyzer.connect(pre_amp);
+    var c = pre_amp;
+    for(let i =0; i<biquadFilters.length; i++){
+        c.connect(biquadFilters[i]);
+        c = biquadFilters[i];
     }
 
-    audioSource.connect(inputAnalyzer);
-    update_eq_ui();
-    stopped = false;
-    animationTimers = [
-        visualize('#input_time',inputAnalyzer,"time"),
-        visualize('#input_freq',inputAnalyzer,"frequency"),
-        visualize('#output_time',outputAnalyzer,"time"),
-        visualize('#output_freq',outputAnalyzer,"frequency")
-    ];
+    for(let i =0; i<compressors.length; i++){
+        c.connect(compressors[i]);
+        c = compressors[i];
 
+    }
+    c.connect(post_amp);
+    post_amp.connect(analyzerNodeList.outputAnalyzer);
+    analyzerNodeList.outputAnalyzer.connect(audioCtx.destination);
+
+    init_eq_controls();
+}
+function init_eq_controls(){
+ 
+    audioTag.addEventListener("canplay", console.log);
+    audioTag.addEventListener("canplay|loadedmetadata|play|ended", console.log);
+    hz_bands.forEach( (hz, i)=>{
+        var row = eq_ui_row_template.content.cloneNode(true);
+        row.querySelector(".hz_label").innerHTML = hz;
+        row.querySelectorAll("input").forEach( (input, index)=> {
+            input.addEventListener('input', e=> {
+                onEQConfigUpdate(index, e);
+            })
+        })
+        eq_ui_container.append(row);
+    });
 }
 
-function update_eq_ui(){
-    var freqs= nyquist_hzs(audioCtx.sampleRate,num_nodex);
-    var aggregated_amps = aggregate_frequency_response(biquadFilters,freqs);
-    var eq_ui =  document.getElementById("eq_ui");
-    eq_ui.innerHTML = `freq response at nyquist sample rates
-    <table>
-    ${aggregated_amps.map( (amp,i)=>{
-        var meter = "<meter min='0' max='60' value='"+amp+"'></meter>"
-        return "<tr><td>"+Math.round(freqs[i],2)+" Hz </td><td> "+meter+"</td><td> "+amp+"</td></tr>"
-    }).join("")}
-    </table>`
+function onEQConfigUpdate(i, e){
+    if(audioCtx === null ) initializeContext();   
+    var value = e.target.value;
+    switch(name){
+        case "gain":  
+            biquadFilters[i].gain.setValueAtTime(value, audioCtx.currentTime+1); break;
+        case "q":    
+             biquadFilters[i].q.setValueAtTime(value, audioCtx.currentTime+1); break;
+        case "threshold":
+        case "ratio":
+        case "knee":
+        case "attack":
+        case "release": 
+            DynamicCompressionModule.getAttributeValue(compressor[i], name).setValueAtTime(value, audioCtx.currentTime+1);
+            break;
+        default: /*wtf*/ break;
+    }
+    var frps= BiquadFilters.aggregate_frequency_response(biquadFilters, hz_bands);
+
+
+    frps.forEach( (amp,index)=>{ 
+        document.getElementsByClassName("freq_resp_meter")[index].value = amp;
+    });
 }
-
-
-function link_audio_graph()
-{    
-    var c = audioSource;
-
-    [inputAnalyzer,gainNode].concat(biquadFilters).concat([outputAnalyzer,audioCtx.destination]).forEach(node =>
-    {
-        c.connect(node);
-        c = node;
-    })
-}
-
-var animationTimers = [];
-
-var stopped = false;
-
-function disconnectSourceAndAnimation()
-{
-    audioSource.disconnect();
-    outputAnalyzer.disconnect();
-    animationTimers.forEach(t => cancelAnimationFrame(t));
-    stopped = true;
-}
-
 
 function nyquist_hzs(sampleRate,noctaves){
     var nyquist = 0.5 * sampleRate;
-    frequencyHz= new Float32Array(noctaves);
+    var frequencyHz= new Float32Array(noctaves);
     for (var i = 0; i < noctaves; ++i) {
         var f = i / noctaves;
         f = nyquist * Math.pow(2.0, noctaves * (f - 1.0));
         frequencyHz[i] = f;
     }
-    return frequencyHz;
-
+    return frequencyHz
 }
 
-//ui buttons
 
-var audioInput = "trackplayer";
-
-getMicBtn.addEventListener("click",function (e)
-{
-    audioInput = "usermedia";
-    if (this.dataset.playing == "false") {
-        this.dataset.playing = "true";
-        start();
-    } else {
-        stream.getTracks().forEach(function (track)
-        {
-            track.stop();
-        });
-        this.dataset.playing = "false";
-        disconnectSourceAndAnimation();
-    }
-})
-
-playButton.addEventListener("click",function (e)
-{
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-
-    if (this.dataset.playing === 'false') {
-        this.dataset.playing = 'true';
-        audioElement.play();
-        start();
-        this.innerText = "pause"
-
-        // if track is playing pause it
-    } else if (this.dataset.playing === 'true') {
-        audioElement.pause();
-        this.dataset.playing = 'false';
-        disconnectSourceAndAnimation();
-        this.innerText = "play"
-    }
-
-    let state = this.getAttribute('aria-checked') === "true" ? true : false;
-    this.setAttribute('aria-checked',state ? "false" : "true");
-    log(audioCtx.state + " audio state")
-});

@@ -1,7 +1,9 @@
-function biquad_filter_list(freq_bands,gain_factors, bandwidths, beqContainer)
-{
-    biquadFilters = [];
+var biquadFilters = [];
+var freq_bands_; 
 
+function get_list(audioCtx, freq_bands, gain_factors, bandwidths){
+    freq_bands_ = freq_bands;
+    var num_nodex = freq_bands.count;
     for( let index in freq_bands){
         var filter = audioCtx.createBiquadFilter();
         var freq = freq_bands[index];
@@ -12,71 +14,10 @@ function biquad_filter_list(freq_bands,gain_factors, bandwidths, beqContainer)
 
         filter.frequency.setValueAtTime(freq, audioCtx.currentTime);
         filter.gain.setValueAtTime(gain,      audioCtx.currentTime);
-        filter.Q.setValueAtTime(q, audioCtx.currentTime);
+        filter.Q.value = q;
+
         biquadFilters.push(filter);
-
     }
-
-    beqContainer !== null && biquadFilters.forEach((filter,index) =>
-    {
-        var freq = freq_bands[index];
-        
-        
-        var label = document.createElement("span");
-        label.innerHTML = Math.round(freq,1)+ " Hz";
-
-        var control = document.createElement("input");
-        control.type = "range";
-        control.value = filter.gain.value;
-        control.min = 0;
-        control.max = 60;
-        control.index = index;
-
-        var valueLabel = document.createElement("span");
-        valueLabel.innerHTML = filter.gain.value;
-        control.addEventListener("input",(e) =>
-        {
-            gain = parseFloat(e.target.value);
-            index = parseInt(e.target.index);
-            filter.gain.setValueAtTime(gain,audioCtx.currentTime);
-            valueLabel.innerHTML = gain;
-
-            log('setting beq ' + index + " to " + gain);
-            update_eq_ui();
-
-        });
-
-        var qvLabel = document.createElement("span");
-        qvLabel.innerHTML = filter.Q.value;
-
-        var qslider = document.createElement("input");
-        qslider.type = 'range';
-        qslider.value = filter.Q.value;
-        qslider.min = 0;
-        qslider.max = 60;
-        qslider.step= 0.1;
-        qslider.index = index;
-        qslider.addEventListener("input",(e) =>
-        {
-            bw = parseFloat(e.target.value);
-            index = parseInt(e.target.index);
-            filter.Q.setValueAtTime(bw,audioCtx.currentTime);
-            qvLabel.innerHTML = bw;
-            update_eq_ui();
-        });
-
-
-        var li = document.createElement("div");
-        li.appendChild(label);
-        li.appendChild(control);
-        li.appendChild(valueLabel);
-
-        li.appendChild(qslider);
-        li.appendChild(qvLabel)
-
-        beqContainer.appendChild(li);
-    });
-
     return biquadFilters;
 }
 
@@ -87,7 +28,7 @@ function aggregate_frequency_response(filters, frequency_list){
     var aggregateAmps = Array(frequency_list.length).fill(0);
    
     for(let i in filters){
-        filter = filters[i];
+        var filter = filters[i];
         var amp_response = new Float32Array(frequency_list.length);
         var phase_shift = new Float32Array(frequency_list.length);
         filter.getFrequencyResponse(frequency_list,amp_response,phase_shift);
@@ -98,13 +39,9 @@ function aggregate_frequency_response(filters, frequency_list){
     return aggregateAmps;
 }
 
-// function test(){
-//     //const SIXTEEN_BAND_FREQUENCY_RANGE = [20,50,100,156,220,311,440,622,880,1250,1750,2500,3500,5000,10000,20000];
 
-//     let gains = Array(2).fill(0);
-//     let qs = Array(2).fill(1);
-//     let hz = [1250, 2500];
-//     var biquads = biquad_filter_list(hz, gains, qs);
-//     console.log(biquads);
-// }
-// test();
+export default {
+    biquadFilters: biquadFilters,
+    get_list,
+    aggregate_frequency_response
+}

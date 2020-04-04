@@ -1,0 +1,46 @@
+{
+  "name": "grepaudio",
+  "version": "1.0.0",
+  "description": "audio dps",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server --hot --open",
+    "build": "webpack --config webpack.config.js --mode production",
+    "test": "test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yishengjiang99/grepaudio.git"
+  },
+  "keywords": [
+    "audio"
+  ],
+  "author": "Yisheng Jiang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yishengjiang99/grepaudio/issues"
+  },
+  "homepage": "https://github.com/yishengjiang99/grepaudio#readme",
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.0.20",
+    "@material-ui/styles": "^4.9.6",
+    "dot-env": "0.0.1",
+    "dotenv": "^8.2.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "functional-acoustics": "^1.2.6",
+    "mime": "^2.4.4",
+    "peaks.js": "^0.19.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "resonance-audio": "^1.0.0",
+    "webpack": "^4.42.1",
+    "webpack-dev-server": "^3.10.3",
+    "webrtc-adapter": "^7.5.1",
+    "ytdl-core": "^2.0.1"
+  },
+  "devDependencies": {
+    "source-map-loader": "^0.2.4",
+    "ts-loader": "^6.2.2",
+    "typescript": "^3.8.3"
+  }
+}

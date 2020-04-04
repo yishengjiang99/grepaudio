@@ -1,67 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
- <link href='style.css' rel='css/stylesheet'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>rt</title>
+    <link rel="stylesheet" href="style.css">   
+    <link rel="stylesheet" href="./lib/vendors/simple-console.css">
+<script src="./lib/vendors/simple-console.js"></script>
+ 
 </head>
 
-<body>
+<body style='margin-left:20px'>
+    <div id=display>   
+     <h3>Mix Sounds   <span id='rx1'></span></h3>
     <table>
         <tr>
-            <td colspan=2 valign=top>
-                <div>
-                    <button data-playing="false" id='playBtn' class="tape-controls-play" role="switch"
-                        aria-checked="false">
-                        <span id='playbtn'>Play </span>
-                    </button>
-                   
-                </div>
-                <div>
-                    <button data-playing="false" id='select-mike' role="switch">Select Microphone</button>
-                </div>
-
-                <br>Master Volume: <span id='rx1'></span>
-                <input type="range" id="volume" class="control-volume" min="0" max="2" value="1" list="gain-vals"
-                    step="0.01" data-action="volume" />
-              
+            <td>
+               <audio controls id='trackplayer' src="./samples/song.mp3"></audio>
             </td>
+            <td>
+                  <div> pre-amp Volume:&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="range" 
+                        id="volume" 
+                        class="control-volume" 
+                        min="-1" max="4" value="1" 
+                        list="gain-vals"
+                        step="0.01" 
+                        oninput="event.target.nextElementSibling.innerText=event.target.value"
+                        data-action="volume" />
+                    <label>1</label></div>
 
+                   <div> second amp Volume:
+                    <input type="range" 
+                        id="volume2" 
+                        class="control-volume" 
+                        min="0" max="3" value="1" 
+                        list="gain-vals"
+                        step="0.01" 
+                        oninput="event.target.nextElementSibling.innerText=event.target.value"
+                        data-action="volume" />
+                    <label>1</label>
+                    <button id='select-mike'>use mic</button>
+        <button id='start'>Click to initialize audio ctx</button>
+                    </div>
+            </td>
+   
         </tr>
         <tr>
-            <td>Slider controls: <div id='beq_container'></div></td>
-            <td><span id='eq_ui'></span></td>
-        <tr>
-            <td><div class='canvas_wrapper'><canvas id='input_time'></canvas></div> </td>
-            <td><div class='canvas_wrapper'><canvas id='input_freq'></canvas></div></td>
+            <td rowspan=2 colspan=2>
+                <form id='eq_update_form'> <table id='eq_ui_container'>
         
-        </tr>
-        <tr>
-            <td><div class='canvas_wrapper'><canvas id='output_time'></canvas></div></td>
-            <td><div class='canvas_wrapper'><canvas id='output_freq'></canvas></div></td>
-        </tr>
-
-        <tr>
-            <td colspan=4>
-                <div id='console'
-                    style='height:200px;bottom:20px;min-height:200px; width:100vw; position:fixed; background-color: black; color:white; overflow-y: scroll;'>
-                </div>
+                </table></form>
+            </td>
+            <td>
+                <span class='canvas_wrapper'><canvas id='input_time'></canvas></span>
+                <span class='canvas_wrapper'><canvas id='input_freq'></canvas></span>
 
             </td>
+
         </tr>
-    </table>
+        <tr>
+            <td>
+                <div class='canvas_wrapper'><canvas id='output_time'></canvas></div>
+                <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
+            </td>
 
-    <div style='display:none'>
-        <audio id='trackplayer' src="./samples/song.mp3" crossorigin="anonymous"></audio>
-        <audio id="microphone"></audio>
-        <template ></template>
-    </div>
-    <script type='module'>
-        </script>
-    <script src='./polyfills.js'></script>
-    <script src='./biquadFilters.js'></script>
-    <script src='./visualize.js'></script>
-    <script src='./equalizer.js'></script>
+        </tr>
+    </table></div>
 
+</body>
+
+<template id='eq_ui_row_template'>
+ <tr>
+        <td><span class='hz_label'></span></td>
+        <td><input name="gain"  value="0" data-index="0" type="range" min="0" max="60" step="0.1"></td>
+        <td><span class='gain_label' for='update_gain'></span></td>
+        <td><input name="q" value="8" data-index="0" type="range" min="0" max="13" step="0.1"></td>
+        <td><span  class="q_label"></span></td>
+        <td><meter class="freq_resp_meter" type="range" min="0" max="60" step="0.1"></meter></td>
+
+
+        <td><input name="threshold" step="0.1" tag="0" type="range" value="-24" placeholder="threshold" max="0" min="-100"> </td>
+        <td><span  class="threshold_label"></span></td>
+
+        <td><input size="3" name="knee" step="0.1" tag="0" type="numeric" value="30" placeholder="knee" max="40" min="0"> </td>
+        <td><input size="3" name="ratio" step="0.1" tag="0" type="numeric" value="12" placeholder="ratio" max="20" min="1"> </td>
+        <td><input size="3" name="attack" step="0.1" tag="0" type="numeric" value="0" placeholder="attack" max="1" min="0"> </td>
+        <td><input size="3" name="release" step="0.1" tag="0" type="numeric" value="0.25" placeholder="release" max="20" min="1"> </td>
+ </tr>
+</template>
+
+<script type='module' src='./equalizer.js'>
+
+</script>
+
+<script>
+var con = new SimpleConsole({
+	placeholder: ">",
+	handleCommand: function(command){
+		try {
+			con.log(eval(command));
+		} catch(error) {
+			con.log(error);
+		}
+	},
+	autofocus: true, // if the console is to be the primary interface of the page
+	storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
+});
+
+// add the console to the page
+document.body.append(con.element);
+
+window.log = con.log;;
+window.logErr = con.logError;
+// show any uncaught errors (errors may be unrelated to the console usage)
+con.handleUncaughtErrors();
+</script>
 
 </body>
 
