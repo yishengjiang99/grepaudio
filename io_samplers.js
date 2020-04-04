@@ -14,20 +14,32 @@ function io_samplers(ctx, fftSize){
     inputAnalyzer.maxDecibels = -10;
     inputAnalyzer.smoothingTimeConstant = 0;
     inputAnalyzer.fftSize = fftSize;
-    function sample_time_domain(ctx){
-         var timer;
-        var canvas1 =line_chart("#input_time");
-        var canvas2 =line_chart("#output_time");
-        var canvas3 =line_chart("#input_freq");
-        var canvas4 =line_chart("#output_freq");
-       function sample(){
 
+    var canvas1 =line_chart("#input_time");
+    var canvas2 =line_chart("#output_time");
+    var canvas3 =line_chart("#input_freq");
+    var canvas4 =line_chart("#output_freq");
+
+    var sample_timer;
+
+    var last_sampled_at = null;
+    function run_samples(){
+        // if(sample_timer){
+        //     log("sampler already running");
+        //     return;
+        // }
+       function sample(){
+           if( last_sampled_at != null && _ctx.currentTime - last_sampled_at < 1){
+              // return;
+           }
+            last_sampled_at = _ctx.currentTime;
             var dataArrayIn = new Uint8Array(fftSize);
             var dataArrayOut = new Uint8Array(fftSize);
-            timer = requestAnimationFrame(sample);
+            sample_timer = requestAnimationFrame(sample);
             inputAnalyzer.getByteTimeDomainData(dataArrayIn);
             
             outputAnalyzer.getByteTimeDomainData(dataArrayOut);
+
             canvas1.drawFrame(dataArrayIn);
             canvas2.drawFrame(dataArrayOut);
 
@@ -37,7 +49,7 @@ function io_samplers(ctx, fftSize){
             outputAnalyzer.fftSize= 256;
             inputAnalyzer.getByteFrequencyData(dataArrayIn2);
             outputAnalyzer.getByteFrequencyData(dataArrayOut2);
-            canvas3.drawBars(dataArrayIn2)
+            canvas3.drawBars(dataArrayIn2);
             canvas4.drawBars(dataArrayOut2);
         }
 
@@ -46,13 +58,13 @@ function io_samplers(ctx, fftSize){
 
 
     function disconnect(){
-          cancelAnimationFrame(timer);
+          cancelAnimationFrame(sample_timer);
     }
 
     return {
         inputAnalyzer, 
         outputAnalyzer,
-        sample_time_domain,
+        run_samples,
         disconnect
     }
     

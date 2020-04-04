@@ -14,7 +14,7 @@ window.AudioContext = (function ()
 })();
 
 window.log=function(text){
-    var consoleDiv =  document.getElementById("console");;
+    var consoleDiv =  document.getElementById("console") || document.querySelector(".simple-console")
     if(consoleDiv == null) {
         console.log(text);
         return;
