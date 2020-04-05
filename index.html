@@ -9,16 +9,16 @@
     <link rel="stylesheet" href="style.css">   
     <link rel="stylesheet" href="./lib/vendors/simple-console.css">
 <script src="./lib/vendors/simple-console.js"></script>
- 
-</head>
 
+</head>
+<!-- https://www.googleapis.com/customsearch/v1?q=music&key=AIzaSyBCXMcymaqef8RmYskmdVOJcQA5e06Zvyg -->
 <body style='margin-left:20px'>
-    <div id=display>   
+
      <h3>Mix Sounds   <span id='rx1'></span></h3>
     <table>
         <tr>
             <td>
-               <audio controls id='trackplayer' src="./samples/song.mp3"></audio>
+               <audio controls id='trackplayer' src="./samples/lana.mp3"></audio>
             </td>
             <td>
                   <div> pre-amp Volume:&nbsp;&nbsp;&nbsp;&nbsp;
@@ -77,7 +77,7 @@
         <td><span class='hz_label'></span></td>
         <td><input name="gain"  value="0" data-index="0" type="range" min="0" max="60" step="0.1"></td>
         <td><span class='gain_label' for='update_gain'></span></td>
-        <td><input name="q" value="8" data-index="0" type="range" min="0" max="13" step="0.1"></td>
+        <td><input name="q" value="8" data-index="0" type="range" min="0" max="60" step="0.1"></td>
         <td><span  class="q_label"></span></td>
         <td><meter class="freq_resp_meter" type="range" min="0" max="60" step="0.1"></meter></td>
 
@@ -92,16 +92,15 @@
  </tr>
 </template>
 
-<script type='module' src='./equalizer.js'>
-
-</script>
-
+<script type='module' src='./equalizer.js'></script>
 <script>
+
 var con = new SimpleConsole({
-	placeholder: ">",
+	placeholder:"",
+    id: "console",
 	handleCommand: function(command){
 		try {
-			con.log(eval(command));
+			window.eq_stdin(command)
 		} catch(error) {
 			con.log(error);
 		}
@@ -109,6 +108,7 @@ var con = new SimpleConsole({
 	autofocus: true, // if the console is to be the primary interface of the page
 	storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
 });
+con.id = 'console';
 
 // add the console to the page
 document.body.append(con.element);
@@ -116,7 +116,7 @@ document.body.append(con.element);
 window.log = con.log;;
 window.logErr = con.logError;
 // show any uncaught errors (errors may be unrelated to the console usage)
-con.handleUncaughtErrors();
+// con.handleUncaughtErrors();
 </script>
 
 </body>

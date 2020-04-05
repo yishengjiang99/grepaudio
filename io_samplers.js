@@ -33,12 +33,29 @@ function io_samplers(ctx, fftSize){
               // return;
            }
             last_sampled_at = _ctx.currentTime;
+
+      
             var dataArrayIn = new Uint8Array(fftSize);
             var dataArrayOut = new Uint8Array(fftSize);
             sample_timer = requestAnimationFrame(sample);
+          var t1 =  ctx.getOutputTimestamp();
+        let info ={
+            baseLatency: ctx.baseLatency,
+            gg: (t1.contextTime - t1.performanceTime).toFixed(4)
+        }
+            logrx1(JSON.stringify(info,null,"\t"))
+
+            var sum =0;
+
             inputAnalyzer.getByteTimeDomainData(dataArrayIn);
-            
+            dataArrayIn.map(d=>sum+=d*d);
+            var inputrms =Math.floor(Math.sqrt(sum));
+            sum =0;
             outputAnalyzer.getByteTimeDomainData(dataArrayOut);
+            dataArrayOut.map(d=>sum+=d*d);
+
+           var outputrms = Math.floor(Math.sqrt(sum));
+            logrx1(`rsm:${inputrms} ${outputrms} + lag ${info.baseLatency}`)
 
             canvas1.drawFrame(dataArrayIn);
             canvas2.drawFrame(dataArrayOut);

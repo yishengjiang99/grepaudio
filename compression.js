@@ -59,7 +59,7 @@ function DynamicCompressionModule(audioCtx)
             var attrname = e.target.getAttribute("name");
             var index = parseInt(e.target.getAttribute("tag"));
             if( compressors[index] === null)  compressors[index] = ctx.createDynamicsCompressor();
-           var cp = compressors[index];
+            var cp = compressors[index];
             var val = e.target.value;
 
             switch(attrname){

@@ -10,18 +10,25 @@ function get_list(audioCtx, freq_bands, gain_factors, bandwidths){
         var gain = gain_factors[index];
         var q = bandwidths[index];
 
-        filter.type = index === 0 ? "highpass" : index === num_nodex - 1 ? "lowpass" : "peaking";
+        filter.type = "peaking"
 
         filter.frequency.setValueAtTime(freq, audioCtx.currentTime);
         filter.gain.setValueAtTime(gain,      audioCtx.currentTime);
-        filter.Q.value = q;
+        filter.Q.setValueAtTime(q,      audioCtx.currentTime);
 
         biquadFilters.push(filter);
     }
     return biquadFilters;
 }
 
-
+function create(audioCtx, freq, type, gain, q){
+        var filter = audioCtx.createBiquadFilter();
+        filter.type = type;
+        filter.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        filter.gain.setValueAtTime(gain,      audioCtx.currentTime);
+        filter.Q.setValueAtTime(q,      audioCtx.currentTime);
+        return filter;
+}
 function aggregate_frequency_response(filters, frequency_list){
     frequency_list = frequency_list || SIXTEEN_BAND_FREQUENCY_RANGE;
     
@@ -39,9 +46,21 @@ function aggregate_frequency_response(filters, frequency_list){
     return aggregateAmps;
 }
 
+function createFromString(audioCtx, string){
+    var params = string.split("|");
+    var freq = params[0] || 60;
+    var gain = params[1] || 5;
+    var q = params[2] || 4;
+    var type = params[1] || "peaking";
+    return create(audio, freq, type,gain,q);
 
+}
+
+function dd(filter){
+    return `type ${filter.type} freq: ${filter.frequency.value} gain ${filter.Q.value}`
+}
 export default {
     biquadFilters: biquadFilters,
     get_list,
-    aggregate_frequency_response
+    aggregate_frequency_response,createFromString,create
 }
