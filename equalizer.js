@@ -6,13 +6,13 @@ import DynamicCompressionModule from './compression.js';
 import PlayableAudioSource from './audio_source.js';
 import './polyfills.js'
 const NYQUIST_SAMPLE_RATE_x2 = 441000;
-const NUM_FREQUENCY_BANDS = 16;
+const NUM_FREQUENCY_BANDS = 12;
 
 
 
 let audioCtx, pre_amp, post_amp;
 var biquadFilters, compressors; //list of 16
-let analyzerNodeList;
+let analyzerNodeList, mod_compressor;
 
 let audioTagSource, micTagSource, white_noise, sinewave;
 
@@ -48,12 +48,12 @@ volumeControl.addEventListener('input', ()=>pre_amp.gain.value = event.target.va
 volumeControl2.addEventListener('input', ()=>post_amp.gain.value = event.target.value);
 getMicBtn.onclick = () => getAudioDevice().then(source => set_audio_input(source));
 
-
-
-
 function start(){
     audioCtx = null;
     initializeContext();
+    if(audioTag.canplay){
+        audioTag.play();
+    }
 }
 
 let hz_bands;
@@ -75,7 +75,7 @@ function initializeContext(){
      pre_amp = audioCtx.createGain();
      post_amp = audioCtx.createGain();
 
-    var mod_compressor = DynamicCompressionModule(audioCtx);
+     mod_compressor = DynamicCompressionModule(audioCtx);
         mod_compressor.addDefaults(NUM_FREQUENCY_BANDS);
         compressors = mod_compressor.list;
 
@@ -135,19 +135,23 @@ function init_eq_controls(){
 function onEQConfigUpdate(i, e){
     if(audioCtx === null ) initializeContext();   
     var value = e.target.value;
-    switch(name){
+    switch(e.target.name){
         case "gain":  
             biquadFilters[i].gain.setValueAtTime(value, audioCtx.currentTime+1); break;
         case "q":    
-             biquadFilters[i].q.setValueAtTime(value, audioCtx.currentTime+1); break;
+             biquadFilters[i].Q.setValueAtTime(value, audioCtx.currentTime+1); break;
         case "threshold":
         case "ratio":
         case "knee":
         case "attack":
         case "release": 
-            DynamicCompressionModule.getAttributeValue(compressor[i], name).setValueAtTime(value, audioCtx.currentTime+1);
+            mod_compressor.getAttributeValue(compressors[i], e.target.name).setValueAtTime(value, audioCtx.currentTime+1);
             break;
         default: /*wtf*/ break;
+    }
+
+    if(e.target.type=='range'){
+        e.target.parentElement.parentElement.getElementsByClassName(e.target.name+"_label")[0].innerHTML = e.target.value;
     }
     var frps= BiquadFilters.aggregate_frequency_response(biquadFilters, hz_bands);
 

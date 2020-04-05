@@ -106,7 +106,8 @@ function DynamicCompressionModule(audioCtx)
         addCompressor,
         attach_form,
         list_connect,
-        addDefaults
+        addDefaults,
+        getAttributeValue
     }
 }
 

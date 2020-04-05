@@ -10,6 +10,9 @@
     margin-bottom:20px;;
     
 }
+td{
+  min-width:25px;
+}
 #console-put{
   width:
 }
