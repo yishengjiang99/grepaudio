@@ -38,8 +38,8 @@
     audioCtx.audioWorklet.addModule('./spl_dba_worklet.js')
       .then(() => {
         let ctx = audioCtx;
-       // let url = 'https://localhost:8000/yt?id=cItYCZbPshw';
-        let url = 'http://localhost/samples/lana.mp3';
+       let url = 'https://localhost:8000/yt?id=cItYCZbPshw';
+        //let url = 'http://localhost/samples/lana.mp3';
 
        let source = ctx.createBufferSource();
 
@@ -49,12 +49,16 @@
        r.port.onmessage=(e)=>{
          div.innerHTML= e.data.spl;
          x++;
-         y = parseFloat(e.data.spl)*40;
+         y = parseFloat(e.data.spl)*800;
          
          if(x >= WIDTH) { 
            x = 0;
-           canvasCtx.moveTo(x,y);
+
+           canvasCtx.clearRect(0,0,WIDTH,HEIGHT);
            canvasCtx.stroke();
+
+           canvasCtx.moveTo(x,y);
+
          }
          canvasCtx.lineTo(x,y);
          canvasCtx.stroke();
