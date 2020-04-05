@@ -89,6 +89,7 @@ function initializeContext(){
 
      sinewave = audioCtx.createOscillator();
      pre_amp = audioCtx.createGain();
+    
      post_amp = audioCtx.createGain();
 
      mod_compressor = DynamicCompressionModule(audioCtx);
@@ -107,27 +108,32 @@ function initializeContext(){
     outputAnalyzer = analyzerNodeList.outputAnalyzer;
     log("init called")
 
-  // activeInputSource=audioTagSource;
-    audioTag = document.querySelector("audio#trackplayer");
 
-    audioTagSource = audioTagSource || audioCtx.createMediaElementSource(audioTag);
-    audioTagSource.connect(analyzerNodeList.inputAnalyzer);
+    // audioTag = document.getElementById("yt2");
+
+
+    // audioTagSource = audioTagSource || audioCtx.createMediaElementSource(audioTag);
+    // audioTagSource.connect(analyzerNodeList.inputAnalyzer);
 
     white_noise = PlayableAudioSource(audioCtx).random_noise(audioCtx);
     white_noise.connect(analyzerNodeList.inputAnalyzer);
-    // white_noise.start();
+     white_noise.start();
     activeInputSource=white_noise;
     analyzerNodeList.inputAnalyzer.connect(pre_amp);
+
     for(let i =0; i<biquadFilters.length; i++){
         insert_dsp_filter(biquadFilters[i]);
     }
+    insert_dsp_filter(post_amp);
     post_amp.connect(analyzerNodeList.outputAnalyzer);
     analyzerNodeList.outputAnalyzer.connect(audioCtx.destination);
 
     init_eq_controls();
 }
 function init_eq_controls(){
- 
+     audioTag = document.getElementById("yt2");
+    audioTagSource=audioCtx.createMediaElementSource(audioTag);
+    audioTagSource.connect(analyzerNodeList.inputAnalyzer);
     audioTag.addEventListener("canplay", console.log);
     audioTag.addEventListener("canplay|loadedmetadata|play|ended", console.log);
     hz_bands.forEach( (hz, i)=>{
