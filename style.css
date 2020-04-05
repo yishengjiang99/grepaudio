@@ -1,8 +1,8 @@
-#console {
+.simple-console {
     bottom: 20px;
     min-height: 200px;
     min-width: 100vw;
-    position: fixed;
+    position: relative;
     background-color: black;
     color: white;
     overflow-y: scroll;
@@ -13,9 +13,7 @@
 td{
   min-width:25px;
 }
-#console-put{
-  width:
-}
+
 .body{
   position:fixed;
   overflow:hidden;

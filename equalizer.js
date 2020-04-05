@@ -43,6 +43,12 @@ window.logrx1 = (txt) => rx1.innerHTML=txt;
 
 startBtn.onclick=initializeContext;
 
+
+
+audioTag = document.getElementById("yt2");
+
+
+
 volumeControl.addEventListener('input', ()=> pre_amp.gain.value = event.target.value);
 volumeControl2.addEventListener('input', ()=> post_amp.gain.value = event.target.value);
 getMicBtn.onclick = () => {
@@ -60,11 +66,16 @@ function start(){
     }
 }
 
-let hz_bands;
+const hz_bands = new Float32Array(
+    32,   64,  125,
+   250,  500, 1000,
+  2000, 4000, 8000,
+ 16000
+);
 let currentDspCursor;
 
 function insert_dsp_filter(filter){
-    if(!currentDspCursor) pre_amp.connect(filter);
+    if(!currentDspCursor) {}
     else{
         currentDSPCursor.disconnect();
         currentDSPCursor.connect(filter);
@@ -85,7 +96,6 @@ function initializeContext(){
         }
         return false;
     }
-    hz_bands = nyquist_hzs(audioCtx.sampleRate*2, NUM_FREQUENCY_BANDS);
 
      sinewave = audioCtx.createOscillator();
      pre_amp = audioCtx.createGain();
@@ -99,9 +109,8 @@ function initializeContext(){
     var gains = Array(16).fill(0);
     var bandwidths = Array(16).fill(8);
     
-    // biquadFilters = BiquadFilters.get_list(audioCtx, hz_bands ,gains,bandwidths);
+    biquadFilters = BiquadFilters.default_filters(audioCtx);
 
-    biquadFilters=[];   
     analyzerNodeList = io_samplers(audioCtx, 2048);
 
     inputAnalyzer=analyzerNodeList.inputAnalyzer;
@@ -109,36 +118,31 @@ function initializeContext(){
     log("init called")
 
 
-    // audioTag = document.getElementById("yt2");
+    audioTag = document.getElementById("yt2");
 
 
-    // audioTagSource = audioTagSource || audioCtx.createMediaElementSource(audioTag);
-    // audioTagSource.connect(analyzerNodeList.inputAnalyzer);
+    audioTagSource = audioTagSource || audioCtx.createMediaElementSource(audioTag);
+    audioTagSource.connect(analyzerNodeList.inputAnalyzer);
 
-    white_noise = PlayableAudioSource(audioCtx).random_noise(audioCtx);
-    white_noise.connect(analyzerNodeList.inputAnalyzer);
-     white_noise.start();
-    activeInputSource=white_noise;
+    
+    activeInputSource=audioTag;
     analyzerNodeList.inputAnalyzer.connect(pre_amp);
-
+    var cursor = pre_amp;
+    
     for(let i =0; i<biquadFilters.length; i++){
-        insert_dsp_filter(biquadFilters[i]);
+        cursor.connect(biquadFilters[i]);
+        cursor = biquadFilters[i];
+
     }
-    insert_dsp_filter(post_amp);
+    cursor.connect(post_amp);
     post_amp.connect(analyzerNodeList.outputAnalyzer);
     analyzerNodeList.outputAnalyzer.connect(audioCtx.destination);
 
-    init_eq_controls();
-}
-function init_eq_controls(){
-     audioTag = document.getElementById("yt2");
-    audioTagSource=audioCtx.createMediaElementSource(audioTag);
-    audioTagSource.connect(analyzerNodeList.inputAnalyzer);
-    audioTag.addEventListener("canplay", console.log);
-    audioTag.addEventListener("canplay|loadedmetadata|play|ended", console.log);
-    hz_bands.forEach( (hz, i)=>{
+
+    biquadFilters.forEach( (hz, i)=>{
+        var filter = biquadFilters[i];
         var row = eq_ui_row_template.content.cloneNode(true);
-        row.querySelector(".hz_label").innerHTML = Number(hz).toFixed(2);
+        row.querySelector(".hz_label").innerHTML = filter.label;
         row.querySelectorAll("input").forEach( (input, index)=> {
             input.addEventListener('input', e=> {
                 onEQConfigUpdate(index, e);
@@ -146,7 +150,9 @@ function init_eq_controls(){
         })
         eq_ui_container.append(row);
     });
+    
 }
+
 
 function onEQConfigUpdate(i, e){
 
@@ -170,23 +176,12 @@ function onEQConfigUpdate(i, e){
     if(e.target.type=='range'){
         e.target.parentElement.parentElement.getElementsByClassName(e.target.name+"_label")[0].innerHTML = e.target.value;
     }
-    var frps= BiquadFilters.aggregate_frequency_response(biquadFilters, hz_bands);
+    var frps= BiquadFilters.aggregate_frequency_response(biquadFilters,hz_bands);
 
 
     frps.forEach( (amp,index)=>{ 
-        if(!isNaN(amp)) document.getElementsByClassName("freq_resp_meter")[index].value = amp;
+        if(!isNaN(amp) && document.getElementsByClassName("freq_resp_meter")[index]) document.getElementsByClassName("freq_resp_meter")[index].value = amp;
     });
-}
-
-function nyquist_hzs(sampleRate,noctaves){
-    var nyquist = 0.5 * sampleRate;
-    var frequencyHz= new Float32Array(noctaves);
-    for (var i = 0; i < noctaves; ++i) {
-        var f = i / noctaves;
-        f = nyquist * Math.pow(2.0, noctaves * (f - 1.0));
-        frequencyHz[i] = f;
-    }
-    return frequencyHz
 }
 
 
@@ -200,8 +195,10 @@ function debug(){
 }
 
 function setNewInput(input){
+    debugger;
+    log( typeof activeInputSource)
     if(activeInputSource!==null && activeInputSource !== input ){
-        activeInputSource.disconnect();
+       // activeInputSource.disconnect();
     }
     activeInputSource = input;
 
@@ -215,18 +212,20 @@ function setNewInput(input){
     }
 }
 window.eq_stdin =  function(str){
+    initializeContext();
     const cmd = str.split(" ")[0];
     const arg1 = str.split(" ")[1] || "";
     const arg2 = str.split(" ")[2] || "";
-    initializeContext();
+
     const now = audioCtx.currentTime;
 
     var resp = "";
     switch(cmd){
+        case 'rreset': audioCtx = null && initializeContext(); break;
         case 'init': initializeContext(); break;
         case "debug": debug(); break;
         case 'sine':         
-            activeInputSource.disconnect();
+            // activeInputSource.disconnect();
             sinewave = audioCtx.createOscillator();
             let _few = (arg1 && parseInt(arg1)) || 60; 
 
@@ -267,6 +266,15 @@ window.eq_stdin =  function(str){
         case 'u':
             post_amp.gain.setValueAtTime(post_amp.gain.value+0.3, now);
             break;
+        case 'q':
+        case 'search':
+            var id = query(arg1);
+            if(!id) resp="cannnot parse id";
+            else{
+                audioTag.src="https://localhost:8000/yt?id="+id;
+                setNewInput(audioTag);
+            }
+            break;
         case 'v':
         case 'yt':
         case 'video':
@@ -278,9 +286,12 @@ window.eq_stdin =  function(str){
             }
             break;
         case 'noise':
+            white_noise = PlayableAudioSource(audioCtx).random_noise(audioCtx);
+            white_noise.connect(analyzerNodeList.inputAnalyzer);
             white_noise.start();
-            activeInputSource.disconnect();
-            white_noise.connect(outputAnalyzer)
+            var duration = arg1 && parseInt(arg1) || 60;
+            white_noise.stop(now+duration);
+            white_noise.onstopped = e => white_noise.disconnect();
             break;
         case 'inputs':
             console.log(inputAnalyzer);
@@ -298,12 +309,13 @@ window.eq_stdin =  function(str){
                     }catch(e){
                         resp = "error: "+e.message;
                     }
-                    break;         
+                    break;  
+                default: break;       
             }
             break;
 
         default: 
-            return eval(cmd)
+            resp="cmd.."
             break;
 
         
@@ -311,6 +323,23 @@ window.eq_stdin =  function(str){
    return resp;
 
 
+}
+
+
+function query(q){
+    var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+
+    var url = 'https://www.youtube.com/results?search_query='+encodeURIComponent(q);
+    fetch(url,{mode:'no-cors'}).then(resp=>resp.text()).then(text => text.match(regExp ))
+    .then(match=>{
+        debugger;
+        if ( match && match[7].length > 11 ){
+            return match[7];
+        }else{
+            return null;
+        }
+    })
+    
 }
 function extractVideoID(url){
     var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
@@ -321,3 +350,8 @@ function extractVideoID(url){
         return null;
     }
 }
+// initializeContext();
+
+// document.querySelector(".simple-console-input").focus();
+
+// add the console to the page

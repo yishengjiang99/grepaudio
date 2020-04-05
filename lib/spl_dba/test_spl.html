@@ -3,6 +3,7 @@
 
 <body class=simple-console>
   <a  id=btn> click to start</a>
+<video 
 <div>
 </div>
 <div>
@@ -38,8 +39,8 @@
     audioCtx.audioWorklet.addModule('./spl_dba_worklet.js')
       .then(() => {
         let ctx = audioCtx;
-       let url = 'https://localhost:8000/yt?id=cItYCZbPshw';
-        //let url = 'http://localhost/samples/lana.mp3';
+
+        let url = 'http://localhost/samples/lana.mp3';
 
        let source = ctx.createBufferSource();
 

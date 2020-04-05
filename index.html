@@ -43,15 +43,18 @@
                         data-action="volume" />
                     <label>1</label>
                     <button id='select-mike'>use mic</button>
-        <button id='start'>Click to initialize audio ctx</button>
                     </div>
             </td>
    
         </tr>
         <tr>
             <td rowspan=2 colspan=2>
-                <form id='eq_update_form'> <table id='eq_ui_container'>
-        
+                <button id='start'>Click to initialize audio ctx</button>
+
+                <form id='eq_update_form'> 
+          
+                    <table id='eq_ui_container'>
+                        
                 </table></form>
             </td>
             <td>
@@ -75,7 +78,7 @@
 <template id='eq_ui_row_template'>
  <tr>
         <td><span class='hz_label'></span></td>
-        <td><input name="gain"  value="0" data-index="0" type="range" min="0" max="60" step="0.1"></td>
+        <td><input name="gain"  value="0" data-index="0" type="range" min="-12" max="12" step="0.1"></td>
         <td><span class='gain_label' for='update_gain'></span></td>
         <td><input name="q" value="8" data-index="0" type="range" min="0" max="60" step="0.1"></td>
         <td><span  class="q_label"></span></td>
@@ -100,7 +103,7 @@ var con = new SimpleConsole({
     id: "console",
 	handleCommand: function(command){
 		try {
-			window.eq_stdin(command)
+		    con.log(window.eq_stdin(command));
 		} catch(error) {
 			con.log(error);
 		}
@@ -108,7 +111,6 @@ var con = new SimpleConsole({
 	autofocus: true, // if the console is to be the primary interface of the page
 	storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
 });
-con.id = 'console';
 
 // add the console to the page
 document.body.append(con.element);

@@ -11,7 +11,7 @@ const mime = require("mime");
 const path = require("path");
 const PORT = 8000
 
-//exec(`lsof -i tcp:${PORT} -t | xargs kill`)
+exec(`lsof -i tcp:${PORT} -t | xargs kill`)
 
 
 https.createServer(options, function (req, res) {

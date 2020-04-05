@@ -1,4 +1,10 @@
 {
     "totvsLanguageServer.welcomePage": false,
-    "totvsLanguageServer.askEncodingChange": true
+    "totvsLanguageServer.askEncodingChange": true,
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/0cd4076e-2974-465d-b73a-5a37b901cbcc/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/grepawk",
+    "appService.deploySubpath": ""
 }
