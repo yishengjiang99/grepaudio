@@ -2,11 +2,9 @@
   "name": "grepaudio",
   "version": "1.0.0",
   "description": "audio dps",
-  "main": "index.js",
+  "main": "http.js",
   "scripts": {
-    "start": "webpack-dev-server --hot --open",
-    "build": "webpack --config webpack.config.js --mode production",
-    "test": "test.js"
+    "start": "node http.js"
   },
   "repository": {
     "type": "git",
