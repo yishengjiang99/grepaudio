@@ -111,8 +111,8 @@ input[type='range']::-webkit-slider-thumb {
   border-radius: 16px;
 }
 .canvas_wrapper {
-    min-width: 320px;
-    min-height: 200px;
+    min-width: 640;
+    min-height: 700;
     display: inline-block;
 
 }

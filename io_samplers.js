@@ -1,4 +1,6 @@
 import {line_chart} from './visualize.js'
+
+
 function io_samplers(ctx, fftSize){
     var _ctx = ctx;
     var sampled_at = [];
@@ -15,10 +17,14 @@ function io_samplers(ctx, fftSize){
     inputAnalyzer.smoothingTimeConstant = 0;
     inputAnalyzer.fftSize = fftSize;
 
-    var canvas1 =line_chart("#input_time");
-    var canvas2 =line_chart("#output_time");
-    var canvas3 =line_chart("#input_freq");
-    var canvas4 =line_chart("#output_freq");
+
+    var canvas1 =line_chart("#canvas1");
+    var canvas2 =line_chart("#canvas2");
+    var input_freq =line_chart("#input_freq");
+    var output_freq =line_chart("#output_freq");
+
+    var amp_response =line_chart("#amp_response");
+
 
     var sample_timer;
 
@@ -38,11 +44,12 @@ function io_samplers(ctx, fftSize){
             var dataArrayIn = new Uint8Array(fftSize);
             var dataArrayOut = new Uint8Array(fftSize);
             sample_timer = requestAnimationFrame(sample);
-          var t1 =  ctx.getOutputTimestamp();
-        let info ={
-            baseLatency: ctx.baseLatency,
-            gg: (t1.contextTime - t1.performanceTime).toFixed(4)
-        }
+            
+            var t1 =  ctx.getOutputTimestamp();
+            let info ={
+                baseLatency: ctx.baseLatency,
+                gg: (t1.contextTime - t1.performanceTime).toFixed(4)
+            }
             logrx1(JSON.stringify(info,null,"\t"))
 
             var sum =0;
@@ -60,14 +67,16 @@ function io_samplers(ctx, fftSize){
             canvas1.drawFrame(dataArrayIn);
             canvas2.drawFrame(dataArrayOut);
 
+//            amp_response.drawTimeseries(dataArrayIn, dataArrayOut);
+
             var dataArrayIn2 = new Uint8Array(256);
             var dataArrayOut2 = new Uint8Array(256);
             inputAnalyzer.fftSize=256;
             outputAnalyzer.fftSize= 256;
             inputAnalyzer.getByteFrequencyData(dataArrayIn2);
             outputAnalyzer.getByteFrequencyData(dataArrayOut2);
-            canvas3.drawBars(dataArrayIn2);
-            canvas4.drawBars(dataArrayOut2);
+            input_freq.drawBars(dataArrayIn2);
+            output_freq.drawBars(dataArrayOut2);
         }
 
         sample();

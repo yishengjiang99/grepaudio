@@ -18,6 +18,11 @@
     <table>
         <tr>
             <td>
+                <div id='ctrls'>
+
+                    <select id='select_song'></select>
+                    <input type=radio> </input>
+                </div>
                <audio controls id='yt2' src="./samples/lana.mp3"></audio>
             </td>
             <td>
@@ -52,25 +57,108 @@
                 <button id='start'>Click to initialize audio ctx</button>
 
                 <form id='eq_update_form'> 
-          
-                    <table id='eq_ui_container'>
-                        
-                </table></form>
+
+<div class="equalizer">
+    <div class="section">
+      <div class="title">HF</div>
+      <div class="sliders">
+        <div class="range-slider">
+          <span class="scope">22</span>
+          <input type="range" class="vertical" min="4700" max="22000" step="100" value="4700" data-filter="highShelf" data-param="frequency">
+          <span class="scope scope-min">4.7</span>
+          <span class="param">kHz</span>  
+        </div>
+        <div class="range-slider">
+          <span class="scope">50</span>
+          <input type="range" class="vertical" min="-50" max="50" value="50" data-filter="highShelf" data-param="gain">
+          <span class="scope scope-min">-50</span>
+          <span class="param">dB</span>  
+        </div>
+      </div>
+    </div>
+      
+    <div class="section">
+      <div class="title">LF</div>
+      <div class="sliders">
+        <div class="range-slider">
+          <span class="scope">220</span>
+          <input type="range" class="vertical" min="35" max="220" step="1" value="35" data-filter="lowShelf" data-param="frequency">
+          <span class="scope scope-min">35</span>
+          <span class="param">Hz</span>  
+        </div>
+        <div class="range-slider">
+          <span class="scope">50</span>
+          <input type="range" class="vertical" min="-50" max="50" value="50" data-filter="lowShelf" data-param="gain">
+          <span class="scope scope-min">-50</span>
+          <span class="param">dB</span>  
+        </div>
+      </div>
+    </div>
+        
+    <div class="section">
+      <div class="title">HMF</div>
+      <div class="sliders">
+        <div class="range-slider">
+          <span class="scope">5.9</span>
+          <input type="range" class="vertical" min="800" max="5900" step="100" value="800" data-filter="highPass" data-param="frequency">
+          <span class="scope scope-min">0.8</span>
+          <span class="param">kHz</span>  
+        </div>
+        <div class="range-slider">
+          <span class="scope">12</span>
+          <input type="range" class="vertical" min="0.7" max="12" step="0.1" value="0.7" data-filter="highPass" data-param="Q">
+          <span class="scope scope-min">0.7</span>
+          <span class="param">Q</span>  
+        </div>
+      </div>
+    </div>  
+      
+    <div class="section">
+      <div class="title">LMF</div>
+      <div class="sliders">
+        <div class="range-slider">
+          <span class="scope">1600</span>
+          <input type="range" class="vertical" min="80" max="1600" step="10" value="880" data-filter="lowPass" data-param="frequency">
+          <span class="scope scope-min">80</span>
+          <span class="param">Hz</span>  
+        </div>
+        <div class="range-slider">
+          <span class="scope">12</span>
+          <input type="range" class="vertical" min="0.7" max="12" step="0.1" value="0.7" data-filter="lowPass" data-param="Q">
+          <span class="scope scope-min">0.7</span>
+          <span class="param">Q</span>  
+        </div>
+      </div>
+    </div></td>
+    <td> <div id='fr'></div></td>
+   
             </td>
             <td>
-                <span class='canvas_wrapper'><canvas id='input_time'></canvas></span>
                 <span class='canvas_wrapper'><canvas id='input_freq'></canvas></span>
+            </td>
+            <td>
+
+                <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
 
             </td>
-
+           
         </tr>
         <tr>
-            <td>
-                <div class='canvas_wrapper'><canvas id='output_time'></canvas></div>
-                <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
+            <td colspan=3>
+               
+                <div class='large_canvas'><canvas id='amp_response'></canvas></div>
             </td>
-
         </tr>
+
+        <tr>
+            <td colspan=3>
+                <span class='canvas_wrapper'><canvas id='canvas1'></canvas></span>
+                <div class='canvas_wrapper'><canvas id='canvas2'></canvas></div>
+
+            </td>
+        </tr>
+        <tr?
+        ></td>
     </table></div>
 
 </body>
@@ -119,6 +207,7 @@ window.log = con.log;;
 window.logErr = con.logError;
 // show any uncaught errors (errors may be unrelated to the console usage)
 // con.handleUncaughtErrors();
+con.element.onclick= document.getElementById("simple-console-input").focus();
 </script>
 
 </body>

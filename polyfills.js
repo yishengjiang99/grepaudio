@@ -14,15 +14,7 @@ window.AudioContext = (function ()
 })();
 
 window.log=function(text){
-    var consoleDiv =  document.getElementById("console") || document.querySelector(".simple-console")
-    if(consoleDiv == null) {
-        console.log(text);
-        return;
-    }
-    else{
-        consoleDiv.innerHTML+="<br>"+text;
-        consoleDiv.scrollTop = consoleDiv.scrollTop;  
-    }
+    con.log && con.log(text);
 }
 window.logErr=function(text){
     if (typeof text === 'object') text = JSON.stringify(text, null,'\n');
