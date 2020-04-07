@@ -13,17 +13,30 @@ window.AudioContext = (function ()
     return window.webkitAudioContext || window.AudioContext || window.mozAudioContext;
 })();
 
-window.log=function(text){
-    var consoleDiv =  document.getElementById("console") || document.querySelector(".simple-console")
-    if(consoleDiv == null) {
-        console.log(text);
-        return;
-    }
-    else{
-        consoleDiv.innerHTML+="<br>"+text;
-        consoleDiv.scrollTop = consoleDiv.scrollTop;  
-    }
+var con = new SimpleConsole({
+	placeholder:"",
+    id: "console",
+	handleCommand: function(command){
+		try {
+		    con.log(eval(command));
+		} catch(error) {
+			con.log(error);
+		}
+	},
+	autofocus: true, // if the console is to be the primary interface of the page
+	storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
+});
+
+
+document.body.append(con.element)
+window.onerror= function (msg, url, lineNo, columnNo, error) {
+  con.log([msg, url, lineNo, columnNo, error].join(', '))
 }
+
+
+window.log= (txt) => con.log(txt);;
+
+
 window.logErr=function(text){
     if (typeof text === 'object') text = JSON.stringify(text, null,'\n');
     window.log(text);
@@ -45,25 +58,3 @@ window.require_once = function(filename)
         script.addEventListener("error", reject);
     })
 }
-
-
-window.onerror = function (msg, url, lineNo, columnNo, error) {
-    var string = msg.toLowerCase();
-    var substring = "script error";
-    if (string.indexOf(substring) > -1){
-      alert('Script Error: See Browser Console for Detail');
-    } else {
-      var message = [
-        'Message: ' + msg,
-        'URL: ' + url,
-        'Line: ' + lineNo,
-        'Column: ' + columnNo,
-        'Error object: ' + JSON.stringify(error)
-      ].join(' - ');
-  
-      logErr(message);
-    }
-  
-    return true;
-  };
-

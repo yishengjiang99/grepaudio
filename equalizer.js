@@ -51,20 +51,14 @@ audioTag = document.getElementById("yt2");
 
 volumeControl.addEventListener('input', ()=> pre_amp.gain.value = event.target.value);
 volumeControl2.addEventListener('input', ()=> post_amp.gain.value = event.target.value);
-getMicBtn.onclick = () => {
+getMicBtn.onclick = () => { PlayableAudioSource(audioCtx).getAudioDevice(audioCtx).then(source => source.connect(analyzerNodeList.inputAnalyzer));}
+document.body.addEventListener("click", function(e){ initializeContext() }, { once: true });
 
-    PlayableAudioSource(audioCtx).getAudioDevice(audioCtx).then(source => source.connect(analyzerNodeList.inputAnalyzer));
+
+function setupConfig2(){
+
 }
 
-function start(){
-    audioCtx = null;
-    initializeContext();
-        debug();
-
-    if(audioTag.canplay){
-        audioTag.play();
-    }
-}
 
 const hz_bands = new Float32Array(
     32,   64,  125,
@@ -74,14 +68,7 @@ const hz_bands = new Float32Array(
 );
 let currentDspCursor;
 
-function insert_dsp_filter(filter){
-    if(!currentDspCursor) {}
-    else{
-        currentDSPCursor.disconnect();
-        currentDSPCursor.connect(filter);
-    }
-    filter.connect(post_amp)
-}
+
 function initializeContext(){
     if(!audioCtx) {
         audioCtx = new AudioContext();
@@ -138,50 +125,38 @@ function initializeContext(){
     post_amp.connect(analyzerNodeList.outputAnalyzer);
     analyzerNodeList.outputAnalyzer.connect(audioCtx.destination);
 
+    document.querySelector("#eq_update_form").addEventListener("input", function(e){
 
-    biquadFilters.forEach( (hz, i)=>{
-        var filter = biquadFilters[i];
-        var row = eq_ui_row_template.content.cloneNode(true);
-        row.querySelector(".hz_label").innerHTML = filter.label;
-        row.querySelectorAll("input").forEach( (input, index)=> {
-            input.addEventListener('input', e=> {
-                onEQConfigUpdate(index, e);
-            })
-        })
-        eq_ui_container.append(row);
+        if(audioCtx === null ) initializeContext();   
+        var value = e.target.value;
+        var j  = e.target.dataset.index;
+
+        switch(e.target.name){
+            case "gain":  
+                biquadFilters[i].gain.setValueAtTime(value, audioCtx.currentTime+1); break;
+            case "q":    
+                 biquadFilters[i].Q.setValueAtTime(value, audioCtx.currentTime+1); break;
+            case "threshold":
+            case "ratio":
+            case "knee":
+            case "attack":
+            case "release": 
+                mod_compressor.getAttributeValue(compressors[i], e.target.name).setValueAtTime(value, audioCtx.currentTime+1);
+                break;
+            default: /*wtf*/ break;
+        }
+    
+        if(e.target.type=='range'){
+            e.target.parentElement.parentElement.getElementsByClassName(e.target.name+"_label")[0].innerHTML = e.target.value;
+        }
+        var frps= BiquadFilters.aggregate_frequency_response(biquadFilters,hz_bands);
+    
+    
+        frps.forEach( (amp,index)=>{ 
+            if(!isNaN(amp) && document.getElementsByClassName("freq_resp_meter")[index]) document.getElementsByClassName("freq_resp_meter")[index].value = amp;
+        });
     });
     
-}
-
-
-function onEQConfigUpdate(i, e){
-
-    if(audioCtx === null ) initializeContext();   
-    var value = e.target.value;
-    switch(e.target.name){
-        case "gain":  
-            biquadFilters[i].gain.setValueAtTime(value, audioCtx.currentTime+1); break;
-        case "q":    
-             biquadFilters[i].Q.setValueAtTime(value, audioCtx.currentTime+1); break;
-        case "threshold":
-        case "ratio":
-        case "knee":
-        case "attack":
-        case "release": 
-            mod_compressor.getAttributeValue(compressors[i], e.target.name).setValueAtTime(value, audioCtx.currentTime+1);
-            break;
-        default: /*wtf*/ break;
-    }
-
-    if(e.target.type=='range'){
-        e.target.parentElement.parentElement.getElementsByClassName(e.target.name+"_label")[0].innerHTML = e.target.value;
-    }
-    var frps= BiquadFilters.aggregate_frequency_response(biquadFilters,hz_bands);
-
-
-    frps.forEach( (amp,index)=>{ 
-        if(!isNaN(amp) && document.getElementsByClassName("freq_resp_meter")[index]) document.getElementsByClassName("freq_resp_meter")[index].value = amp;
-    });
 }
 
 
@@ -194,8 +169,11 @@ function debug(){
     log(bew)
 }
 
+
+
+
 function setNewInput(input){
-    debugger;
+
     log( typeof activeInputSource)
     if(activeInputSource!==null && activeInputSource !== input ){
        // activeInputSource.disconnect();
@@ -354,4 +332,4 @@ function extractVideoID(url){
 
 // document.querySelector(".simple-console-input").focus();
 
-// add the console to the page
+// add the console to the pageinsert_dsp_filter
