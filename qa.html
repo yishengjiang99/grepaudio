@@ -14,6 +14,7 @@
   <div id=rx1></div>
   <select>
   </select>
+  <button style='display:block' id=init> init ctx</go>
 
   <button style='display:none' id=go>go</go>
 
@@ -38,6 +39,8 @@
   var currentSubject = "";
   var reports = "", reports2 = "";
   const go = document.querySelector("#go");
+  const initbtn = document.querySelector("#init");
+
   import io_samplers from './io_samplers.js'
   let  filter_labels=[];
 
@@ -67,20 +70,34 @@
 
       filters = [];
       filter_labels=[];
-      var filter = ctx.createBiquadFilter();
-      filter.type = "lowpass"
-      filter.frequency.value = 466.16;
-      filter_labels.push('466hz_LP');
+
+      for(let i=1; i<8; i++){
+        var filter = ctx.createBiquadFilter();
+        filter.type = "lowpass"
+   
+        filter.frequency.value = 125 * i
+        filter_labels.push( (250*i)+"_hz_LP");
+        
+        filters.push(filter);
+        filter = ctx.createBiquadFilter();
+        filter.type = "highpass"
+        filter.frequency.value =  125 * i;
+        filter_labels.push( (250*i)+"_hz_HP");
+
+                
+        filters.push(filter);
+        filter = ctx.createBiquadFilter();
+        filter.type = "peaking"
+        filter.frequency.value = 125 * i;
+        filter_labels.push( (250*i)+"_hz_peaking");
+
+
+        filters.push(filter)
+
+      }
+
       
-      filters.push(filter);
-      filter = ctx.createBiquadFilter();
-      filter.type = "highpass"
-      filter.frequency.value = 466.16;
-      filter_labels.push('466hz_HP');
-
-      filters.push(filter)
-
-
+      initbtn.style.display = 'none'; 
       go.style.display = "block";
 
     } catch (e)
@@ -104,7 +121,7 @@
 
       })
     }
-    inputs = ["A0.mp3"];
+    inputs = filelist.slice(0,10);
     reports = [];
     queryUpdates();
     for (const input of inputs)
@@ -118,6 +135,7 @@
       {
         audio.src = './samples/' + input;
       }
+
       for (let i =0; i<filters.length; i++){
    
        var filter = filters[i];
@@ -165,10 +183,10 @@
 
 
   function queryUpdates() {
-    log(reports.length);
+   // log(reports.length);
     setTimeout(function () {
       requestAnimationFrame(queryUpdates);
-      log(reports.length);
+      rx1.innerHTML=reports.length;
 
     },1000);
   }
