@@ -1,5 +1,62 @@
 var biquadFilters = [];
 
+const hz_bands = new Float32Array(
+    32,   64,  125,
+   250,  500, 1000,
+  2000, 4000, 8000,
+ 16000
+);
+var highShelf;
+var lowShelf; 
+var highPass; 
+var lowPass;
+
+function filter_option_2(context, preamp, postamp){
+     highShelf = context.createBiquadFilter();
+     lowShelf = context.createBiquadFilter();
+     highPass = context.createBiquadFilter();
+     lowPass = context.createBiquadFilter();
+
+    preamp.connect(highShelf);
+    highShelf.connect(lowShelf);
+    lowShelf.connect(highPass);
+    highPass.connect(lowPass);
+    lowPass.connect(postamp);
+
+    highShelf.type = "highshelf";
+    highShelf.frequency.value = 4700;
+    highShelf.gain.value = 50;
+
+    lowShelf.type = "lowshelf";
+    lowShelf.frequency.value = 35;
+    lowShelf.gain.value = 50;
+
+    highPass.type = "highpass";
+    highPass.frequency.value = 800;
+    highPass.Q.value = 0.7;
+
+    lowPass.type = "lowpass";
+    lowPass.frequency.value = 880;
+    lowPass.Q.value = 0.7;
+    biquadFilters= [highShelf,lowShelf,highPass,lowPass];
+
+
+var ranges = document.querySelectorAll('input[class=vertical]');
+ranges.forEach(function(range, i){
+  range.addEventListener('input', function() {
+      if(i<2)    biquadFilters[i].gain.value = this.value
+  else     biquadFilters[i].Q.value = this.value;
+    // var amp_response = new Float32Array(frequency_list.length);
+    // var phase_shift = new Float32Array(frequency_list.length);
+  
+    // document.getElementById("fr_update").innerHTML= 
+    //     biquadFilters.map( b => b.getFrequencyResponse(hz_bands,amp_response,phase_shift) )
+    // .map( fr=>{ "<td>"+fr.amps.join("</td><td>") } ).join("</tr><tr>");
+
+  })
+});
+    return biquadFilters;
+}
 
 function default_filters(audioCtx)
 {
@@ -29,6 +86,7 @@ function get_list(audioCtx,freq_bands,gain_factors,bandwidths)
         else if (index == num_nodes - 1) filter.type = 'lowshelf';
         else filter.type = 'peaking';
 
+        filter.type='peaking';
         filter.frequency.setValueAtTime(freq,audioCtx.currentTime);
         filter.gain.setValueAtTime(gain,audioCtx.currentTime);
         filter.Q.setValueAtTime(q,audioCtx.currentTime);
@@ -90,5 +148,5 @@ function dd(filter)
 export default {
     biquadFilters: biquadFilters,
     default_filters,
-    aggregate_frequency_response,createFromString,create
+    aggregate_frequency_response,createFromString,create,filter_option_2
 }

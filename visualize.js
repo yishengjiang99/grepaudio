@@ -9,6 +9,52 @@ export function line_chart(canvasId){
     canvasCtx.lineWidth = 2;
     canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
 
+    var t = 0;
+
+    function drawTimeseries(dataArray){
+        var bufferLength = dataArray.length;
+        
+        canvasCtx.beginPath();
+        var sliceWidth = 1;
+        
+        var ysum=0;
+        var t0 = 0;
+
+        for (var i = 0; i < bufferLength; i++) {
+
+            var v = dataArray[i];
+            var y = v * HEIGHT / 2;
+
+
+            if(i - t0 < 2500){
+                ysum += (y*y);
+                continue;   
+            }
+            y = Math.sqrt(ysum);
+                t++;
+                t0 = i;
+                ysum=0;
+                
+            if (i === 0) {
+                canvasCtx.moveTo(t,y);
+            } else {
+                canvasCtx.lineTo(t,y);
+            }
+
+            if( t >= WIDTH){
+                t = 0;
+                canvasCtx.clearRect(0,0,WIDTH,HEIGHT);
+
+            }
+            canvasCtx.clearRect(t+100,0,t+80,HEIGHT);
+            t++;
+
+        }
+        canvasCtx.lineTo(canvas.width, canvas.height / 2);
+        canvasCtx.stroke();
+    }
+
+
     function drawFrame(dataArray){
         var bufferLength = dataArray.length;
         canvasCtx.fillStyle = 'rgb(200, 200, 200)';
@@ -31,9 +77,6 @@ export function line_chart(canvasId){
 
             x += sliceWidth;
         }
-
-        canvasCtx.lineTo(canvas.width, canvas.height / 2);
-        canvasCtx.stroke();
 
     }
 
@@ -60,83 +103,6 @@ export function line_chart(canvasId){
     }
     return {
         canvas,canvasCtx,WIDTH,HEIGHT,
-        drawFrame,drawBars
+        drawFrame,drawBars,drawTimeseries
     }  
-}
-function drawFancyCurve(canvas, frequencyHz, dbResponses)
-{
-    canvas.setAttribute('width',canvas.parentElement.clientWidth);
-    canvas.setAttribute('height',canvas.parentElement.clientHeight);
-
-    canvasContext = canvas.getContext("2d");
-    var curveColor = "rgb(192,192,192)";
-    var gridColor = "rgb(100,100,100)";
-    var textColor = 'rbg(255,255,255)';
-    var bgcolor = 'rbg(0,0,0)';
-    var width =  canvas.width;
-    var height = canvas.height;
-    var dbScale = 60;
-    frequencyHz.sort();
-    var pixelsPerDb = (0.5 * height) / dbScale;
-    var maxFreq = frequencyHz[0];
-
-    const dbToY= (db)=>(0.5 * height) - pixelsPerDb * db;
-    const fToX = (f)=> (f-maxFreq) * width
-
-    canvasContext.fillStyle = bgcolor;
-    canvasContext.clearRect(0,0,width,height);
-    canvasContext.fillRect(0,0,width,height);
-    canvasContext.strokeStyle = curveColor;
-    canvasContext.lineWidth = 3;
-    canvasContext.beginPath();
-    canvasContext.moveTo(0,0);
-
-    for (var i = 0; i < frequencyHz.length; i++) {
-        var f = frequencyHz[i];
-        var dbResponse = dbResponses[i];
-        var x = fToX(f);
-        var y = dbToY(dbResponse);
-        log(x + "," + y);
-        if (i == 0)
-            canvasContext.moveTo(x,y);
-        else
-            canvasContext.lineTo(x,y);
-    }
-
-    canvasContext.stroke();
-    canvasContext.beginPath();
-    canvasContext.lineWidth = 1;
-    canvasContext.strokeStyle = gridColor;
-
-    // Draw frequency scale.
-    for (var i = 0; i < frequencyHz.length; i++) {
-        var f = frequencyHz[i];
-        var x = fToX(x);
-        canvasContext.strokeStyle = gridColor;
-        canvasContext.moveTo(x,30);
-        canvasContext.lineTo(x,height);
-        canvasContext.stroke();
-        canvasContext.textAlign = "center";
-        canvasContext.strokeStyle = "white";
-        canvasContext.strokeText(f.toFixed(0) + "Hz",x,20);
-    }
-
-    // Draw 0dB line.
-    canvasContext.beginPath();
-    canvasContext.moveTo(0,0.5 * height);
-    canvasContext.lineTo(width,0.5 * height);
-    canvasContext.stroke();
-
-    // Draw decibel scale.
-
-    for (var db = -dbScale; db < dbScale; db += 10) {
-        var y = dbToY(db);
-        canvasContext.strokeStyle = textColor;
-        canvasContext.strokeText(db.toFixed(0) + "dB",width - 40,y);
-        canvasContext.strokeStyle = gridColor;
-        canvasContext.beginPath();
-        canvasContext.moveTo(0,y);
-        canvasContext.lineTo(width,y);
-        canvasContext.stroke();
-    }
 }

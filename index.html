@@ -18,6 +18,11 @@
     <table>
         <tr>
             <td>
+                <div id='ctrls'>
+
+                    <select id='select_song'></select>
+                    <input type=radio> </input>
+                </div>
                <audio controls id='yt2' src="./samples/lana.mp3"></audio>
             </td>
             <td>
@@ -236,21 +241,34 @@
       <td><input size="3" name="release" step="0.1" tag="0" type="numeric" value="0.25" placeholder="release" max="20" min="1"> </td>
 </tr>
 </table></form>
+
             </td>
             <td>
-                <span class='canvas_wrapper'><canvas id='input_time'></canvas></span>
                 <span class='canvas_wrapper'><canvas id='input_freq'></canvas></span>
+            </td>
+            <td>
+
+                <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
 
             </td>
-
+           
         </tr>
         <tr>
-            <td>
-                <div class='canvas_wrapper'><canvas id='output_time'></canvas></div>
-                <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
+            <td colspan=3>
+               
+                <div class='large_canvas'><canvas id='amp_response'></canvas></div>
             </td>
-
         </tr>
+
+        <tr>
+            <td colspan=3>
+                <span class='canvas_wrapper'><canvas id='canvas1'></canvas></span>
+                <div class='canvas_wrapper'><canvas id='canvas2'></canvas></div>
+
+            </td>
+        </tr>
+        <tr?
+        ></td>
     </table></div>
 
 </body>
@@ -299,6 +317,7 @@ window.log = con.log;;
 window.logErr = con.logError;
 // show any uncaught errors (errors may be unrelated to the console usage)
 // con.handleUncaughtErrors();
+con.element.onclick= document.getElementById("simple-console-input").focus();
 </script>
 
 </body>
