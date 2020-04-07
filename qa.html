@@ -1,0 +1,199 @@
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>rt</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./lib/vendors/simple-console.css">
+  <script src="./lib/vendors/simple-console.js"></script>
+
+<body>
+  <audio controls></audio>
+  <div id=rx1></div>
+  <select>
+  </select>
+
+  <button style='display:none' id=go>go</go>
+
+    <div id=rx1> </div>
+
+    <!-- <select name=filter>
+   
+</select> -->
+    <scriptt></scriptt>
+</body>
+
+<script type="module">
+
+  const audio = document.querySelector("audio")
+  var ctx,inputs,filters;
+  var source;
+  var spl_dba,filelist;
+  var meter,meter2;
+  const rx1 = document.querySelector("#rx1")
+  var context = ctx;
+  var audioCxt = ctx;
+  var currentSubject = "";
+  var reports = "", reports2 = "";
+  const go = document.querySelector("#go");
+  import io_samplers from './io_samplers.js'
+  let  filter_labels=[];
+
+  async function init() {
+
+    try
+    {
+      if (ctx && ctx.status == 'running')
+      {
+        return;
+      }
+
+      ctx = new AudioContext();
+
+      source = ctx.createMediaElementSource(audio);
+
+      await ctx.audioWorklet.addModule('./lib/spl_dba/spl_dba_worklet.js')
+
+      meter = new AudioWorkletNode(ctx,'spl_dba');
+      meter.port.onmessage = (e) => {
+        reports +=`\n${ctx.currentTime},IN,${e.data.spl_a},${e.data.spl_k},${ctx.currentTime}`;
+      }
+      meter2 = new AudioWorkletNode(ctx,'spl_dba');
+      meter2.port.onmessage = (e) => {
+        reports +=`\n${ctx.currentTime},OUT,${e.data.spl_a},${e.data.spl_k},${ctx.currentTime}`;
+      }
+
+      filters = [];
+      filter_labels=[];
+      var filter = ctx.createBiquadFilter();
+      filter.type = "lowpass"
+      filter.frequency.value = 466.16;
+      filter_labels.push('466hz_LP');
+      
+      filters.push(filter);
+      filter = ctx.createBiquadFilter();
+      filter.type = "highpass"
+      filter.frequency.value = 466.16;
+      filter_labels.push('466hz_HP');
+
+      filters.push(filter)
+
+
+      go.style.display = "block";
+
+    } catch (e)
+    {
+      throw e;
+    }
+
+  }
+
+
+  document.querySelector("#go").onclick = async function () {
+    const runTillNextOrDone = () => {
+      return new Promise((resolve,reject) => {
+        audio.onended = () => {
+          resolve();
+        }
+        go.onclick = () => {
+          download("reports",reports);
+          resolve();
+        }
+
+      })
+    }
+    inputs = ["A0.mp3"];
+    reports = [];
+    queryUpdates();
+    for (const input of inputs)
+    {
+
+      if (audio.src == './samples/' + input)
+      {
+        audio.seek(0);
+      }
+      else
+      {
+        audio.src = './samples/' + input;
+      }
+      for (let i =0; i<filters.length; i++){
+   
+       var filter = filters[i];
+        currentSubject = input + "_" +filter_labels[i];
+        reports = "";
+        source.connect(meter);
+        meter.connect(filter);
+
+        filter.connect(meter2);
+        meter2.connect(ctx.destination);
+     
+
+        audio.play();
+
+
+        await runTillNextOrDone();
+
+        download(currentSubject+".csv", reports);
+
+        filter.disconnect();
+        meter2.disconnect();
+        meter.disconnect();
+      }
+    }
+    download(currentSubject+"_.csv", reports);
+
+    var url = window.URL.createObjectURL(reports);
+    window.URL.revokeObjectURL(url);
+  }
+
+  function download(filename,text) {
+    var element = document.createElement('a');
+    element.setAttribute('href','data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download',filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+  }
+
+
+
+
+  function queryUpdates() {
+    log(reports.length);
+    setTimeout(function () {
+      requestAnimationFrame(queryUpdates);
+      log(reports.length);
+
+    },1000);
+  }
+  document.body.addEventListener("click",(e) => {
+
+    init();
+
+
+  },{ once: true });
+
+  fetch("/samples/mp3list.csv").then(resp => {
+    return resp.text();
+  }).then(text => {
+    filelist = text.split(",")
+    document.querySelector("select").innerHTML = filelist.map(t => `<option value=${t}>${t}</option>`).join("");
+    document.querySelector("select").oninput = function (e) {
+      init();
+      log("err")
+      audio.src = '/samples/' + e.target.value;
+    }
+  });
+
+
+
+</script>
+<script type='module' src='./polyfills.js'></script>
+
+</html>
