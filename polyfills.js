@@ -13,47 +13,70 @@ window.AudioContext = (function ()
     return window.webkitAudioContext || window.AudioContext || window.mozAudioContext;
 })();
 
-var con = new SimpleConsole({
-	placeholder:"",
-    id: "console",
-	handleCommand: function(command){
-		try {
-		    con.log(eval(command));
-		} catch(error) {
-			con.log(error);
-		}
-	},
-	autofocus: true, // if the console is to be the primary interface of the page
-	storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
-});
+
+window.onerror = function (msg,url,lineNo,columnNo,error)
+{
+    con.log([msg,url,lineNo,columnNo,error].join(', '))
+
+}
+window.log = (txt) => con.log(txt);;
 
 
-document.body.append(con.element)
-window.onerror= function (msg, url, lineNo, columnNo, error) {
-  con.log([msg, url, lineNo, columnNo, error].join(', '))
-
-
-window.log= (txt) => con.log(txt);;
-
-
-window.logErr=function(text){
-    if (typeof text === 'object') text = JSON.stringify(text, null,'\n');
+window.logErr = function (text)
+{
+    if (typeof text === 'object') text = JSON.stringify(text,null,'\n');
     window.log(text);
 
 }
-window.require_once = function(filename)
-{
-    return new Promise((resolve,reject)=>{
-        var head = document.getElementsByTagName('head')[0];
 
-        var script = document.createElement('script');
-        script.src = filename;
-        script.async=false 
-        script.defer=false
-        script.type = 'text/javascript';
+
+
+var con = new SimpleConsole({
+    placeholder: "",
+    id: "console",
+    handleCommand: function (command)
+    {
+        try {
+            con.log(window.eq_stdin(command));
+        } catch (error) {
+            con.log(error);
+        }
+    },
+    autofocus: true, // if the console is to be the primary interface of the page
+    storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
+});
+
+// add the console to the page
+document.body.append(con.element);
+
+window.log = con.log;
+window.logErr = con.logError;
+// show any uncaught errors (errors may be unrelated to the console usage)
+// con.handleUncaughtErrors();
+con.element.addEventListener("click", function(){ this.querySelector("input").focus() });
+
+function initAudioTag(containerId) {
     
-        head.appendChild(script);
-        script.addEventListener("load", resolve);
-        script.addEventListener("error", reject);
-    })
+    var container = document.querySelector(containerId);
+    var audio = document.createElement("audio");
+    audio.controls=true;
+    audio.autoplay=true;
+    var select = document.createElement("select");
+    container.appendChild(audio);
+    container.innerHTML += "<br>";
+    container.appendChild(select);
+    fetch("/samples/filelist").then(resp => {
+        return resp.text();
+      }).then(text => {
+ 
+        filelist = text.split("\n");
+        select.innerHTML = filelist.map(t => `<option value=${t}>${t}</option>`).join("");
+        audio.src = filelist[0];
+        select.addEventListener('click', function(e){
+            audio.src = e.target.value; 
+        });
+        audio.setAttribute("data-filelist", filelist);
+      }).catch(console.error);
+    return audio;
+
 }

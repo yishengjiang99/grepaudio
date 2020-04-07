@@ -7,31 +7,39 @@
   <title>rt</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="./lib/vendors/simple-console.css">
+	<script src="./lib/vendors/tonejs-ui.js"></script>
+
   <script src="./lib/vendors/simple-console.js"></script>
 
 <body>
-  <audio controls></audio>
   <div id=rx1></div>
-  <select>
-  </select>
-  <button style='display:block' id=init> init ctx</go>
+  
 
-  <button style='display:none' id=go>go</go>
+  <content>
+
+  </content>
+
+  L<center-block>
+      <button style='display:block' id=init> init ctx</go>
+
+      <button style='display:none' id=go>go</go>
+  </center-block>
 
     <div id=rx1> </div>
 
     <!-- <select name=filter>
    
 </select> -->
-    <scriptt></scriptt>
+
 </body>
+]<script src='./polyfills.js'></script>
 
 <script type="module">
 
-  const audio = document.querySelector("audio")
+  const audio = initAudioTag("content")
   var ctx,inputs,filters;
   var source;
-  var spl_dba,filelist;
+  var spl_dba;
   var meter,meter2;
   const rx1 = document.querySelector("#rx1")
   var context = ctx;
@@ -121,19 +129,20 @@
 
       })
     }
+    var filelist = audio.getAttribute("data-filelist");
     inputs = filelist.slice(0,10);
     reports = [];
     queryUpdates();
     for (const input of inputs)
     {
 
-      if (audio.src == './samples/' + input)
+      if (audio.src == input)
       {
         audio.seek(0);
       }
       else
       {
-        audio.src = './samples/' + input;
+        audio.src = input;
       }
 
       for (let i =0; i<filters.length; i++){
@@ -179,9 +188,6 @@
     document.body.removeChild(element);
   }
 
-
-
-
   function queryUpdates() {
    // log(reports.length);
     setTimeout(function () {
@@ -190,28 +196,8 @@
 
     },1000);
   }
-  document.body.addEventListener("click",(e) => {
-
-    init();
-
-
-  },{ once: true });
-
-  fetch("/samples/mp3list.csv").then(resp => {
-    return resp.text();
-  }).then(text => {
-    filelist = text.split(",")
-    document.querySelector("select").innerHTML = filelist.map(t => `<option value=${t}>${t}</option>`).join("");
-    document.querySelector("select").oninput = function (e) {
-      init();
-      log("err")
-      audio.src = '/samples/' + e.target.value;
-    }
-  });
-
-
+  window.addEventListener("click",init,{ once: true });
 
 </script>
-<script type='module' src='./polyfills.js'></script>
 
 </html>

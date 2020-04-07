@@ -106,3 +106,16 @@ export function line_chart(canvasId){
         drawFrame,drawBars,drawTimeseries
     }  
 }
+
+export function time_series(canvasId){
+    var canvas = document.querySelector(canvasId);
+    var canvasCtx = canvas.getContext("2d");
+    canvas.setAttribute('width',canvas.parentElement.clientWidth);
+    canvas.setAttribute('height',canvas.parentElement.clientHeight);
+    var WIDTH = canvas.width;
+    var HEIGHT = canvas.height;
+    canvasCtx.clearRect(0,0,WIDTH,HEIGHT);
+    canvasCtx.lineWidth = 2;
+    canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+    
+}

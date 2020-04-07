@@ -134,7 +134,7 @@ function initializeContext(){
 
         if(audioCtx === null ) initializeContext();   
         var value = e.target.value;
-        var j  = e.target.dataset.index;
+        var i  = e.target.dataset.index;
 
         switch(e.target.name){
             case "gain":  
@@ -161,7 +161,6 @@ function initializeContext(){
             if(!isNaN(amp) && document.getElementsByClassName("freq_resp_meter")[index]) document.getElementsByClassName("freq_resp_meter")[index].value = amp;
         });
     });
-    
 }
 
     //         // if(!isNaN(amp) && document.getElementsByClassName("freq_resp_meter")[index]) document.getElementsByClassName("freq_resp_meter")[index].value = amp;
@@ -177,31 +176,7 @@ function initializeContext(){
         compressors.forEach(b => bew += "<br>" + b.threshold.value + "|" + b.ratio.value + " |" + b.knee.value);
 
 
-function setNewInput(input){
 
-    log( typeof activeInputSource)
-    if(activeInputSource!==null && activeInputSource !== input ){
-       // activeInputSource.disconnect();
-
-    }
-
-    function setNewInput(input)
-    {
-        debugger;
-        log(typeof activeInputSource)
-        if (activeInputSource !== null && activeInputSource !== input) {
-            // activeInputSource.disconnect();
-        }
-        activeInputSource = input;
-
-        if (input instanceof AudioBufferSourceNode || input instanceof AudioScheduledSourceNode) {
-            input.start();
-        }
-
-        else if (input === 'audiotag') {
-            activeInputSource = audioTag;
-            audioTag.oncanplay = () => audioTag.play();
-        }
     }
     window.eq_stdin = function (str)
     {
@@ -349,8 +324,3 @@ function setNewInput(input){
             return null;
         }
     }
-// initializeContext();
-
-// document.querySelector(".simple-console-input").focus();
-
-// add the console to the pageinsert_dsp_filter
