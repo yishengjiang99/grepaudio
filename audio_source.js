@@ -68,7 +68,10 @@ function PlayableAudioSource(ctx){
         random_noise,
         getAudioDevice
     }
-}
+    
+    function noise_gen(){
+      
+    }
 
 
 export default PlayableAudioSource;

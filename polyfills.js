@@ -31,7 +31,6 @@ var con = new SimpleConsole({
 document.body.append(con.element)
 window.onerror= function (msg, url, lineNo, columnNo, error) {
   con.log([msg, url, lineNo, columnNo, error].join(', '))
-}
 
 
 window.log= (txt) => con.log(txt);;
