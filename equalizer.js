@@ -42,12 +42,7 @@ const eq_ui_row_template = document.getElementById("eq_ui_row_template");
 window.logrx1 = (txt) => rx1.innerHTML = txt;
 
 
-startBtn.onclick = initializeContext;
-
-
-
-audioTag = document.getElementById("yt2");
-
+audioTag =initAudioTag("#ctrls");
 
 
 volumeControl.addEventListener('input', ()=> pre_amp.gain.value = event.target.value);
@@ -86,7 +81,7 @@ function initializeContext(){
         }
         return false;
     }
-
+    logrx1("ty");
     sinewave = audioCtx.createOscillator();
     pre_amp = audioCtx.createGain();
 

@@ -55,12 +55,13 @@ window.logErr = con.logError;
 // con.handleUncaughtErrors();
 con.element.addEventListener("click", function(){ this.querySelector("input").focus() });
 
-function initAudioTag(containerId) {
+window.initAudioTag= function(containerId) {
     
     var container = document.querySelector(containerId);
     var audio = document.createElement("audio");
+    audio.id = 'yt2';
     audio.controls=true;
-    audio.autoplay=true;
+    audio.autoplay=false;
     var select = document.createElement("select");
     container.appendChild(audio);
     container.innerHTML += "<br>";
@@ -68,12 +69,12 @@ function initAudioTag(containerId) {
     fetch("/samples/filelist").then(resp => {
         return resp.text();
       }).then(text => {
- 
-        filelist = text.split("\n");
+        var filelist = text.split("\n");
         select.innerHTML = filelist.map(t => `<option value=${t}>${t}</option>`).join("");
         audio.src = filelist[0];
-        select.addEventListener('click', function(e){
+        select.addEventListener('input', function(e){
             audio.src = e.target.value; 
+            audio.oncanplay = audio.play();
         });
         audio.setAttribute("data-filelist", filelist);
       }).catch(console.error);

@@ -14,16 +14,14 @@
 <!-- https://www.googleapis.com/customsearch/v1?q=music&key=AIzaSyBCXMcymaqef8RmYskmdVOJcQA5e06Zvyg -->
 <body style='margin-left:20px'>
 
-     <h3>Mix Sounds   <span id='rx1'></span></h3>
+     <h3>Mix Sounds   </h3>
     <table>
         <tr>
             <td>
                 <div id='ctrls'>
 
-                    <select id='select_song'></select>
-                    <input type=radio> </input>
+             
                 </div>
-               <audio controls id='yt2' src="./samples/lana.mp3"></audio>
             </td>
             <td>
                   <div> pre-amp Volume:&nbsp;&nbsp;&nbsp;&nbsp;
@@ -47,14 +45,15 @@
                         oninput="event.target.nextElementSibling.innerText=event.target.value"
                         data-action="volume" />
                     <label>1</label>
-                    <button id='select-mike'>use mic</button>
+                       <button id='select-mike'>use mic</button>
+                       <span id='rx1'> Click Anywhere on window to start audio ctx (new chrome rule)</span>
                     </div>
             </td>
    
         </tr>
         <tr>
             <td rowspan=2 colspan=2>
-                <button id='start'>Click to initialize audio ctx</button>
+   
 
                 <form id="eq_update_form"> 
           
