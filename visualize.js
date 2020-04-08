@@ -12,6 +12,7 @@ export function line_chart(canvasId){
     var t = 0;
 
     function drawTimeseries(dataArray){
+        
         var bufferLength = dataArray.length;
         
         canvasCtx.beginPath();

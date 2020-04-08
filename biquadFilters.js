@@ -123,7 +123,7 @@ function aggregate_frequency_response(filters,_)
             aggregateAmps[i] += Math.log10(val) * 20;
         })
     }
-console.log(aggregateAmps)
+    console.log(aggregateAmps)
     return aggregateAmps;
 }
 

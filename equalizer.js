@@ -1,7 +1,6 @@
 import BiquadFilters from './biquadFilters.js'
 
 import io_samplers from './io_samplers.js'
-import bufferReader from "./lib/bufferReader.js";
 import DynamicCompressionModule from './compression.js';
 import PlayableAudioSource from './audio_source.js';
 import './polyfills.js'
@@ -40,6 +39,10 @@ const eq_ui_container = document.getElementById('eq_ui_container');
 const eq_update_form = document.getElementById('eq_update_form');
 const eq_ui_row_template = document.getElementById("eq_ui_row_template");
 const fr_meters = document.getElementsByClassName("freq_resp_meter");
+
+
+document.querySelectorAll("input[name=q]").forEach(d=>d.min='1.0');
+document.querySelectorAll("input[name=gain]").forEach(d=>d.value=0.0);
 window.logrx1 = (txt) => rx1.innerHTML = txt;
 
 
@@ -207,10 +210,8 @@ function initializeContext(){
         biquadFilters.forEach(b => bew += "<br>" + b.frequency.value + "|" + b.gain.value + " |" + b.Q.value);
 
         compressors.forEach(b => bew += "<br>" + b.threshold.value + "|" + b.ratio.value + " |" + b.knee.value);
-
-
-
     }
+
     window.eq_stdin = function (str)
     {
         initializeContext();
@@ -316,6 +317,10 @@ function initializeContext(){
                     default: break;
                 }
                 break;
+            case 'reset':
+               biquadFilters = [];
+               break;
+           
 
             default:
                 resp = "cmd.."

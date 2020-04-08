@@ -30,7 +30,7 @@
 	box-shadow: 0 1px 0 transparent;
 }
 .simple-console-input:focus {
-	outline: 1;
+	outline: 0;
 	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 .simple-console-input-wrapper button {
@@ -71,7 +71,7 @@
 	margin: 0.5em;
 	margin-top: 1.5em;
 	border: 1px solid rgba(128, 128, 128, 0.5);
-	border-radius: 0;
+	border-radius: 0.2em;
 	user-select: none;
 	-ms-user-select: none;
 	-moz-user-select: none;
