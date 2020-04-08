@@ -19,7 +19,7 @@ app.use(function (req,res,next)
 app.get("/yt", async (req,res) =>{
   const query = req.params.q;
 
-  const youtube_api_key = 'AIzaSyBCXMcymaqef8RmYskmdVOJcQA5e06Zvyg';
+  const youtube_api_key = process.env.GOOGLE_KEY_OMG;  
   const url =`https://www.googleapis.com/youtube/v3/search?type=video&part=snippet&maxResults=10&q=${query}&key=${youtube_api_key}`
   const request = require("request");
 
