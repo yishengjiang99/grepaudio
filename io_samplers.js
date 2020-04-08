@@ -35,6 +35,7 @@ function io_samplers(ctx, fftSize){
         //     return;
         // }
        function sample(){
+
            if( last_sampled_at != null && _ctx.currentTime - last_sampled_at < 1){
               // return;
            }
@@ -75,8 +76,13 @@ function io_samplers(ctx, fftSize){
             outputAnalyzer.fftSize= 256;
             inputAnalyzer.getByteFrequencyData(dataArrayIn2);
             outputAnalyzer.getByteFrequencyData(dataArrayOut2);
+            post_data('freq_out', dataArrayOut2, outputAnalyzer.frequencyBinCount);
+
+
             input_freq.drawBars(dataArrayIn2);
             output_freq.drawBars(dataArrayOut2);
+     
+           
         }
 
         sample();

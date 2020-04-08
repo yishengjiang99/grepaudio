@@ -28,7 +28,7 @@ let letancySamplers = [];
 
 
 const startBtn = document.getElementById("start");
-const getMicBtn = document.querySelector("#select-mike")
+const getMicBtn = document.querySelector("tone-microphone")
 const playButton = document.getElementById("playBtn");
 const rx1 = document.getElementById("rx1");
 const volumeControl = document.getElementById("volume");
@@ -39,6 +39,7 @@ const list = document.getElementsByClassName('update_gain');
 const eq_ui_container = document.getElementById('eq_ui_container');
 const eq_update_form = document.getElementById('eq_update_form');
 const eq_ui_row_template = document.getElementById("eq_ui_row_template");
+const fr_meters = document.getElementsByClassName("freq_resp_meter");
 window.logrx1 = (txt) => rx1.innerHTML = txt;
 
 
@@ -47,7 +48,9 @@ audioTag =initAudioTag("#ctrls");
 
 volumeControl.addEventListener('input', ()=> pre_amp.gain.value = event.target.value);
 volumeControl2.addEventListener('input', ()=> post_amp.gain.value = event.target.value);
-getMicBtn.onclick = () => { PlayableAudioSource(audioCtx).getAudioDevice(audioCtx).then(source => source.connect(analyzerNodeList.inputAnalyzer));}
+getMicBtn.onclick = () => { 
+    PlayableAudioSource(audioCtx).getAudioDevice(audioCtx).then(source => source.connect(analyzerNodeList.inputAnalyzer));
+}
 document.body.addEventListener("click", function(e){ initializeContext() }, { once: true });
 
 
@@ -55,13 +58,45 @@ function setupConfig2(){
 
 }
 
-
 const hz_bands = new Float32Array(
     32,64,125,
     250,500,1000,
     2000,4000,8000,
-    16000
+    16000, 24000
 );
+
+
+window.post_data=function(arr,fftdata,bincount){
+    if(arr=='freq_out'){
+
+
+        var binWidth = 24400/bincount;
+
+        var sums = new Float32Array(hz_bands.length).fill(0);
+
+        var max = 0;
+    
+        for(let i =1; i <= fftdata.length; i++){
+            var freq = i * binWidth;
+            let j;
+            
+            for(j = 0; hz_bands[j] < freq; j++);
+            
+            sums[j] += fftdata[i];
+
+
+            if (sums[j] > max) max = sums[j];
+        }
+
+        if(max > 0 ){
+            debugger;
+        }
+        for(let j =0; j < sums.count;j++){
+            fr_meters[j].max = max;
+            fr_meters[j].value = sums[j];
+        }        
+    }
+}
 
 
 function initializeContext(){
@@ -102,7 +137,6 @@ function initializeContext(){
     log("init called")
 
 
-    audioTag = document.getElementById("yt2");
 
 
     audioTagSource = audioTagSource || audioCtx.createMediaElementSource(audioTag);
@@ -112,10 +146,14 @@ function initializeContext(){
 
 
     if (configs == 1) {
-        biquadFilters = BiquadFilters.filter_option_2(audioCtx,pre_amp,post_amp);
+        biquadFilters = BiquadFilters.default_filters(audioCtx);
         activeInputSource = audioTag;
         analyzerNodeList.inputAnalyzer.connect(pre_amp);
         var cursor = pre_amp;
+        for(const filter of biquadFilters){
+            cursor.connect(filter);
+            cursor = filter;
+        }
 
         post_amp.connect(analyzerNodeList.outputAnalyzer);
         analyzerNodeList.outputAnalyzer.connect(audioCtx.destination);

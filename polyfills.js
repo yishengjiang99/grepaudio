@@ -58,18 +58,16 @@ con.element.addEventListener("click", function(){ this.querySelector("input").fo
 window.initAudioTag= function(containerId) {
     
     var container = document.querySelector(containerId);
-    var audio = document.createElement("audio");
-    audio.id = 'yt2';
-    audio.controls=true;
-    audio.autoplay=false;
+    var audio = container.querySelector("audio");
+
     var select = document.createElement("select");
-    container.appendChild(audio);
-    container.innerHTML += "<br>";
-    container.appendChild(select);
-    fetch("/samples/filelist").then(resp => {
+    select.style="height:50px; vertical-align:top;"
+
+    fetch("/samples/mp3list.csv").then(resp => {
         return resp.text();
       }).then(text => {
-        var filelist = text.split("\n");
+        container.appendChild(select);
+        var filelist = text.split(",");
         select.innerHTML = filelist.map(t => `<option value=${t}>${t}</option>`).join("");
         audio.src = filelist[0];
         select.addEventListener('input', function(e){

@@ -107,9 +107,9 @@ function create(audioCtx,freq,type,gain,q)
     filter.Q.setValueAtTime(q,audioCtx.currentTime);
     return filter;
 }
-function aggregate_frequency_response(filters,frequency_list)
+function aggregate_frequency_response(filters,_)
 {
-
+    var frequency_list = new Float32Array(filters.map(f=>f.frequency.value));
 
     var aggregateAmps = Array(frequency_list.length).fill(0);
 
@@ -123,7 +123,7 @@ function aggregate_frequency_response(filters,frequency_list)
             aggregateAmps[i] += Math.log10(val) * 20;
         })
     }
-
+console.log(aggregateAmps)
     return aggregateAmps;
 }
 

@@ -170,12 +170,12 @@ input[type='range']::-webkit-slider-thumb {
     position: fixed;
     bottom: 10px;
     margin: 20px 0px;
-    max-height: 70vh;
+    max-height: 25vh;
     overflow-y: scroll;
-    width: 90vw;
+    width: 0vw;
     background-color:black;
     color:white;
-    min-height:30vh;
+    min-height:25vh;
 
 }
 
