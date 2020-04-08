@@ -4,7 +4,8 @@
   "description": "audio dps",
   "main": "http.js",
   "scripts": {
-    "start": "node http.js"
+    "start": "node http.js",
+    "lol": "es-dev-server --app-index index.html --node-resolve --watch --open"
   },
   "repository": {
     "type": "git",
@@ -21,12 +22,15 @@
   "homepage": "https://github.com/yishengjiang99/grepaudio#readme",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.0.20",
+    "@github/auto-complete-element": "^2.0.0",
     "@material-ui/styles": "^4.9.6",
     "dot-env": "0.0.1",
     "dotenv": "^8.2.0",
     "fluent-ffmpeg": "^2.1.2",
     "functional-acoustics": "^1.2.6",
+    "lit-element": "^2.3.1",
     "mime": "^2.4.4",
+    "nega-autocomplete": "^0.2.4",
     "peaks.js": "^0.19.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -37,6 +41,7 @@
     "ytdl-core": "^2.0.1"
   },
   "devDependencies": {
+    "es-dev-server": "^1.46.1",
     "source-map-loader": "^0.2.4",
     "ts-loader": "^6.2.2",
     "typescript": "^3.8.3"

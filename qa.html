@@ -7,29 +7,32 @@
   <title>rt</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="./lib/vendors/simple-console.css">
-	<script src="./lib/vendors/tonejs-ui.js"></script>
 
   <script src="./lib/vendors/simple-console.js"></script>
+  <script type="module">
+import '@github/auto-complete-element'
+  </script>
+
 
 <body>
   <div id=rx1></div>
   
-
   <content>
-    
+    <audio controls></audio>
+
   </content>
 
   <center-block>
+    <auto-complete src="http://localhost:3333/yt" aria-owns="users-popup">
+      <input type="text">
+      <ul id="users-popup"></ul>
+    </auto-complete>
       <button style='display:block' id=init> init ctx</go>
 
-      <button style='display:none' id=go>go</go>
+      <button style='display:none' id=go> go </button>
   </center-block>
 
     <div id=rx1> </div>
-
-    <!-- <select name=filter>
-   
-</select> -->
 
 </body>
 ]<script src='./polyfills.js'></script>
