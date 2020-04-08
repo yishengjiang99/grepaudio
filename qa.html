@@ -18,15 +18,17 @@ import '@github/auto-complete-element'
   <div id=rx1></div>
   
   <content>
+    <auto-complete src="http://localhost:3333/yt" aria-owns="users-popup">
+      <input type="text">
+      <ul id="users-popup"></ul>
+    </auto-complete>
+    
     <audio controls></audio>
 
   </content>
 
   <center-block>
-    <auto-complete src="http://localhost:3333/yt" aria-owns="users-popup">
-      <input type="text">
-      <ul id="users-popup"></ul>
-    </auto-complete>
+
       <button style='display:block' id=init> init ctx</go>
 
       <button style='display:none' id=go> go </button>
