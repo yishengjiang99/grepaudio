@@ -13,7 +13,7 @@ var BiquadFilters = function (ctx)
 
     const bars = [
         { "label": "32","f": 32,"gain": 1,"type": "highshelf" },
-        { "label": "64","f": 64,"gain": 0,"type": "highshelf" },
+        { "label": "64","f": 64,"gain": 1,"type": "highshelf" },
         { "label": "125","f": 125,"gain": 0,"type": "peaking" },
         { "label": "125","f": 220,"gain": 0,"type": "peaking" },
         { "label": "250","f": 250,"gain": 0,"type": "peaking" },
@@ -108,7 +108,7 @@ var BiquadFilters = function (ctx)
         {
             var filter = audioCtx.createBiquadFilter();
             filter.type = obj.type || 'lowpass';
-            filter.gain.value = obj.gainValue || 0;
+            filter.gain.value = obj.gain || 0;
             filter.Q.value = 1;
             filter.frequency.value = obj.f;
             return filter;
@@ -135,7 +135,7 @@ var BiquadFilters = function (ctx)
                 case "lowshelf":
                 case "highshelf":
                     input.name = "gain";
-                    input.value = 0;
+                    input.value = obj.gain;
                     input.max = 12;
                     input.min = -12;
                     input.ddefaultValue = 0;
@@ -179,7 +179,8 @@ var BiquadFilters = function (ctx)
 
                 }
                 log("updated filter "+i+" "+name+ " to "+ value );
-                
+                post_FR_update()
+
             }
  
             var nameLabel = document.createElement("label");
@@ -233,8 +234,18 @@ var BiquadFilters = function (ctx)
         filter.Q.setValueAtTime(q,audioCtx.currentTime);
         return filter;
     }
-
-
+    function post_FR_update(){
+        var frps = aggregate_frequency_response(biquadFilters, hz_bands);
+        var chartdata = {
+            labels: hz_bands,
+            datasets: frps.amp_list.map( (frp, index)=>{ 
+                return {label: `${frps.biquads[index].type} ${frps.biquads[index].frequency.value}`, data: frp} 
+            })
+        };   
+            
+        window.post_data("freq_resp_update", chartdata);
+    }
+    
     function aggregate_frequency_response(filters, frequency_list)
     {
    
@@ -282,7 +293,9 @@ var BiquadFilters = function (ctx)
 
     function dd(filter)
     {
-        return `type ${filter.type} freq: ${filter.frequency.value} gain ${filter.Q.value}`
+        const json = filter.toJson();
+        return Object.keys(json).map(k => `<b>${k}</b>: ${typeof json[k] == 'object' ? json[k].join(',') : json[k]}`) + "\n";
+        
     }
     return {
         default_filters,

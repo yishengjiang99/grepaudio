@@ -39,9 +39,6 @@ document.querySelectorAll("input[name=gain]").forEach(d => d.value = 0.0);
 window.logrx1 = (txt) => rx1.innerHTML = txt;
 window.logrx2 = (txt) => rx2.innerHTML = txt;
 
-audioTag = initAudioTag("#ctrls");
-
-
 volumeControl.addEventListener('input',() => pre_amp.gain.value = event.target.value);
 volumeControl2.addEventListener('input',() => post_amp.gain.value = event.target.value);
 getMicBtn.onclick = () =>
@@ -68,7 +65,8 @@ window.post_data = function (arr, arg1, arg2)
 {
     if (arr == 'freq_out') {
 
-
+        var bincount = 9;
+        var fftdata = arg1;
         var binWidth = 24400 / bincount;
 
         var sums = new Float32Array(hz_bands.length).fill(0);
@@ -96,8 +94,16 @@ window.post_data = function (arr, arg1, arg2)
         }
     }
 
-    else if(arr=='freq_resp'){
-        
+    else if(arr=='freq_resp_update'){
+        var chartdata = arg1;
+
+
+        new Chart(bigchart_ctx, {
+            type: 'bar',
+            dataset: chartdata,
+            options: {title: {display: true, text: "Freq Response"}}
+
+        });
     }
 }
 
@@ -120,7 +126,7 @@ async function initializeContext()
         return false;
     }
     log("in init")
-
+    audioTag = initAudioTag("#ctrls");
     sinewave = audioCtx.createOscillator();
     pre_amp = audioCtx.createGain();
 
@@ -131,24 +137,24 @@ async function initializeContext()
     mod_compressor.addDefaults(NUM_FREQUENCY_BANDS);
     compressors = mod_compressor.list;
 
-    var gains = Array(16).fill(0);
-    var bandwidths = Array(16).fill(8);
-
-
     analyzerNodeList = io_samplers(audioCtx,2048);
 
     inputAnalyzer = analyzerNodeList.inputAnalyzer;
     outputAnalyzer = analyzerNodeList.outputAnalyzer;
     audioTagSource = audioTagSource || audioCtx.createMediaElementSource(audioTag);
-    sinewave.connect(analyzerNodeList.inputAnalyzer);
+
+    audioTagSource.connect(inputAnalyzer);
+    inputAnalyzer.connect(pre_amp);
 
 
     bqModule = new BiquadFilters(audioCtx);
     biquadFilters = bqModule.default_filters();
-    activeInputSource = sinewave;
+    activeInputSource = audioTagSource;
 
 
-    analyzerNodeList.inputAnalyzer.connect(pre_amp);
+
+    activeInputSource.connect(inputAnalyzer);
+    inputAnalyzer.connect(pre_amp);
     var cursor = pre_amp;
     for (const filter of biquadFilters) {
         cursor.connect(filter);
@@ -166,9 +172,10 @@ async function initializeContext()
 function debug()
 {
     var bew = "";
-    biquadFilters.forEach(b => bew += "<br>" + b.frequency.value + "|" + b.gain.value + " |" + b.Q.value);
+    log(bqModule.to_string());
+    log()
+    log(bew);
 
-    compressors.forEach(b => bew += "<br>" + b.threshold.value + "|" + b.ratio.value + " |" + b.knee.value);
 }
 
 window.eq_stdin = function (str)
