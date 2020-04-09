@@ -112,11 +112,14 @@ input[type='range']::-webkit-slider-thumb {
   height: 16px;
   border-radius: 16px;
 }
-.canvas_wrapper {
-    min-width: 700;
+.canvas_wrapper-bigger {
+    min-width: 333;
     min-height: 300;
     display: inline-block;
 
+}
+.canvas_wrapper{
+  width:50px;height:50;
 }
 .large_canvas{
     width:980px;

@@ -53,19 +53,29 @@ function filter_option_2(context, preamp, postamp){
     return biquadFilters;
 }
 
+
+
 BiquadFilterNode.prototype.toJson = function(){
-    var a = Float32Array(16);
-    var b = Float32Array(16);
+    var a = new Float32Array(hz_bands.length);
+    var b = new Float32Array(hz_bands.length);
     var fr = this.getFrequencyResponse(hz_bands,a,b )
     return {
         gain: this.gain.value,
         frequency: this.frequency.value,
         type: this.type,
         q: this.Q.value,
-        FRMag: a,
+        FRMag:  a,
         FRPhase: b
-    
     }
+}
+
+BiquadFilterNode.prototype.toString =function(){
+    return JSON.stringify({
+        gain: this.gain.value,
+        frequency: this.frequency.value,
+        type: this.type,
+        q: this.Q.value,
+    })
 }
 
 function toJson(){
@@ -95,7 +105,7 @@ function default_filters(audioCtx)
 
     var container = document.querySelector("#eq_update_form");
     
-    biquadFilters= bars.map( (obj,i) =>
+    this.biquadFilters= bars.map( (obj,i) =>
     {
         var filter = audioCtx.createBiquadFilter();
         filter.type = obj.type || 'lowpass';
@@ -225,14 +235,10 @@ function dd(filter)
     return `type ${filter.type} freq: ${filter.frequency.value} gain ${filter.Q.value}`
 }
 
-function to_string(){
-        return "";
-}
-
 
 export default {
     biquadFilters: biquadFilters,
     default_filters,toJson,
     aggregate_frequency_response,createFromString,create,filter_option_2,
-    to_string: to_string
+    to_string: dd
 }

@@ -48,7 +48,7 @@ app.get("/yt", async (req,res) =>{
       res.end(JSON.stringify(ret));
     }else{
       var rethtml = body.items.map(item=>{
-        res.send(`<option value=${item.vid}>${item.title} - ${}</option>`);
+        res.send(`<option value=${item.vid}>${item.title}</option>`);
       })
         res.end();
     }

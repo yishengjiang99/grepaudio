@@ -79,3 +79,9 @@ window.initAudioTag= function(containerId) {
     return audio;
 
 }
+
+const $ = (selector) => document.querySelector(selector);
+document.onload = function(){
+    $('.canvas_wrapper')
+    
+}
