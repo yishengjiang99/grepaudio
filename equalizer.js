@@ -32,32 +32,27 @@ const playButton = document.getElementById("playBtn");
 const rx1 = document.getElementById("rx1");
 const volumeControl = document.getElementById("volume");
 const volumeControl2 = document.getElementById("volume2");
-const compressorDiv = document.getElementById("compressor_container");
-const inputSelect = document.getElementById("inputselect")
-const list = document.getElementsByClassName('update_gain');
-const eq_ui_container = document.getElementById('eq_ui_container');
-const eq_update_form = document.getElementById('eq_update_form');
-const eq_ui_row_template = document.getElementById("eq_ui_row_template");
-const fr_meters = document.getElementsByClassName("freq_resp_meter");
 
 
-document.querySelectorAll("input[name=q]").forEach(d=>d.min='1.0');
-document.querySelectorAll("input[name=gain]").forEach(d=>d.value=0.0);
+document.querySelectorAll("input[name=q]").forEach(d => d.min = '1.0');
+document.querySelectorAll("input[name=gain]").forEach(d => d.value = 0.0);
 window.logrx1 = (txt) => rx1.innerHTML = txt;
 
 
-audioTag =initAudioTag("#ctrls");
+audioTag = initAudioTag("#ctrls");
 
 
-volumeControl.addEventListener('input', ()=> pre_amp.gain.value = event.target.value);
-volumeControl2.addEventListener('input', ()=> post_amp.gain.value = event.target.value);
-getMicBtn.onclick = () => { 
+volumeControl.addEventListener('input',() => pre_amp.gain.value = event.target.value);
+volumeControl2.addEventListener('input',() => post_amp.gain.value = event.target.value);
+getMicBtn.onclick = () =>
+{
     PlayableAudioSource(audioCtx).getAudioDevice(audioCtx).then(source => source.connect(analyzerNodeList.inputAnalyzer));
 }
-document.body.addEventListener("click", function(e){ initializeContext() }, { once: true });
+document.body.addEventListener("click",function (e) { initializeContext() },{ once: true });
 
 
-function setupConfig2(){
+function setupConfig2()
+{
 
 }
 
@@ -65,47 +60,49 @@ const hz_bands = new Float32Array(
     32,64,125,
     250,500,1000,
     2000,4000,8000,
-    16000, 24000
+    16000,24000
 );
 
 
-window.post_data=function(arr,fftdata,bincount){
-    if(arr=='freq_out'){
+window.post_data = function (arr,fftdata,bincount)
+{
+    if (arr == 'freq_out') {
 
 
-        var binWidth = 24400/bincount;
+        var binWidth = 24400 / bincount;
 
         var sums = new Float32Array(hz_bands.length).fill(0);
 
         var max = 0;
-    
-        for(let i =1; i <= fftdata.length; i++){
+
+        for (let i = 1; i <= fftdata.length; i++) {
             var freq = i * binWidth;
             let j;
-            
-            for(j = 0; hz_bands[j] < freq; j++);
-            
+
+            for (j = 0; hz_bands[j] < freq; j++);
+
             sums[j] += fftdata[i];
 
 
             if (sums[j] > max) max = sums[j];
         }
 
-        if(max > 0 ){
+        if (max > 0) {
             debugger;
         }
-        for(let j =0; j < sums.count;j++){
+        for (let j = 0; j < sums.count; j++) {
             fr_meters[j].max = max;
             fr_meters[j].value = sums[j];
-        }        
+        }
     }
 }
 
 
-function initializeContext(){
-    if(!audioCtx) {
+function initializeContext()
+{
+    if (!audioCtx) {
         audioCtx = new AudioContext();
-    }else{
+    } else {
         return;
 
     }
@@ -153,7 +150,7 @@ function initializeContext(){
         activeInputSource = audioTag;
         analyzerNodeList.inputAnalyzer.connect(pre_amp);
         var cursor = pre_amp;
-        for(const filter of biquadFilters){
+        for (const filter of biquadFilters) {
             cursor.connect(filter);
             cursor = filter;
         }
@@ -166,199 +163,203 @@ function initializeContext(){
     post_amp.connect(analyzerNodeList.outputAnalyzer);
     analyzerNodeList.outputAnalyzer.connect(audioCtx.destination);
 
-    document.querySelector("#eq_update_form").addEventListener("input", function(e){
+    document.querySelector("#eq_update_form").addEventListener("input",function (e)
+    {
 
-        if(audioCtx === null ) initializeContext();   
+        if (audioCtx === null) initializeContext();
         var value = e.target.value;
-        var i  = e.target.dataset.index;
+        var i = e.target.dataset.index;
 
-        switch(e.target.name){
-            case "gain":  
-                biquadFilters[i].gain.setValueAtTime(value, audioCtx.currentTime+1); break;
-            case "q":    
-                 biquadFilters[i].Q.setValueAtTime(value, audioCtx.currentTime+1); break;
+        switch (e.target.name) {
+            case "gain":
+                biquadFilters[i].gain.setValueAtTime(value,audioCtx.currentTime + 1); break;
+            case "q":
+                biquadFilters[i].Q.setValueAtTime(value,audioCtx.currentTime + 1); break;
             case "threshold":
             case "ratio":
             case "knee":
             case "attack":
-            case "release": 
-                mod_compressor.getAttributeValue(compressors[i], e.target.name).setValueAtTime(value, audioCtx.currentTime+1);
+            case "release":
+                mod_compressor.getAttributeValue(compressors[i],e.target.name).setValueAtTime(value,audioCtx.currentTime + 1);
                 break;
             default: /*wtf*/ break;
         }
-    
-        if(e.target.type=='range'){
-            e.target.parentElement.parentElement.getElementsByClassName(e.target.name+"_label")[0].innerHTML = e.target.value;
-        }
-        var frps= BiquadFilters.aggregate_frequency_response(biquadFilters,hz_bands);
-    
-    
-        frps.forEach( (amp,index)=>{ 
-            if(!isNaN(amp) && document.getElementsByClassName("freq_resp_meter")[index]) document.getElementsByClassName("freq_resp_meter")[index].value = amp;
+
+        // if(e.target.type=='range'){
+        //     e.target.parentElement.parentElement.getElementsByClassName(e.target.name+"_label")[0].innerHTML = e.target.value;
+        // }
+        var frps = BiquadFilters.aggregate_frequency_response(biquadFilters,hz_bands);
+
+        var meters = document.getElementsByClassName("freq_resp_meter");
+
+
+        frps.forEach((amp,index) =>
+        {
+            if(amp > 0) log(index+": "+amp);
+            
+            meters[index].value = amp+"";
+     
         });
     });
 }
 
-    //         // if(!isNaN(amp) && document.getElementsByClassName("freq_resp_meter")[index]) document.getElementsByClassName("freq_resp_meter")[index].value = amp;
-    //     });
-    // }
 
 
-    function debug()
-    {
-        var bew = "";
-        biquadFilters.forEach(b => bew += "<br>" + b.frequency.value + "|" + b.gain.value + " |" + b.Q.value);
+function debug()
+{
+    var bew = "";
+    biquadFilters.forEach(b => bew += "<br>" + b.frequency.value + "|" + b.gain.value + " |" + b.Q.value);
 
-        compressors.forEach(b => bew += "<br>" + b.threshold.value + "|" + b.ratio.value + " |" + b.knee.value);
-    }
+    compressors.forEach(b => bew += "<br>" + b.threshold.value + "|" + b.ratio.value + " |" + b.knee.value);
+}
 
-    window.eq_stdin = function (str)
-    {
-        initializeContext();
-        const cmd = str.split(" ")[0];
-        const arg1 = str.split(" ")[1] || "";
-        const arg2 = str.split(" ")[2] || "";
+window.eq_stdin = function (str)
+{
+    initializeContext();
+    const cmd = str.split(" ")[0];
+    const arg1 = str.split(" ")[1] || "";
+    const arg2 = str.split(" ")[2] || "";
 
-        const now = audioCtx.currentTime;
+    const now = audioCtx.currentTime;
 
-        var resp = "";
-        switch (cmd) {
-            case 'rreset': audioCtx = null && initializeContext(); break;
-            case 'init': initializeContext(); break;
-            case "debug": debug(); break;
-            case 'sine':
-                // activeInputSource.disconnect();
-                sinewave = audioCtx.createOscillator();
-                let _few = (arg1 && parseInt(arg1)) || 60;
+    var resp = "";
+    switch (cmd) {
+        case 'rreset': audioCtx = null && initializeContext(); break;
+        case 'init': initializeContext(); break;
+        case "debug": debug(); break;
+        case 'sine':
+            // activeInputSource.disconnect();
+            sinewave = audioCtx.createOscillator();
+            let _few = (arg1 && parseInt(arg1)) || 60;
 
-                activeInputSource = sinewave;
-                sinewave.frequency.setValueAtTime(_few,audioCtx.currentTime)
-                sinewave.connect(inputAnalyzer);
-                sinewave.start();
-                break;
-            case 'volume':
-                return "current volumes are " + pre_amp.volume.value + " postamp " + post_amp + " "
-            case 'toxic':
-                activeInputSource !== null && activeInputSource.disconnect();
-                audioTag.src = "/samples/toxic.mp3";
-                audioTag.oncanplay = e => audioTag.play();
-                break;
-            case 'b':
-            case 'biquad':
+            activeInputSource = sinewave;
+            sinewave.frequency.setValueAtTime(_few,audioCtx.currentTime)
+            sinewave.connect(inputAnalyzer);
+            sinewave.start();
+            break;
+        case 'volume':
+            return "current volumes are " + pre_amp.volume.value + " postamp " + post_amp + " "
+        case 'toxic':
+            activeInputSource !== null && activeInputSource.disconnect();
+            audioTag.src = "/samples/toxic.mp3";
+            audioTag.oncanplay = e => audioTag.play();
+            break;
+        case 'b':
+        case 'biquad':
+            resp += "biquad " + bdex;
+
+            if (!arg1) {
+
+            } else {
+                let fr = biquadFilters[bdex].getFrequencyResponse(hz_bands,amp_response,phase_shift);
+
+
+                var amp_response = new Float32Array(hz_bands.length);
+                var phase_shift = new Float32Array(hz_bands.length);
+                var bdex = parseInt(arg1)
+                var b = biquadFilters[bdex];
+                resp += "<br>" + b.frequency.value + "|" + b.gain.value + " |" + b.Q.value
+
                 resp += "biquad " + bdex;
-
-                if (!arg1) {
-
-                } else {
-                    let fr = biquadFilters[bdex].getFrequencyResponse(hz_bands,amp_response,phase_shift);
-
-
-                    var amp_response = new Float32Array(hz_bands.length);
-                    var phase_shift = new Float32Array(hz_bands.length);
-                    var bdex = parseInt(arg1)
-                    var b = biquadFilters[bdex];
-                    resp += "<br>" + b.frequency.value + "|" + b.gain.value + " |" + b.Q.value
-
-                    resp += "biquad " + bdex;
-                    resp += "<br>amp resp " + amp_response.join(",");
-                    ;
-                }
-                break;
-            case 'd':
-                post_amp.gain.setValueAtTime(post_amp.gain.value - 0.3,now);
-                break;
-            case 'u':
-                post_amp.gain.setValueAtTime(post_amp.gain.value + 0.3,now);
-                break;
-            case 'q':
-            case 'search':
-                var id = query(arg1);
-                if (!id) resp = "cannnot parse id";
-                else {
-                    audioTag.src = "https://localhost:8000/yt?id=" + id;
-                    setNewInput(audioTag);
-                }
-                break;
-            case 'v':
-            case 'yt':
-            case 'video':
-                var id = extractVideoID(arg1);
-                if (!id) resp = "cannnot parse id";
-                else {
-                    audioTag.src = "https://localhost:8000/yt?id=" + id;
-                    setNewInput(audioTag);
-                }
-                break;
-            case 'noise':
-                white_noise = PlayableAudioSource(audioCtx).random_noise(audioCtx);
-                white_noise.connect(analyzerNodeList.inputAnalyzer);
-                white_noise.start();
-                var duration = arg1 && parseInt(arg1) || 60;
-                white_noise.stop(now + duration);
-                white_noise.onstopped = e => white_noise.disconnect();
-                break;
-            case 'inputs':
-                console.log(inputAnalyzer);
-                break;
-            case 'new':
-                switch (args1) {
-                    case 'b':
-                    case 'biquad':
-                        var newb = audioCtx.createBiquadFilter();
-                        var params = args[2];
-                        try {
-                            var newf = BiquadFilters.createFromString(params);
-                            insert_dsp_filter(newf);
-                            resp += "createing biquad " + dd(newf);
-                        } catch (e) {
-                            resp = "error: " + e.message;
-                        }
-                        break;
-                    default: break;
-                }
-                break;
-            case 'reset':
-               biquadFilters = [];
-               break;
-           
-
-            default:
-                resp = "cmd.."
-                break;
+                resp += "<br>amp resp " + amp_response.join(",");
+                ;
+            }
+            break;
+        case 'd':
+            post_amp.gain.setValueAtTime(post_amp.gain.value - 0.3,now);
+            break;
+        case 'u':
+            post_amp.gain.setValueAtTime(post_amp.gain.value + 0.3,now);
+            break;
+        case 'q':
+        case 'search':
+            var id = query(arg1);
+            if (!id) resp = "cannnot parse id";
+            else {
+                audioTag.src = "https://localhost:8000/yt?id=" + id;
+                setNewInput(audioTag);
+            }
+            break;
+        case 'v':
+        case 'yt':
+        case 'video':
+            var id = extractVideoID(arg1);
+            if (!id) resp = "cannnot parse id";
+            else {
+                audioTag.src = "https://localhost:8000/yt?id=" + id;
+                setNewInput(audioTag);
+            }
+            break;
+        case 'noise':
+            white_noise = PlayableAudioSource(audioCtx).random_noise(audioCtx);
+            white_noise.connect(analyzerNodeList.inputAnalyzer);
+            white_noise.start();
+            var duration = arg1 && parseInt(arg1) || 60;
+            white_noise.stop(now + duration);
+            white_noise.onstopped = e => white_noise.disconnect();
+            break;
+        case 'inputs':
+            console.log(inputAnalyzer);
+            break;
+        case 'new':
+            switch (args1) {
+                case 'b':
+                case 'biquad':
+                    var newb = audioCtx.createBiquadFilter();
+                    var params = args[2];
+                    try {
+                        var newf = BiquadFilters.createFromString(params);
+                        insert_dsp_filter(newf);
+                        resp += "createing biquad " + dd(newf);
+                    } catch (e) {
+                        resp = "error: " + e.message;
+                    }
+                    break;
+                default: break;
+            }
+            break;
+        case 'reset':
+            biquadFilters = [];
+            break;
 
 
-        }
-        return resp;
+        default:
+            resp = "cmd.."
+            break;
 
 
     }
+    return resp;
+
+
+}
 
 
 
-    function query(q)
-    {
-        var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+function query(q)
+{
+    var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
 
-        var url = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
-        fetch(url,{ mode: 'no-cors' }).then(resp => resp.text()).then(text => text.match(regExp))
-            .then(match =>
-            {
-                debugger;
-                if (match && match[7].length > 11) {
-                    return match[7];
-                } else {
-                    return null;
-                }
-            })
+    var url = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
+    fetch(url,{ mode: 'no-cors' }).then(resp => resp.text()).then(text => text.match(regExp))
+        .then(match =>
+        {
+            debugger;
+            if (match && match[7].length > 11) {
+                return match[7];
+            } else {
+                return null;
+            }
+        })
 
+}
+function extractVideoID(url)
+{
+    var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+    var match = url.match(regExp);
+    if (match && match[7].length == 11) {
+        return match[7];
+    } else {
+        return null;
     }
-    function extractVideoID(url)
-    {
-        var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
-        var match = url.match(regExp);
-        if (match && match[7].length == 11) {
-            return match[7];
-        } else {
-            return null;
-        }
-    }
+}

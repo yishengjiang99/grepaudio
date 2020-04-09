@@ -88,16 +88,16 @@ function default_filters(audioCtx)
         { "label": "32","f": 32,"gain": 2,"type": "lowshelf" },
         { "label": "64","f": 64,"gain": 0,"type": "lowshelf" },
         { "label": "125","f": 125,"gain": 0,"type": "lowshelf" },
-        { "label": "125","f": 125,"gain": 0,"type": "peaking" },
+        { "label": "125","f": 220,"gain": 0,"type": "peaking" },
         { "label": "250","f": 250,"gain": 0,"type": "lowshelf" },
-        { "label": "250","f": 250,"gain": 0,"type": "peaking" },
-        { "label": "250","f": 500,"gain": 0,"type": "lowshelf" },
-        { "label": "250","f": 500,"gain": 0,"type": "peaking" },
-        { "label": "250","f": 1000,"gain": 0,"type": "lowshelf" },
-        { "label": "250","f": 1000,"gain": 0,"type": "peaking" },
-        { "label": "500","f": 2000,"gain": 0,"type": "lowpass" },
-        { "label": "1k","f": 2000,"gain": 0,"type": "peaking" },
-        { "label": "2k","f": 4000,"gain": 0,"type": "lowpass" },
+        { "label": "250","f": 255,"gain": 0,"type": "peaking" },
+        { "label": "500","f": 500,"gain": 0,"type": "lowshelf" },
+        { "label": "505","f": 505,"gain": 0,"type": "peaking" },
+        { "label": "1000","f": 1000,"gain": 0,"type": "lowshelf" },
+        { "label": "1005","f": 1000,"gain": 0,"type": "peaking" },
+        { "label": "2k","f": 2000,"gain": 0,"type": "lowpass" },
+        { "label": "2k","f": 2000,"gain": 0,"type": "peaking" },
+        { "label": "4k","f": 4000,"gain": 0,"type": "lowpass" },
         { "label": "4k","f": 4000,"gain": 0,"type": "peaking" },
         { "label": "8k","f": 8000,"gain": 0,"type": "highshelf" },
         { "label": "16k","f": 16000,"gain": 0,"type": "highshelf" }
@@ -143,7 +143,13 @@ function default_filters(audioCtx)
               
                break;
             }
-            
+         var meter = document.createElement("meter");
+         meter.min=0; 
+         meter.max=50; 
+         meter.value =0;
+         meter.className = "freq_resp_meter";
+         meter.index = i; 
+
         var label = document.createElement("label");
         label.innerHTML = input.value;
         
@@ -156,11 +162,15 @@ function default_filters(audioCtx)
         nameLabel.innerHTML = obj.label +" "+input.name;
         nameLabel.style.marginRight = 40;
         nameLabel.style.textAlign = 'right';
-        var col = document.createElement("div");
-        col.append(nameLabel);
-        col.append(input);
-        col.append(label);    
-        container.append(col)
+        var col = document.createElement("tr");
+
+        
+        col.append(nameLabel.wrap("td"));
+        col.append(input.wrap("td"));
+        col.append(label.wrap("td"));
+        col.append(meter.wrap("td"));
+
+        container.append(col);
         return filter;
     });
       
@@ -199,9 +209,10 @@ function create(audioCtx,freq,type,gain,q)
     filter.Q.setValueAtTime(q,audioCtx.currentTime);
     return filter;
 }
-function aggregate_frequency_response(filters,_)
+function aggregate_frequency_response()
 {
-    var frequency_list = new Float32Array(filters.map(f=>f.frequency.value));
+    var filters = this.biquadFilters;
+    var frequency_list = new Float32Array(this.biquadFilters.map(f=>f.frequency.value));
 
     var aggregateAmps = Array(frequency_list.length).fill(0);
 
@@ -215,7 +226,7 @@ function aggregate_frequency_response(filters,_)
             aggregateAmps[i] += Math.log10(val) * 20;
         })
     }
-console.log(aggregateAmps)
+
     return aggregateAmps;
 }
 

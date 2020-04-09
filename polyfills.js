@@ -85,3 +85,12 @@ document.onload = function(){
     $('.canvas_wrapper')
     
 }
+function wrap(el, wrapper) {
+    el.parentNode.insertBefore(wrapper, el);
+    wrapper.appendChild(el);
+}
+HTMLElement.prototype.wrap = function (parent_tag) { 
+    let p= document.createElement(parent_tag);
+    p.appendChild(this)
+    return p;
+}
