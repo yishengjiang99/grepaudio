@@ -226,7 +226,7 @@ function aggregate_frequency_response()
             aggregateAmps[i] += Math.log10(val) * 20;
         })
     }
-
+console.log(aggregateAmps)
     return aggregateAmps;
 }
 
