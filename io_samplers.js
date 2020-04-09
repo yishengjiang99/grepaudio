@@ -23,7 +23,7 @@ function io_samplers(ctx, fftSize){
     var input_freq =line_chart("#input_freq");
     var output_freq =line_chart("#output_freq");
 
-    var amp_response =line_chart("#amp_response");
+   // var amp_response =line_chart("#amp_response");
 
 
     var sample_timer;
@@ -37,7 +37,7 @@ function io_samplers(ctx, fftSize){
        function sample(){
 
            if( last_sampled_at != null && _ctx.currentTime - last_sampled_at < 1){
-              // return;
+                return;
            }
             last_sampled_at = _ctx.currentTime;
 

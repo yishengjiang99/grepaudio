@@ -94,3 +94,5 @@ HTMLElement.prototype.wrap = function (parent_tag) {
     p.appendChild(this)
     return p;
 }
+
+const bigchart_ctx  = $("#big-chart").getContext('2d');

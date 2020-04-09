@@ -14,7 +14,7 @@
     <h3>Mix Sounds </h3>
 
 
-    <table>
+    <table border=1>
         <tr>
 
             <td>
@@ -34,7 +34,7 @@
             <td colspan=2>
 
                 <span id=ctrls
-                    ><audio controls src='./samples/audiocheck.net_60Hz_-5dBFS_7000Hz_-17dBFS_3s.wav'></audio>
+                    ><audio controls src='/samples/song.mp3'></audio>
                 </span>
                 <span>                <button id=mic-check>Mic Check!</button>
                 </span>
@@ -54,21 +54,19 @@
 
             </td>
             <td>
-                <div id='rx1'></div>
-                <div id='logrx2'></div>
+         
+                <div id='rx2'></div>
                 <div id='rx2log'></div>
 
                 
             </td>
             <td>
-                <div class='canvas_wrapper-bigger'><canvas id='output_freq'></canvas></div>
-      
-
+                <div class='canvas_wrapper-bigger'><canvas id='big-chart'></canvas></div>
             </td>
         </tr>
         <tr>
             <td colspan=3>
-                <div class='large_canvas'><canvas id='amp_response'></canvas></div>
+                <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
                 <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
 
             </td>
@@ -109,7 +107,9 @@
                 min="1"> </td>
     </tr>
 </template>
-<script src='./tone-ui.js'> </script>
+<script src='polyfills.js'></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 
 <script type='module' src='./equalizer.js'></script>
 
