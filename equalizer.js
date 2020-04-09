@@ -27,7 +27,7 @@ let letancySamplers = [];
 
 
 const startBtn = document.getElementById("start");
-const getMicBtn = document.querySelector("tone-microphone")
+const getMicBtn = document.querySelector("microphone")
 const playButton = document.getElementById("playBtn");
 const rx1 = document.getElementById("rx1");
 const volumeControl = document.getElementById("volume");
@@ -41,16 +41,24 @@ const eq_ui_row_template = document.getElementById("eq_ui_row_template");
 const fr_meters = document.getElementsByClassName("freq_resp_meter");
 
 
-document.querySelectorAll("input[name=q]").forEach(d=>d.min='1.0');
-document.querySelectorAll("input[name=gain]").forEach(d=>d.value=0.0);
-window.logrx1 = (txt) => rx1.innerHTML = txt;
+document.querySelectorAll("input[name=q]").forEach(d=>d.min='0.0');
+document.querySelectorAll("input[name=q]").forEach(d=>d.max='2.0');
 
+
+document.querySelectorAll("input[name=gain]").forEach(d=>d.value=0.0);
+
+
+
+window.logrx1 = (txt) => rx1.innerHTML = txt;
+window.logrx2 = (txt) => document.getElementById("moreInfo").innerHTML = txt;
 
 audioTag =initAudioTag("#ctrls");
 
 
 volumeControl.addEventListener('input', ()=> pre_amp.gain.value = event.target.value);
 volumeControl2.addEventListener('input', ()=> post_amp.gain.value = event.target.value);
+
+
 getMicBtn.onclick = () => { 
     PlayableAudioSource(audioCtx).getAudioDevice(audioCtx).then(source => source.connect(analyzerNodeList.inputAnalyzer));
 }
@@ -62,10 +70,10 @@ function setupConfig2(){
 }
 
 const hz_bands = new Float32Array(
-    32,64,125,
+[    32,64,125,
     250,500,1000,
     2000,4000,8000,
-    16000, 24000
+    16000, 24000]
 );
 
 
@@ -90,10 +98,7 @@ window.post_data=function(arr,fftdata,bincount){
 
             if (sums[j] > max) max = sums[j];
         }
-
-        if(max > 0 ){
-            debugger;
-        }
+        
         for(let j =0; j < sums.count;j++){
             fr_meters[j].max = max;
             fr_meters[j].value = sums[j];
@@ -196,12 +201,10 @@ function initializeContext(){
         frps.forEach( (amp,index)=>{ 
             if(!isNaN(amp) && document.getElementsByClassName("freq_resp_meter")[index]) document.getElementsByClassName("freq_resp_meter")[index].value = amp;
         });
+        logrx2(BiquadFilters.to_string());
     });
 }
 
-    //         // if(!isNaN(amp) && document.getElementsByClassName("freq_resp_meter")[index]) document.getElementsByClassName("freq_resp_meter")[index].value = amp;
-    //     });
-    // }
 
 
     function debug()
@@ -272,12 +275,9 @@ function initializeContext(){
                 break;
             case 'q':
             case 'search':
-                var id = query(arg1);
-                if (!id) resp = "cannnot parse id";
-                else {
-                    audioTag.src = "https://localhost:8000/yt?id=" + id;
-                    setNewInput(audioTag);
-                }
+               var url = "https://grepaudio.herokuapp.com/yt?format=json&q="+cmd;
+               this.fetch(url).then(res=>res.text()).then(html=>resp = html);
+               
                 break;
             case 'v':
             case 'yt':
@@ -343,7 +343,7 @@ function initializeContext(){
         fetch(url,{ mode: 'no-cors' }).then(resp => resp.text()).then(text => text.match(regExp))
             .then(match =>
             {
-                debugger;
+          
                 if (match && match[7].length > 11) {
                     return match[7];
                 } else {

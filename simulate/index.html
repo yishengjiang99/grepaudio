@@ -1,0 +1,261 @@
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>rt</title>
+  <link rel="stylesheet" href="../style.css">
+
+  <link rel="stylesheet" href="../lib/vendors/simple-console.css">
+  <script src="../lib/vendors/simple-console.js"></script>
+  <script src="../webaudiox/build/webaudiox.js"></script>
+
+<body>
+  <h1>decodeAudioData example</h1>
+  <div id='hud'> </div>
+
+  <button class="play">Play</button>
+  <button class="stop">Stop</button>
+
+  <button class="setup">stepup</button>
+
+  <h2>feedb</h2>
+  <input class="feedback-control" type="range" min=0 max="200" step="1" value="330">
+  <span class="feedback-value">30</span>
+
+  <h2>Set loop start and loop end</h2>
+  <input class="loopstart-control" type="range" min="0" max="20" step="1" value="0">
+  <span class="loopstart-value">0</span>
+
+  <input class="loopend-control" type="range" min="0" max="20" step="1" value="0">
+  <span class="loopend-value">0</span>
+
+  <audio src='/samples/song.mp3' controls></audio>
+  <div id='logrx2'></div>
+
+  <div class='large_canvas'>
+    <canvas></canvas>
+  </div>
+  <div class='large_canvas'>
+    <canvas id='canvasIn'></canvas>
+  </div>
+</body>
+<script>
+  const rx2log = function (tx) { document.getElementById('logrx2').innerHTML = tx }
+  const pre = document.querySelector('pre');
+  const myScript = document.querySelector('script');
+  const play = document.querySelector('.play');
+  const stop = document.querySelector('.stop');
+  const setup = document.querySelector(".setup");
+
+  const freqcontrol = document.querySelector('.feedback-control');
+
+  const fbval = document.querySelector('.feedback-value');
+
+  const loopstartControl = document.querySelector('.loopstart-control');
+  const loopstartValue = document.querySelector('.loopstart-value');
+  loopstartControl.setAttribute('disabled','disabled');
+
+  const loopendControl = document.querySelector('.loopend-control');
+  const loopendValue = document.querySelector('.loopend-value');
+  loopendControl.setAttribute('disabled','disabled');
+
+
+</script>
+<script src="../graph.js"></script>
+
+</html>
+<script>
+  let ctx,bq,b;
+  function main() {
+    ctx = new AudioContext();
+
+    var outputAnalyzer = ctx.createAnalyser();
+    outputAnalyzer.minDecibels = -90;
+    outputAnalyzer.maxDecibels = -10;
+    outputAnalyzer.smoothingTimeConstant = 0;
+    outputAnalyzer.fftSize = 1024;
+
+    var inputAnalyzer = ctx.createAnalyser();
+    inputAnalyzer.minDecibels = -90;
+    inputAnalyzer.maxDecibels = -10;
+    inputAnalyzer.smoothingTimeConstant = 0;
+    inputAnalyzer.fftSize = 1024;
+
+    var canvas = document.querySelector("canvas");
+    var t = canvas.getContext("2d");
+    canvasCtx = t;
+
+    canvas.setAttribute('width',canvas.parentElement.clientWidth);
+    canvas.setAttribute('height',canvas.parentElement.clientHeight);
+    var WIDTH = canvas.width;
+    var HEIGHT = canvas.height;
+    canvasCtx.clearRect(0,0,WIDTH,HEIGHT);
+    canvasCtx.lineWidth = 2;
+    canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+
+    canvasCtx.beginPath();
+    canvasCtx.rect(0,0,WIDTH,HEIGHT);
+    canvasCtx.stroke();
+
+    let files = ['/samples/song.mp3','/samples/britney.mp3'];
+
+    let tests = [
+      "BQ,HSH,450,3",
+      "BQ,LSH,450,1",
+      "BQ,HSH,450,3|BQ,PEQ,575,2,6"
+    ];
+    let file = files[0];
+    let testGraph = graph(tests[1],ctx);
+
+    var audioCtx = ctx;
+    var oscillator = audioCtx.createOscillator();
+
+    oscillator.type = 'square';
+    oscillator.frequency.setValueAtTime(50,ctx.currentTime); 
+
+    source = oscillator;
+    oscillator.connect(inputAnalyzer);
+
+
+
+    var LPF = ctx.createBiquadFilter();
+    LPF.type = 'lowpass';
+    LPF.frequency = 20;
+    bq = b;
+
+
+    var PEQ = ctx.createBiquadFilter();
+    PEQ.type = 'peaking';
+    PEQ.frequency = 70;
+
+
+    window.onkeyup = function (e) {
+      const now = ctx.currentTime + 0.1;
+
+      switch(e.key){
+        case 'up':    PEQ.Q.linearRampToValueAtTime(PEQ.Q.value+0.01, now+1);
+        case 'down':  PEQ.Q.linearRampToValueAtTime(PEQ.Q.value-0.01, now+1);
+        case 'left':  PEQ.frequency.linearRampToValueAtTime(PEQ.frequency.value-5, now+1);
+        case 'right': PEQ.frequency.linearRampToValueAtTime(PEQ.frequency.value+5, now+1);
+
+
+        case 'w':  LPF.gain.linearRampToValueAtTime(LPF.gain+5,now+1);
+        case 's':  LPF.gain.linearRampToValueAtTime(LPF.gain-5,now+1);
+        case 'a':  LPF.frequency.linearRampToValueAtTime(LPF.frequency.value+5,now+0.1);
+        case 'd':  LPF.frequency.linearRampToValueAtTime(LPF.frequency.value-5,now+0.1);
+      }
+      e.preventDefault();
+    }
+
+
+
+
+    inputAnalyzer.connect(LPF).connect(PEQ);
+    PEQ.connect(outputAnalyzer)
+    outputAnalyzer.connect(ctx.destination);
+    oscillator.start();
+    var c2 = WebAudiox.Analyser2Canvas(inputAnalyzer, document.querySelector("canvas#canvasIn"));
+
+    let startSampleFor = function (test) {
+      var dataArrayIn2 = new Uint8Array(256);
+      var dataArrayOut2 = new Uint8Array(256);
+
+      canvas.setAttribute("data-test",test.toString())
+      function sampleFFT() {
+        canvasCtx.clearRect(0,0,WIDTH,HEIGHT);
+
+        timer = requestAnimationFrame(sampleFFT);
+        inputAnalyzer.getByteFrequencyData(dataArrayIn2);
+        outputAnalyzer.getByteFrequencyData(dataArrayOut2);
+        document.querySelector("#hud").innerHTML = "filtrerlow pass " + LPF.frequency.value 
+      + " <br>  peaking" + PEQ.frequency.value;
+        var sum = 0;
+        var r1 = dataArrayIn2.map(d => sum += d * d);
+        var inputrms = Math.floor(Math.sqrt(sum));
+
+        var sum2 = 0;
+        var rr1 = dataArrayOut2.map(d => sum += d * d);
+        var outputrms2 = Math.floor(Math.sqrt(sum));
+
+        rx2log(inputrms + " " + outputrms2)
+        for (let i = 0; i < 25; i++)
+        {
+          //f (dataArrayIn2[i] == 0) continue;
+          canvasCtx.beginPath();
+          var x = dataArrayIn2[i] * 2;
+          var y = dataArrayOut2[i];
+          canvasCtx.arc(x,y, 2,0,2 * Math.PI);
+
+          canvasCtx.stroke();
+
+          barHeight = dataArrayOut2[i];
+
+          canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)';
+          canvasCtx.fillRect(x,HEIGHT - barHeight / 2,barWidth,barHeight / 2);
+
+          canvasCtx.fillRect(x,HEIGHT - barHeight / 2,barWidth,barHeight / 2);
+
+          x += barWidth + 1;
+
+          barHeight = dataArrayOut2[i];
+
+          canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)';
+canvasCtx.fillRect(x,HEIGHT - barHeight / 2,barWidth,barHeight / 2);
+
+canvasCtx.fillRect(x,HEIGHT - barHeight / 2,barWidth,barHeight / 2);
+
+        }
+        var barWidth = (WIDTH / 80) * 2.5;
+        var barHeight;
+        var x = 0;
+
+        for (var i = 0; i < 44; i++)
+        {
+          barHeight = dataArrayOut2[i];
+
+          canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)';
+          canvasCtx.fillRect(x,HEIGHT - barHeight / 2,barWidth,barHeight / 2);
+
+          canvasCtx.fillRect(x,HEIGHT - barHeight / 2,barWidth,barHeight / 2);
+
+          x += barWidth + 1;
+        }
+      }
+
+        sampleFFT();
+
+    }
+      
+
+      startSampleFor("dd");
+  }
+    play.onclick = function () {
+      main();
+      play.setAttribute('disabled','disabled');
+
+    }
+
+    stop.onclick = function () {
+      source.pause();
+      play.removeAttribute('disabled');
+
+    }
+
+    loopstartControl.oninput = function () {
+      source.loopStart = loopstartControl.value;
+      loopstartValue.innerHTML = loopstartControl.value;
+    }
+
+    loopendControl.oninput = function () {
+      b.Q = loopendControl.value;
+      loopendValue.innerHTML = loopendControl.value;
+    }
+
+    freqcontrol.oninput = function () {
+      b.frequency.setValueAtTime(freqcontrol.value,ctx.currentTime);
+      fbval.innerHTML = freqcontrol.value;
+    }
+
+</script>

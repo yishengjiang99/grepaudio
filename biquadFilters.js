@@ -38,40 +38,122 @@ function filter_option_2(context, preamp, postamp){
     lowPass.type = "lowpass";
     lowPass.frequency.value = 880;
     lowPass.Q.value = 0.7;
+
+
     biquadFilters= [highShelf,lowShelf,highPass,lowPass];
+    
+    var ranges = document.querySelectorAll('input[class=vertical]');
 
-
-var ranges = document.querySelectorAll('input[class=vertical]');
-ranges.forEach(function(range, i){
-  range.addEventListener('input', function() {
-      if(i<2)    biquadFilters[i].gain.value = this.value
-  else     biquadFilters[i].Q.value = this.value;
-    // var amp_response = new Float32Array(frequency_list.length);
-    // var phase_shift = new Float32Array(frequency_list.length);
-  
-    // document.getElementById("fr_update").innerHTML= 
-    //     biquadFilters.map( b => b.getFrequencyResponse(hz_bands,amp_response,phase_shift) )
-    // .map( fr=>{ "<td>"+fr.amps.join("</td><td>") } ).join("</tr><tr>");
-
-  })
-});
+    ranges.forEach(function(range, i){
+      range.addEventListener('input', function() {
+          if(i<2)    biquadFilters[i].gain.value = this.value
+            else     biquadFilters[i].Q.value = this.value;
+      })
+    });
     return biquadFilters;
+}
+
+BiquadFilterNode.prototype.toJson = function(){
+    var a = Float32Array(16);
+    var b = Float32Array(16);
+    var fr = this.getFrequencyResponse(hz_bands,a,b )
+    return {
+        gain: this.gain.value,
+        frequency: this.frequency.value,
+        type: this.type,
+        q: this.Q.value,
+        FRMag: a,
+        FRPhase: b
+    
+    }
+}
+
+function toJson(){
+    return biquadFilters.map(b=>toJson());
 }
 
 function default_filters(audioCtx)
 {
-    const bars = [{ "label": "32","f": 32,"gain": 0,"type": "lowshelf" },{ "label": "64","f": 64,"gain": 0,"type": "peaking" },{ "label": "125","f": 125,"gain": 0,"type": "peaking" },{ "label": "250","f": 250,"gain": 0,"type": "peaking" },{ "label": "500","f": 500,"gain": 0,"type": "peaking" },{ "label": "1k","f": 1000,"gain": 0,"type": "peaking" },{ "label": "2k","f": 2000,"gain": 0,"type": "peaking" },{ "label": "4k","f": 4000,"gain": 0,"type": "peaking" },{ "label": "8k","f": 8000,"gain": 0,"type": "peaking" },{ "label": "16k","f": 16000,"gain": 0,"type": "highshelf" }];
-    biquadFilters= bars.map(obj =>
+    const bars = [
+        { "label": "32","f": 32,"gain": 2,"type": "lowshelf" },
+        { "label": "64","f": 64,"gain": 0,"type": "lowshelf" },
+        { "label": "125","f": 125,"gain": 0,"type": "lowshelf" },
+        { "label": "125","f": 125,"gain": 0,"type": "peaking" },
+        { "label": "250","f": 250,"gain": 0,"type": "lowshelf" },
+        { "label": "250","f": 250,"gain": 0,"type": "peaking" },
+        { "label": "250","f": 500,"gain": 0,"type": "lowshelf" },
+        { "label": "250","f": 500,"gain": 0,"type": "peaking" },
+        { "label": "250","f": 1000,"gain": 0,"type": "lowshelf" },
+        { "label": "250","f": 1000,"gain": 0,"type": "peaking" },
+        { "label": "500","f": 2000,"gain": 0,"type": "lowpass" },
+        { "label": "1k","f": 2000,"gain": 0,"type": "peaking" },
+        { "label": "2k","f": 4000,"gain": 0,"type": "lowpass" },
+        { "label": "4k","f": 4000,"gain": 0,"type": "peaking" },
+        { "label": "8k","f": 8000,"gain": 0,"type": "highshelf" },
+        { "label": "16k","f": 16000,"gain": 0,"type": "highshelf" }
+    ];
+
+    var container = document.querySelector("#eq_update_form");
+    
+    biquadFilters= bars.map( (obj,i) =>
     {
         var filter = audioCtx.createBiquadFilter();
         filter.type = obj.type || 'lowpass';
         filter.gain.value = obj.gainValue || 0;
         filter.Q.value = 1;
-        filter.frequency.value = obj.f || 0;
-        filter.label = obj.label;
-        return filter;
+        filter.frequency.value = obj.f;
+
+        var input = document.createElement("input");
+        input.type = 'range';
+        input.labelledby="IDREF"
+        input.setAttribute("data-index", i);
+        input.valuetext = input.value;
+        switch(obj.type){
+            case "lowshelf":
+            case "highshelf":
+                input.name="db"; 
+                input.value = 0;
+                input.max = 12;
+                input.min = -12;
+                input.ddefaultValue = 0;
+                break;
+            case "lowpass": 
+            case "highpass":
+                input.name="Q";
+                input.defaultValue = 0.5;
+                input.min = 0;
+                input.max = 12;
+                break;
+            case "peaking":
+               input.min = -12;
+               input.max = 12;
+               input.defaultValue =  0;
+               input.value = 0;
+               input.name = "Q";
+              
+               break;
+            }
+            
+        var label = document.createElement("label");
+        label.innerHTML = input.value;
         
-    })
+        input.oninput = (e)=> {
+            var value = e.target.value;
+            label.innerHTML = value;
+        }
+
+        var nameLabel = document.createElement("label");
+        nameLabel.innerHTML = obj.label +" "+input.name;
+        nameLabel.style.marginRight = 40;
+        nameLabel.style.textAlign = 'right';
+        var col = document.createElement("div");
+        col.append(nameLabel);
+        col.append(input);
+        col.append(label);    
+        container.append(col)
+        return filter;
+    });
+      
     return biquadFilters;
 }
 function get_list(audioCtx,freq_bands,gain_factors,bandwidths)
@@ -123,7 +205,7 @@ function aggregate_frequency_response(filters,_)
             aggregateAmps[i] += Math.log10(val) * 20;
         })
     }
-    console.log(aggregateAmps)
+console.log(aggregateAmps)
     return aggregateAmps;
 }
 
@@ -143,10 +225,14 @@ function dd(filter)
     return `type ${filter.type} freq: ${filter.frequency.value} gain ${filter.Q.value}`
 }
 
+function to_string(){
+        return "";
+}
 
 
 export default {
     biquadFilters: biquadFilters,
-    default_filters,
-    aggregate_frequency_response,createFromString,create,filter_option_2
+    default_filters,toJson,
+    aggregate_frequency_response,createFromString,create,filter_option_2,
+    to_string: to_string
 }

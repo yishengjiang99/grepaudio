@@ -113,7 +113,7 @@ input[type='range']::-webkit-slider-thumb {
   border-radius: 16px;
 }
 .canvas_wrapper {
-    min-width: 320;
+    min-width: 700;
     min-height: 300;
     display: inline-block;
 

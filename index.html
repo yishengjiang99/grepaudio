@@ -21,28 +21,30 @@
                 <div> pre-amp Volume:&nbsp;&nbsp;&nbsp;&nbsp;
                     <input type="range" id="volume" class="control-volume" min="-1" max="4" value="1" list="gain-vals"
                         step="0.01" oninput="event.target.nextElementSibling.innerText=event.target.value"
-                        data-action="volume" />
+                        data-action="volume" /> <span></span> 
                 </div>
 
                 <div> second amp Volume:
                     <input type="range" id="volume2" class="control-volume" min="0" max="3" value="1" list="gain-vals"
                         step="0.01" oninput="event.target.nextElementSibling.innerText=event.target.value"
-                        data-action="volume" />
+                        data-action="volume" /><span></span>
 
                 </div>
             </td>
             <td colspan=2>
-                <tone-microphone>f</tone-microphone>
+                <microphone></microphone>
 
                 <span id=ctrls><audio controls src='./samples/audiocheck.net_60Hz_-5dBFS_7000Hz_-17dBFS_3s.wav'></audio>
                 </span>
+
 
             </td>
 
         </tr>
         <tr>
             <td rowspan=2 colspan=1>
-                <div id="32_eq">
+                <div id="rx1">
+              
                 </div>
 
                 <form id="eq_update_form">                 
@@ -156,6 +158,7 @@
                         </tr>
 
                     </table>
+                    
                 </form>
 
             </td>
