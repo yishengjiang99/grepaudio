@@ -142,8 +142,18 @@ async function initializeContext(audioCtx)
     post_amp.connect(splitter2);
     splitter.connect(audioCtx.destination)
     splitter.connect(outputAnalyzer);
+  
+
+
     analyzerNodeList.run_samples(audioCtx);
 
+    white_noise = PlayableAudioSource(audioCtx).random_noise(audioCtx);
+    debugger;
+
+    white_noise.connect(post_amp);
+    white_noise.start();
+
+    white_noise.stop(audioCtx.currentTime+2);
     audioCtx.onstatechange = function (ev)
     {
         switch (ev.target.state) {
@@ -165,15 +175,14 @@ function debug()
 
 }
 
-window.eq_stdin = function (str)
+function eq_stdin(str)
 {
 
 
-    debugger;
     const cmd = str.split(" ")[0];
     const arg1 = str.split(" ")[1] || "";
     const arg2 = str.split(" ")[2] || "";
-    audioCtx = window.g_audioctx;
+    audioCtx = audioCtx || window.g_audioCtx;
     const now = audioCtx.currentTime;
 
     var resp = "";
@@ -318,6 +327,7 @@ function extractVideoID(url)
     }
 }
 
+window.eq_stdin= eq_stdin;
 export default {
     initializeContext,
     eq_stdin

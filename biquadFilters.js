@@ -203,7 +203,7 @@ var  BiquadFilters = function (ctx)
  
             var nameLabel = document.createElement("label");
             nameLabel.innerHTML = obj.label + " " + input.name;
-            nameLabel.style.marginRight = 40;
+  
             nameLabel.style.textAlign = 'right';
             var col = document.createElement("tr");
 
