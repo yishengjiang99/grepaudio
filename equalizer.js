@@ -148,8 +148,6 @@ async function initializeContext(audioCtx)
     analyzerNodeList.run_samples(audioCtx);
 
     white_noise = PlayableAudioSource(audioCtx).random_noise(audioCtx);
-    debugger;
-
     white_noise.connect(post_amp);
     white_noise.start();
 
@@ -206,6 +204,7 @@ function eq_stdin(str)
             activeInputSource !== null && activeInputSource.disconnect();
             audioTag.src = "/samples/toxic.mp3";
             audioTag.oncanplay = e => audioTag.play();
+            audioTag.crosite
             break;
         case 'b':
         case 'biquad':
@@ -236,22 +235,23 @@ function eq_stdin(str)
             break;
         case 'q':
         case 'search':
-            var id = query(arg1);
-            if (!id) resp = "cannnot parse id";
-            else {
-                audioTag.src = "https://localhost:8000/yt?id=" + id;
-                setNewInput(audioTag);
-            }
-            break;
         case 'v':
         case 'yt':
+        case 'search':
         case 'video':
-            var id = extractVideoID(arg1);
-            if (!id) resp = "cannnot parse id";
-            else {
-                audioTag.src = "https://localhost:8000/yt?id=" + id;
-                setNewInput(audioTag);
-            }
+            fetch("https://grepaudio.herokuapp.com/yt?n=5&format=json&q="+encodeURIComponent).then(resp=>resp.json())
+            .then(rows=>{
+                if(rows.length>0){
+                    var url="https://grepaudio.herokuapp.com/"+rows[0].vid+".mp3";
+                  g_audioTag.src=url;
+
+                  g_audioTag.autoplay=true;
+                  g_audioTag.oncanplay =()=>g_audioTag.play();
+                  
+                  loadBufferAndPlay(url);
+
+                }
+            })
             break;
         case 'noise':
             white_noise = PlayableAudioSource(audioCtx).random_noise(audioCtx);
@@ -297,6 +297,39 @@ function eq_stdin(str)
 
 }
 
+function loadBufferAndPlay(url) {
+    // Load asynchronously
+    var context = window.g_audioCtx;
+
+    var request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.responseType = "arraybuffer";
+  
+    request.onload = function() { 
+        context.decodeAudioData(
+            request.response,
+            function(buffer) {
+                if (source) {
+                  source.stop(0);
+                  source.disconnect();
+                }
+                source = context.createBufferSource();
+  
+                source.connect(panner);
+    
+                source.buffer = buffer;
+                source.loop = true;
+                source.start(0);
+  
+            
+            },
+  
+            function(buffer) {
+                console.log("Error decoding source!");
+            }
+        );
+    }
+}
 
 
 function query(q)

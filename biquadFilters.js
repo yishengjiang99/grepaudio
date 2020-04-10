@@ -1,4 +1,4 @@
-var  BiquadFilters = function (ctx)
+var BiquadFilters = function (ctx)
 {
     var biquadFilters = [];
     var audioCtx = ctx;
@@ -12,29 +12,29 @@ var  BiquadFilters = function (ctx)
 
 
     const bars = [
-        { "label": "32","f": 32,    "Q":1, "gain": 1,"type": "highshelf" },
-        { "label": "64","f": 64,    "Q":1, "gain": 1,"type": "highshelf" },
-        { "label": "125","f": 125,  "Q":1, "gain": 1,"type": "peaking" },
-        { "label": "125","f": 125,  "Q":1, "gain": 1,"type": "highshelf" },
+        { "label": "32","f": 32,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "64","f": 64,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "125","f": 125,"Q": 1,"gain": 1,"type": "peaking" },
+        { "label": "125","f": 125,"Q": 1,"gain": 1,"type": "highshelf" },
 
-        { "label": "125","f": 220,  "Q":1, "gain": 1,"type": "peaking" },
-        { "label": "125","f": 220,  "Q":1, "gain": 1,"type": "highshelf" },
+        { "label": "125","f": 220,"Q": 1,"gain": 1,"type": "peaking" },
+        { "label": "125","f": 220,"Q": 1,"gain": 1,"type": "highshelf" },
 
-        { "label": "250","f": 250,  "Q":1, "gain": 1,"type": "peaking" },
-        { "label": "500","f": 500, "Q":1, "gain": 1,"type": "highshelf" },
-        { "label": "500","f": 500, "Q":1, "gain": 1,"type": "peaking" },
-        { "label": "500","f": 500, "Q":1, "gain": 1,"type": "lowshelf" },
-        { "label": "1005","f": 1000,"Q":1, "gain": 1,"type": "highshelf" },
+        { "label": "250","f": 250,"Q": 1,"gain": 1,"type": "peaking" },
+        { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "peaking" },
+        { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "lowshelf" },
+        { "label": "1005","f": 1000,"Q": 1,"gain": 1,"type": "highshelf" },
 
 
-        { "label": "1005","f": 1000,"Q":1, "gain": 1,"type": "peaking" },
-        { "label": "1005","f": 1000,"Q":1, "gain": 1,"type": "lowshelf" },
+        { "label": "1005","f": 1000,"Q": 1,"gain": 1,"type": "peaking" },
+        { "label": "1005","f": 1000,"Q": 1,"gain": 1,"type": "lowshelf" },
 
-        { "label": "2k","f": 2000,"Q":1, "gain": 1,"type": "peaking" },
+        { "label": "2k","f": 2000,"Q": 1,"gain": 1,"type": "peaking" },
 
-        { "label": "4k","f": 4000,"Q":1, "gain": 1,"type": "peaking" },
-        { "label": "4k","f": 4000,"Q":1, "gain": 1,"type": "peaking" },
-        { "label": "8k","f": 8000,"Q":1, "gain": 1,"type": "peaking" },
+        { "label": "4k","f": 4000,"Q": 1,"gain": 1,"type": "peaking" },
+        { "label": "4k","f": 4000,"Q": 1,"gain": 1,"type": "peaking" },
+        { "label": "8k","f": 8000,"Q": 1,"gain": 1,"type": "peaking" },
         { "label": "16k","f": 16000,"gain": 1,"type": "lowshelf" }
     ];
 
@@ -111,14 +111,14 @@ var  BiquadFilters = function (ctx)
     }
 
 
-   function default_filters()
+    function default_filters()
     {
 
-        biquadFilters = bars.map( (obj,i) =>
+        biquadFilters = bars.map((obj,i) =>
         {
             var filter = audioCtx.createBiquadFilter();
             filter.type = obj.type || 'lowpass';
-            filter.gain.value = obj.gain || 0;
+            filter.gain.value = obj.gain || 1;
             filter.Q.value = 1;
             filter.frequency.value = obj.f;
             return filter;
@@ -129,13 +129,14 @@ var  BiquadFilters = function (ctx)
     }
 
 
-    function filter_ui(){
+    function filter_ui()
+    {
         var container = document.querySelector("#eq_update_form");
-        
+
         bars.map((obj,i) =>
         {
 
-      
+
             var input = document.createElement("input");
             input.type = 'range';
             input.labelledby = "IDREF"
@@ -154,7 +155,7 @@ var  BiquadFilters = function (ctx)
                 case "highpass":
                     input.name = "Q";
                     input.defaultValue = 0.5;
-                    input.value = obj.q; 
+                    input.value = obj.q;
                     input.min = 0;
                     input.max = 12;
                     break;
@@ -184,26 +185,26 @@ var  BiquadFilters = function (ctx)
                 var value = e.target.value;
                 label.innerHTML = value;
                 var name = e.target.name;
-                if(name==='gain'){
-                    thefilter.gain.setValueAtTime(value, audioCtx.currentTime+0.1);
-                }else if (name==='Q') { 
-                    thefilter.Q.setValueAtTime(value, audioCtx.currentTime+0.1);
+                if (name === 'gain') {
+                    thefilter.gain.setValueAtTime(value,audioCtx.currentTime + 0.1);
+                } else if (name === 'Q') {
+                    thefilter.Q.setValueAtTime(value,audioCtx.currentTime + 0.1);
 
                 }
-                con.logHTML("updated filter "+i+" "+name+ " to "+ value );
-          
-                var freq_list = new Float32Array(biquadFilters.map(b=>b.frequency.value));
+                con.logHTML("updated filter " + i + " " + name + " to " + value);
+
+                var freq_list = new Float32Array(biquadFilters.map(b => b.frequency.value));
                 var a = new Float32Array(freq_list.length);
                 var b = new Float32Array(freq_list.length);
-                var newfrq = biquadFilters[i].getFrequencyResponse(freq_list, a,b);
+                var newfrq = biquadFilters[i].getFrequencyResponse(freq_list,a,b);
 
-                window.post_data("freq_resp_update", a, b);
+                window.post_data("freq_resp_update",a,b);
 
             }
- 
+
             var nameLabel = document.createElement("label");
             nameLabel.innerHTML = obj.label + " " + input.name;
-  
+
             nameLabel.style.textAlign = 'right';
             var col = document.createElement("tr");
 
@@ -252,14 +253,15 @@ var  BiquadFilters = function (ctx)
         filter.Q.setValueAtTime(q,audioCtx.currentTime);
         return filter;
     }
-    function post_FR_update(){
-        var frps = aggregate_frequency_response(biquadFilters, hz_bands);
-        window.post_data("freq_resp_update", frps);
-    }
-    
-    function aggregate_frequency_response(filters, frequency_list)
+    function post_FR_update()
     {
-   
+        var frps = aggregate_frequency_response(biquadFilters,hz_bands);
+        window.post_data("freq_resp_update",frps);
+    }
+
+    function aggregate_frequency_response(filters,frequency_list)
+    {
+
         var frequency_list = frequency_list && new Float32Array(frequency_list)
         frequency_list = frequency_list || new Float32Array(biquadFilters.map(f => f.frequency.value));
 
@@ -277,8 +279,8 @@ var  BiquadFilters = function (ctx)
             amp_list.push(amp_response);
         }
 
-//        con.logHTML(biquadFilters.map( b => dd(b) ).join("<br>"))
-    
+        //        con.logHTML(biquadFilters.map( b => dd(b) ).join("<br>"))
+
         return {
             aggregate: aggregateAmps,
             amp_list: amp_list,
@@ -286,9 +288,10 @@ var  BiquadFilters = function (ctx)
         }
     }
 
-    function to_string(){
-        return this.biquadFilters.map(b=> dd(b)).join("|")
-     }
+    function to_string()
+    {
+        return this.biquadFilters.map(b => dd(b)).join("|")
+    }
 
 
     function createFromString(audioCtx,string)
@@ -306,7 +309,7 @@ var  BiquadFilters = function (ctx)
     {
         const json = filter.toJson();
         return Object.keys(json).map(k => `${k}</b>: ${typeof json[k] == 'object' ? json[k].join(',') : json[k]}`) + "\n";
-        
+
     }
     return {
         default_filters,
@@ -317,7 +320,7 @@ var  BiquadFilters = function (ctx)
         filter_option_2,
         to_string: dd
     }
-    
+
 
 }
 export default BiquadFilters;

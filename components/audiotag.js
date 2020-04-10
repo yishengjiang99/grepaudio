@@ -15,13 +15,14 @@ var audioTag= function(containerId) {
     var noiseCancel = document.createElement("select");
     container.appendChild(select);
  
-   
+
+
     var filelist = song_db.split("\n");
 
     select.innerHTML = filelist.map(t=>"./samples/"+t.trim())
     .map(t => `<option value=${t}>${t}</option>`).join("");
 
-    audio.src = '/samples/song.mp3';
+    audio.src = './samples/song.mp3';
 
     select.addEventListener('input', function(e){
         audio.src = e.target.value; 
@@ -38,12 +39,7 @@ var audioTag= function(containerId) {
 
 export default audioTag;
 const song_db=
-`Sin2000.wav
-Sin4000.wav
-Sin440.wav
-Sin8000.wav
-backwards-drink.wav
-ball-ball-hard.wav
+`ball-ball-hard.wav
 ball-ball-hard2.wav
 ball-ball-light.wav
 ball-ball-light2.wav
