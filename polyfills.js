@@ -14,27 +14,25 @@ window.AudioContext = (function ()
 })();
 
 
-
-
-
-
 var con = new SimpleConsole({
     placeholder: "",
     id: "console",
     handleCommand: function (command)
     {
         try {
-            con.log(window.eq_stdin(command));
+            con.log(eq_stdin(command));
         } catch (error) {
             con.log(error);
         }
     },
     autofocus: true, // if the console is to be the primary interface of the page
     storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
-});
+})
+document.body.append(con.element);
+
 window.con = con;
 // add the console to the page
-document.getElementById("console") && document.getElementById("console").append(con) || document.body.append(con.element);
+
 window.log = con.log;
 window.logErr = con.logError;
 con.element.addEventListener("click",function () { this.querySelector("input").focus() });

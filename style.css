@@ -1,14 +1,15 @@
 .simple-console {
-    bottom: 20px;
+    bottom: 10px;
     min-width: 70vw;
     left:30vw;
     position: relative;
     background-color: black;
     color: white;
     overflow-y: scroll;
-    max-height:200px;
+
     margin-bottom:5px;;
     font-size:12px;
+    min-height:40px;
 }
 td{
   min-width:25px;
@@ -17,7 +18,7 @@ td{
   position:relative;
 }
 #overlay {
-  position: absolute; /* Sit on top of the page content */
+  position: fixed; /* Sit on top of the page content */
   display: 'block'; /* Hidden by default */
   width: 100%; /* Full width (cover the whole page) */
   height: 100%; /* Full height (cover the whole page) */
@@ -25,7 +26,7 @@ td{
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0,0,0,0.2); /* Black background with opacity */
+  background-color: rgba(0,0,0,0.9); /* Black background with opacity */
   z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
   cursor: pointer; /* Add a pointer on hover */
 }
@@ -42,8 +43,7 @@ td{
   -ms-transform:translate(-50%,-50%)
 }
 body{
-  background-color: #4444;
-  color:#eeeeee
+
   position: fixed;
   overflow:hidden;
   height: 100%;

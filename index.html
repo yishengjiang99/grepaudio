@@ -11,19 +11,20 @@
 </head>
 
 <body>
-
+    <div id="overlay" title="Click to turn off the overlay effect" style="display: block;">
+        <div class="text">overlay blocker</div>
+        <div class="text"><br>
+            <br><span style="font-size:20px;" class="w3-black w3-padding w3-hide-medium w3-hide-small">
+                Click anywhere to turn off the overlay effect
+            </span></div>
+    </div>
     <div>
-        <h3>Mix Sounds </h3> <button style='display:inline' id='reset'>reset</button>
+        <h3>Mix Sounds </h3> 
     </div>
 
-    <div style='margin:20px;position:relative'>
-        <div id="overlay" title="Click to turn off the overlay effect" style="display: block;">
-            <div class="text">overlay blocker</div>
-            <div class="text"><br>
-                <br><span style="font-size:20px;" class="w3-black w3-padding w3-hide-medium w3-hide-small">
-                    Click anywhere to turn off the overlay effect
-                </span></div>
-        </div>
+    <div class='container' style='margin:20px;position:relative'>
+
+
         <table>
             <tr>
                 <td>
@@ -41,17 +42,16 @@
                             data-action="volume" /><span></span>
                     </div>
                 </td>
-                <td colspan=2 align=right>
+                <td colspan=2 style='text-alighn:right'>
 
                     <span id=ctrls>
-                        <audio controls src='/samples/song.mp3'>
+                        <audio controls src='./samples/song.mp3'>
+                           
                         </audio>
+                        <button id=mic-check>Mic Check!</button>
                     </span>
-                    <span> <button id=mic-check>Mic Check!</button>
-                    </span>
-
+           
                 </td>
-
             </tr>
             <tr>
                 <td rowspan=2 colspan=1>
@@ -62,22 +62,25 @@
 
                 </td>
                 <td>
-                    <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
-                    <div id='rx2'></div>
-                    <div id='rx2log'></div>
+           
+                    <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
+        
+
                 </td>
                 <td>
-                    <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
+                    <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
                 </td>
             </tr>
             <tr>
-                <td colspan=3>
-                    <div id="rx1"></div>
-
-
+                <td colspan=1>
+                    <div id=console></div>
                 </td>
             </tr>
         </table>
+        <div id="rx1"></div>
+        <div id='rx1'></div>
+        <div id='rx2log'></div>
+
     </div>
 
 
@@ -93,7 +96,7 @@
         let audioCtx, audioTag, eq;
 
         $("#overlay").onclick = function (e) {
-          $("#overlay").style.display='none';
+          $("#overlay").style.zIndex=-99;
         
             this.style.display='none';
      

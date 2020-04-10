@@ -18,7 +18,7 @@ var audioTag= function(containerId) {
    
     var filelist = song_db.split("\n");
 
-    select.innerHTML = filelist.map(t=>"/samples/"+t.trim())
+    select.innerHTML = filelist.map(t=>"./samples/"+t.trim())
     .map(t => `<option value=${t}>${t}</option>`).join("");
 
     audio.src = '/samples/song.mp3';

@@ -9,6 +9,16 @@
   <link rel="stylesheet" href="../simple-console.css">
   <script src="../simple-console.js"></script>
 
+
+function init() {
+    analyserView1 = new AnalyserView("view1");
+
+    initAudio();
+    analyserView1.initByteBuffer();
+    analyserView1.setAnalysisType(ANALYSISTYPE_WAVEFORM);
+    draw();
+}
+
 </head>fff
 
 <body>
@@ -26,6 +36,16 @@
     import PlayableAudioSource from '../audio_source.js';
 
     import Recorder from "./record.js"
+
+
+function init() {
+    analyserView1 = new AnalyserView("view1");
+
+    initAudio();
+    analyserView1.initByteBuffer();
+    analyserView1.setAnalysisType(ANALYSISTYPE_WAVEFORM);
+    draw();
+}
     var b = document.querySelector("button");
     var clicked = false;
     var chunks = [];
@@ -35,7 +55,7 @@
     var osc = ac.createOscillator();
     var dest = ac.createMediaStreamDestination();
     var mediaRecorder = new MediaRecorder(dest.stream);
-    var splitter  ac.createChannelSplitterNode();
+    var splitter  = ac.createChannelSplitterNode();
     osc.connect(dest);
 
     b.addEventListener("click",function (e) {
