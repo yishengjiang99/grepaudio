@@ -102,7 +102,7 @@ async function initializeContext(audioCtx)
     var ctx = audioCtx;
 
     audioTag = window.g_audioTag;
-    debugger;
+
     sinewave = audioCtx.createOscillator();
     pre_amp = audioCtx.createGain();
 
@@ -126,8 +126,6 @@ async function initializeContext(audioCtx)
     bqModule = new BiquadFilters(audioCtx);
     biquadFilters = bqModule.default_filters();
     activeInputSource = audioTagSource;
-
-
 
     activeInputSource.connect(inputAnalyzer);
     inputAnalyzer.connect(pre_amp);
