@@ -23,7 +23,6 @@ function io_samplers(ctx, fftSize){
     var input_freq =line_chart("#input_freq");
     var output_freq =line_chart("#output_freq");
 
-   // var amp_response =line_chart("#amp_response");
 
 
     var sample_timer;

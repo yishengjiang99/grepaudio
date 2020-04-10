@@ -104,46 +104,51 @@ async function initializeContext(audioCtx)
     audioTag = window.g_audioTag;
 
     sinewave = audioCtx.createOscillator();
-    pre_amp = audioCtx.createGain();
-
-    post_amp = audioCtx.createGain();
-    
-
+    pre_amp = audioCtx.createGain(1);
+    post_amp = audioCtx.createGain(1);
+        
     mod_compressor = DynamicCompressionModule(audioCtx);
     mod_compressor.addDefaults(NUM_FREQUENCY_BANDS);
     compressors = mod_compressor.list;
 
     analyzerNodeList = io_samplers(audioCtx,2048);
-
     inputAnalyzer = analyzerNodeList.inputAnalyzer;
     outputAnalyzer = analyzerNodeList.outputAnalyzer;
-    audioTagSource = audioTagSource || audioCtx.createMediaElementSource(audioTag);
 
-    audioTagSource.connect(inputAnalyzer);
-    inputAnalyzer.connect(pre_amp);
+    audioTagSource = audioTagSource || audioCtx.createMediaElementSource(audioTag);
+    activeInputSource = audioTagSource;
+
+    activeInputSource.connect(pre_amp);
+
+    var splitter = ctx.createChannelSplitter(2);
+    var splitter2 = ctx.createChannelSplitter(2);
+
+    activeInputSource.connect(splitter);
+    splitter.connect(inputAnalyzer);
+
 
 
     bqModule = new BiquadFilters(audioCtx);
     biquadFilters = bqModule.default_filters();
-    activeInputSource = audioTagSource;
+ 
 
-    activeInputSource.connect(inputAnalyzer);
-    inputAnalyzer.connect(pre_amp);
-    var cursor = pre_amp;
+    var cursor = splitter;
     for (const filter of biquadFilters) {
         cursor.connect(filter);
         cursor = filter;
     }
     cursor.connect(post_amp);
 
-    post_amp.connect(outputAnalyzer);
-    outputAnalyzer.connect(audioCtx.destination);
+    post_amp.connect(splitter2);
+    splitter.connect(audioCtx.destination)
+    splitter.connect(outputAnalyzer);
+    analyzerNodeList.run_samples(audioCtx);
 
     audioCtx.onstatechange = function (ev)
     {
         switch (ev.target.state) {
             case "running": analyzerNodeList.run_samples(audioCtx); break;
-            default: logrx1('ctx state' + ev.target.state); break;
+            default: analyzerNodeList.stop();
         }
         return false;
     }
@@ -162,11 +167,13 @@ function debug()
 
 window.eq_stdin = function (str)
 {
-    initializeContext();
+
+
+    debugger;
     const cmd = str.split(" ")[0];
     const arg1 = str.split(" ")[1] || "";
     const arg2 = str.split(" ")[2] || "";
-
+    audioCtx = window.g_audioctx;
     const now = audioCtx.currentTime;
 
     var resp = "";

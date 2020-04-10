@@ -24,7 +24,7 @@ var con = new SimpleConsole({
     handleCommand: function (command)
     {
         try {
-            con.log(stdin(command) || window.eq_stdin(command));
+            con.log(window.eq_stdin(command));
         } catch (error) {
             con.log(error);
         }
