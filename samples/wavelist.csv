@@ -1,44 +1,34 @@
-var audioTag= function(containerId) {
-    
-    var container = document.querySelector(containerId);
-
-    var audio = document.createElement("audio");
-    audio.onload=function(){
-      audio.addEventListener("input|progress|select|play|playing|pause|loadstart|loadeddata|loadedmetadatadurationchange", function(e){
-        log('player event '+e.type);
-      })
-    }
-    var select = document.createElement("select");
-    
-    select.style="height:33px; vertical-align:top;"
-
-    var noiseCancel = document.createElement("select");
-    container.appendChild(select);
- 
-   
-    var filelist = song_db.split("\n");
-
-    select.innerHTML = filelist.map(t=>"/samples/"+t.trim())
-    .map(t => `<option value=${t}>${t}</option>`).join("");
-
-    audio.src = '/samples/song.mp3';
-
-    select.addEventListener('input', function(e){
-        audio.src = e.target.value; 
-        audio.loop=true;
-        audio.oncanplay = audio.play();
-    });
-    audio.setAttribute("data-filelist", filelist);
-
-      
-    return audio;
-}
-
-
-
-export default audioTag;
-const song_db=
-`Sin2000.wav
+A0.mp3
+A1.mp3
+A2.mp3
+A3.mp3
+A4.mp3
+A5.mp3
+A6.mp3
+A7.mp3
+C1.mp3
+C2.mp3
+C3.mp3
+C5.mp3
+C6.mp3
+C7.mp3
+C8.mp3
+Djembe.wav
+Ds1.mp3
+Ds2.mp3
+Ds3.mp3
+Ds4.mp3
+Ds5.mp3
+Ds6.mp3
+Ds7.mp3
+Fs1.mp3
+Fs2.mp3
+Fs3.mp3
+Fs4.mp3
+Fs5.mp3
+Fs6.mp3
+Fs7.mp3
+Sin2000.wav
 Sin4000.wav
 Sin440.wav
 Sin8000.wav
@@ -75,6 +65,7 @@ clapping-crowd.wav
 conga-rhythm.wav
 crunched-up-paper.wav
 ethnic8.wav
+filelist
 filter-noise-1.wav
 filter-noise-2.wav
 filter-noise-3.wav
@@ -89,8 +80,10 @@ hihat-short.wav
 human-voice.wav
 hype-crowd.wav
 j-pines-bigger-snare.wav
+lana.mp3
 laughter.wav
 lo-drum.wav
+mp3list.csv
 muted-snare.wav
 o-daiko.wav
 penny-spinning.wav
@@ -103,6 +96,8 @@ screeching-car.wav
 siren.wav
 slit-drum-hi.wav
 slit-drum-low.wav
+song.mp3
+spl_of_notes_on_filter
 stick-cue-hard1.wav
 stick-cue-hard2.wav
 stick-cue-hard3.wav
@@ -120,40 +115,10 @@ ticking.wav
 timbale.wav
 tingly-windthing.wav
 tingly-windthing2.wav
+toxic.mp3
 water-bowl.wav
 water-glass.wav
+wavelist.csv
 waves.wav
 white-noise-mono.wav
 white-noise.wav
-A0.mp3
-A1.mp3
-A2.mp3
-A3.mp3
-A4.mp3
-A5.mp3
-A6.mp3
-A7.mp3
-C1.mp3
-C2.mp3
-C3.mp3
-C5.mp3
-C6.mp3
-C7.mp3
-C8.mp3
-Ds1.mp3
-Ds2.mp3
-Ds3.mp3
-Ds4.mp3
-Ds5.mp3
-Ds6.mp3
-Ds7.mp3
-Fs1.mp3
-Fs2.mp3
-Fs3.mp3
-Fs4.mp3
-Fs5.mp3
-Fs6.mp3
-Fs7.mp3
-lana.mp3
-song.mp3
-toxic.mp3`;

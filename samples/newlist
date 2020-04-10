@@ -1,44 +1,5 @@
-var audioTag= function(containerId) {
-    
-    var container = document.querySelector(containerId);
-
-    var audio = document.createElement("audio");
-    audio.onload=function(){
-      audio.addEventListener("input|progress|select|play|playing|pause|loadstart|loadeddata|loadedmetadatadurationchange", function(e){
-        log('player event '+e.type);
-      })
-    }
-    var select = document.createElement("select");
-    
-    select.style="height:33px; vertical-align:top;"
-
-    var noiseCancel = document.createElement("select");
-    container.appendChild(select);
- 
-   
-    var filelist = song_db.split("\n");
-
-    select.innerHTML = filelist.map(t=>"/samples/"+t.trim())
-    .map(t => `<option value=${t}>${t}</option>`).join("");
-
-    audio.src = '/samples/song.mp3';
-
-    select.addEventListener('input', function(e){
-        audio.src = e.target.value; 
-        audio.loop=true;
-        audio.oncanplay = audio.play();
-    });
-    audio.setAttribute("data-filelist", filelist);
-
-      
-    return audio;
-}
-
-
-
-export default audioTag;
-const song_db=
-`Sin2000.wav
+Djembe.wav
+Sin2000.wav
 Sin4000.wav
 Sin440.wav
 Sin8000.wav
@@ -156,4 +117,4 @@ Fs6.mp3
 Fs7.mp3
 lana.mp3
 song.mp3
-toxic.mp3`;
+toxic.mp3
