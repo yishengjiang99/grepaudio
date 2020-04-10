@@ -1,0 +1,10 @@
+<script src="https://unpkg.com/@webcomponents/webcomponentsjs@^2/webcomponents-bundle.js"></script>
+<script src="https://unpkg.com/tone"></script>
+<script src="https://unpkg.com/@tonejs/ui"></script>
+<div id=record>
+ 
+</div>
+<script>
+  var tone = new Tone(g_ctx);
+  $("#record").innerHTML = tone.context.latencyHint;
+</script>

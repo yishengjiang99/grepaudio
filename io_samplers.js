@@ -18,8 +18,8 @@ function io_samplers(ctx, fftSize){
     inputAnalyzer.fftSize = fftSize;
 
 
-    var canvas1 =line_chart("#canvas1");
-    var canvas2 =line_chart("#canvas2");
+    // var canvas1 =line_chart("#canvas1");
+    // var canvas2 =line_chart("#canvas2");
     var input_freq =line_chart("#input_freq");
     var output_freq =line_chart("#output_freq");
 
@@ -37,7 +37,7 @@ function io_samplers(ctx, fftSize){
        function sample(){
 
            if( last_sampled_at != null && _ctx.currentTime - last_sampled_at < 1){
-                return;
+//                return;
            }
             last_sampled_at = _ctx.currentTime;
 
@@ -65,8 +65,8 @@ function io_samplers(ctx, fftSize){
            var outputrms = Math.floor(Math.sqrt(sum));
             logrx1(`rsm:${inputrms} ${outputrms} + lag ${info.baseLatency}`)
 
-            canvas1.drawFrame(dataArrayIn);
-            canvas2.drawFrame(dataArrayOut);
+            // canvas1.drawFrame(dataArrayIn);
+            // canvas2.drawFrame(dataArrayOut);
 
 //            amp_response.drawTimeseries(dataArrayIn, dataArrayOut);
 

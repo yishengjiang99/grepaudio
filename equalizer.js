@@ -45,13 +45,7 @@ getMicBtn.onclick = () =>
 {
     PlayableAudioSource(audioCtx).getAudioDevice(audioCtx).then(source => source.connect(analyzerNodeList.inputAnalyzer));
 }
-document.body.addEventListener("click",function (e) { initializeContext() },{ once: true });
 
-
-function setupConfig2()
-{
-
-}
 
 const hz_bands = new Float32Array(
     32,64,125,
@@ -96,37 +90,19 @@ window.post_data = function (arr, arg1, arg2)
 
     else if(arr=='freq_resp_update'){
         var chartdata = arg1;
+        var meters =this.document.querySelectorAll("meter.freq_resp_meter");
 
-
-        new Chart(bigchart_ctx, {
-            type: 'bar',
-            dataset: chartdata,
-            options: {title: {display: true, text: "Freq Response"}}
-
-        });
+        chartdata.forEach((v,i)=> meters[i].value = v);
     }
 }
 
 
-async function initializeContext()
+async function initializeContext(audioCtx)
 {
-    if (!audioCtx) {
-        log("'creat'")
-        audioCtx = await new AudioContext();
-    } else {
-        return;
-    }
+    var ctx = audioCtx;
 
-    audioCtx.onstatechange = function (ev)
-    {
-        switch (ev.target.state) {
-            case "running": analyzerNodeList.run_samples(audioCtx); break;
-            default: logrx1('ctx state' + ev.target.state); break;
-        }
-        return false;
-    }
-    log("in init")
-    audioTag = initAudioTag("#ctrls");
+    audioTag = window.g_audioTag;
+    debugger;
     sinewave = audioCtx.createOscillator();
     pre_amp = audioCtx.createGain();
 
@@ -165,6 +141,14 @@ async function initializeContext()
     post_amp.connect(outputAnalyzer);
     outputAnalyzer.connect(audioCtx.destination);
 
+    audioCtx.onstatechange = function (ev)
+    {
+        switch (ev.target.state) {
+            case "running": analyzerNodeList.run_samples(audioCtx); break;
+            default: logrx1('ctx state' + ev.target.state); break;
+        }
+        return false;
+    }
 }
 
 
@@ -327,4 +311,9 @@ function extractVideoID(url)
     } else {
         return null;
     }
+}
+
+export default {
+    initializeContext,
+    eq_stdin
 }

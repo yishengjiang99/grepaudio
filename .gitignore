@@ -5,3 +5,17 @@ etc/csr.pem
 etc/key.pem
 .DS_Store
 dist
+simulate/helpers/webaudiox.absolutenormalizer.js
+simulate/helpers/webaudiox.adaptativenormalizer.js
+simulate/helpers/webaudiox.analyser2canvas.js
+simulate/helpers/webaudiox.analyser2volume.js
+simulate/helpers/webaudiox.analyserbeatdetector.js
+simulate/helpers/webaudiox.analyserbeatdetectordatgui.js
+simulate/helpers/webaudiox.binaural.js
+simulate/helpers/webaudiox.bytetonormalizedfloat32array.js
+simulate/helpers/webaudiox.gamesounds.js
+simulate/helpers/webaudiox.jsfx.js
+simulate/helpers/webaudiox.lineout.js
+simulate/helpers/webaudiox.loadbuffer.js
+simulate/helpers/webaudiox.shim.js
+simulate/helpers/webaudiox.three.js
