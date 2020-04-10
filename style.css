@@ -44,13 +44,8 @@ td{
 body{
   background-color: #4444;
   color:#eeeeee
-  position:fixed;
+  position: fixed;
   overflow:hidden;
-}/**
- * Body CSS
- */
-html,
-body {
   height: 100%;
   position:fixed;
   overflow:hidden;

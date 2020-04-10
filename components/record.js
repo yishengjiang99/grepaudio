@@ -6,39 +6,63 @@ let worker;
 let btn;
 let recording = false;
 let audioTag;
+
 function Recorder(ctx){
     if(btn) return btn;''
    var ctx = ctx;
+   audioTag = document.createElement('audio');
+   audioTag.controls=true;
+
    destination = ctx.createMediaStreamDestination();
-   recorder = new MediaRecorder();
+   recorder = new MediaRecorder(destination.stream);
+  
    recorder.ondataavailable = function(e){
-       chunks.push(evt.data);
+    queue.push(e.data);
    }
+   
    recorder.onstop=(e)=>{
-    let blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
-    audioTag = document.createElement('audio');
+    let blob = new Blob(queue, { 'type' : 'audio/ogg; codecs=opus' });
+
     audioTag.src = URL.createObjectURL(blob);
    }
    
    btn = document.createElement("button");
    btn.innerText = "record";
+
+   var btnstop = document.createElement("button");
+   btnstop.innerText = "stop";
+  
    btn.onclick=(e)=>{
-       if(recording){
-            recorder.stop();
+       if(recording===true){
+           debugger;
+
             recorder.requestData();
+            window.removeEventListener('click',this);
             recording=false;
+            btn.innerText='resume';
        }else{
+            
+            if(recorder.state=='inactive') recorder.start();
+            else recorder.resume();
+
             recording=true;
-            recorder.start();
-            tn.innerText("stop")
+            btn.innerText = 'done'
        }
    }
-   
-   var div = document.createElement("div");
+  btnstop.onclick = e =>{
+      recorder.stop();
+      recorder.requestData();
+  }
+
+  var div = document.createElement("div");
+
    div.appendChild(audioTag);
    div.appendChild(btn);
+   div.appendChild(btnstop);
 
-   return div;
+   return{
+       div, btn, audioTag, recording 
+   };
 
 }
 

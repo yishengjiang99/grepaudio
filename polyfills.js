@@ -14,6 +14,31 @@ window.AudioContext = (function ()
 })();
 
 
+
+
+
+
+var con = new SimpleConsole({
+    placeholder: "",
+    id: "console",
+    handleCommand: function (command)
+    {
+        try {
+            con.log(stdin(command) || window.eq_stdin(command));
+        } catch (error) {
+            con.log(error);
+        }
+    },
+    autofocus: true, // if the console is to be the primary interface of the page
+    storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
+});
+window.con = con;
+// add the console to the page
+document.getElementById("console") && document.getElementById("console").append(con) || document.body.append(con.element);
+window.log = con.log;
+window.logErr = con.logError;
+con.element.addEventListener("click",function () { this.querySelector("input").focus() });
+
 window.onerror = function (msg,url,lineNo,columnNo,error)
 {
     con.log([msg,url,lineNo,columnNo,error].join(', '))
@@ -28,48 +53,21 @@ window.logErr = function (text)
     window.log(text);
 
 }
-
-
-
-var con;
-
-if(!con){
-con = new SimpleConsole({
-    placeholder: "",
-    id: "console",
-    handleCommand: function (command)
-    {
-        try {
-            con.log(window.eq_stdin(command));
-        } catch (error) {
-            con.log(error);
-        }
-    },
-    autofocus: true, // if the console is to be the primary interface of the page
-    storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
-  });
-
-  // add the console to the page
-  document.body.append(con.element);
-}
-window.log = con.log;
-window.logErr = con.logError;
-
-con.element.addEventListener("click", function(){ this.querySelector("input").focus() });
-
-
 const $ = (selector) => document.querySelector(selector);
-document.onload = function(){
+document.onload = function ()
+{
     $('.canvas_wrapper')
 }
-function wrap(el, wrapper) {
-    el.parentNode.insertBefore(wrapper, el);
+function wrap(el,wrapper)
+{
+    el.parentNode.insertBefore(wrapper,el);
     wrapper.appendChild(el);
 }
-HTMLElement.prototype.wrap = function (parent_tag) { 
-    let p= document.createElement(parent_tag);
+HTMLElement.prototype.wrap = function (parent_tag)
+{
+    let p = document.createElement(parent_tag);
     p.appendChild(this)
     return p;
 }
 
-const bigchart_ctx  = $("#big-chart") &&  $("#big-chart").getContext('2d');
+const bigchart_ctx = $("#big-chart") && $("#big-chart").getContext('2d');

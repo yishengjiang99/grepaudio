@@ -1,10 +1,106 @@
-<script src="https://unpkg.com/@webcomponents/webcomponentsjs@^2/webcomponents-bundle.js"></script>
-<script src="https://unpkg.com/tone"></script>
-<script src="https://unpkg.com/@tonejs/ui"></script>
-<div id=record>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>rt</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../simple-console.css">
+  <script src="../simple-console.js"></script>
+
+</head>fff
+
+<body>
+
+
+
+    <p>Encoding a pure sine wave to an Opus file </p>
+    <button>Make sine wave</button>
+    <audio controls></audio>
+  <script src='../polyfills.js'></script>
+
+
+  <script type='module'>
+
+    import PlayableAudioSource from '../audio_source.js';
+
+    import Recorder from "./record.js"
+    var b = document.querySelector("button");
+    var clicked = false;
+    var chunks = [];
+  
+    var ac;
+    var ac = new AudioContext();
+    var osc = ac.createOscillator();
+    var dest = ac.createMediaStreamDestination();
+    var mediaRecorder = new MediaRecorder(dest.stream);
+    var splitter  ac.createChannelSplitterNode();
+    osc.connect(dest);
+
+    b.addEventListener("click",function (e) {
+      if (!clicked)
+      {
+        if(ac.state !=='running') ac.resume();
+        mediaRecorder.start();
+
+        e.target.innerHTML = "Stop recording";
+        clicked = true;
+      } else
+      {
+        mediaRecorder.stop();
+        osc.stop(0);
+        e.target.disabled = true;
+      }
+    });
+
+    mediaRecorder.ondataavailable = function (evt) {
+      // push each chunk (blobs) in an array
+      chunks.push(evt.data);
+    };
+
+    mediaRecorder.onstop = function (evt) {
+      // Make blob out of our blobs, and open it.
+      var blob = new Blob(chunks,{ 'type': 'audio/ogg; codecs=opus' });
+      document.querySelector("audio").src = URL.createObjectURL(blob);
+    };
+    var ctx = ac;
+   
  
-</div>
-<script>
-  var tone = new Tone(g_ctx);
-  $("#record").innerHTML = tone.context.latencyHint;
-</script>
+
+    const keys = 'asdfg'.split("");
+    const notes = 'CDEFGA'.split("")
+
+
+
+    var gain = ctx.createGain(1);
+
+    var delay = ctx.createDelay(0.5);
+
+    osc.connect(gain);
+    gain.connect(splitter);
+
+    gain.connect(ctx.destination);
+
+    var delay = ctx.createDelay(1);
+
+    window.onkeydown = function (evt) {
+      con.log("keydown " + ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(1, now() + 1.0);
+
+    }
+
+    window.onkeypress = function (evt) {
+      con.log("keypress " + ctx.currentTime);
+
+    }
+
+    window.onkeyup = function (evt) {
+
+      con.log("keyup " + ctx.currentTime);
+
+    }
+
+
+  </script>
+  </script>
