@@ -1,5 +1,4 @@
 import BiquadFilters from './biquadFilters.js'
-
 import io_samplers from './io_samplers.js'
 import DynamicCompressionModule from './compression.js';
 import PlayableAudioSource from './audio_source.js';
@@ -26,9 +25,6 @@ let letancySamplers = [];
 var bqModule;
 
 
-const startBtn = document.getElementById("start");
-const getMicBtn = document.querySelector("#mic-check")
-const playButton = document.getElementById("playBtn");
 const rx1 = document.getElementById("rx1");
 const volumeControl = document.getElementById("volume");
 const volumeControl2 = document.getElementById("volume2");
@@ -41,11 +37,6 @@ window.logrx2 = (txt) => rx2.innerHTML = txt;
 
 volumeControl.addEventListener('input',() => pre_amp.gain.value = event.target.value);
 volumeControl2.addEventListener('input',() => post_amp.gain.value = event.target.value);
-getMicBtn.onclick = () =>
-{
-    PlayableAudioSource(audioCtx).getAudioDevice(audioCtx).then(source => source.connect(analyzerNodeList.inputAnalyzer));
-}
-
 
 const hz_bands = new Float32Array(
     32,64,125,
@@ -97,26 +88,18 @@ window.post_data = function (arr, arg1, arg2)
 }
 
 
-async function initializeContext(audioCtx)
+async function initializeContext(audioCtx, activeInputSource)
 {
-    var ctx = audioCtx;
+    var ctx = audioCtx ||  window.g_audioCtx;
 
-    audioTag = window.g_audioTag;
 
     sinewave = audioCtx.createOscillator();
     pre_amp = audioCtx.createGain(1);
     post_amp = audioCtx.createGain(1);
         
-    mod_compressor = DynamicCompressionModule(audioCtx);
-    mod_compressor.addDefaults(NUM_FREQUENCY_BANDS);
-    compressors = mod_compressor.list;
-
     analyzerNodeList = io_samplers(audioCtx,2048);
     inputAnalyzer = analyzerNodeList.inputAnalyzer;
     outputAnalyzer = analyzerNodeList.outputAnalyzer;
-
-    audioTagSource = audioTagSource || audioCtx.createMediaElementSource(audioTag);
-    activeInputSource = audioTagSource;
 
     activeInputSource.connect(pre_amp);
 
@@ -131,27 +114,31 @@ async function initializeContext(audioCtx)
     bqModule = new BiquadFilters(audioCtx);
     biquadFilters = bqModule.default_filters();
  
+    mod_compressor = DynamicCompressionModule(audioCtx);
+    mod_compressor.addDefaults(biquadFilters.length);
+    compressors = mod_compressor.list;
 
     var cursor = splitter;
-    for (const filter of biquadFilters) {
+    for (let i in biquadFilters) {
+        const filter = biquadFilters[i];
         cursor.connect(filter);
+        compressors[i].connect(filter.gain);
         cursor = filter;
     }
     cursor.connect(post_amp);
-
     post_amp.connect(splitter2);
-    splitter.connect(audioCtx.destination)
-    splitter.connect(outputAnalyzer);
+    splitter2.connect(audioCtx.destination)
+    splitter2.connect(outputAnalyzer);
   
 
 
     analyzerNodeList.run_samples(audioCtx);
 
     white_noise = PlayableAudioSource(audioCtx).random_noise(audioCtx);
-    white_noise.connect(post_amp);
+    white_noise.connect(activeInputSource);
     white_noise.start();
-
     white_noise.stop(audioCtx.currentTime+2);
+    
     audioCtx.onstatechange = function (ev)
     {
         switch (ev.target.state) {

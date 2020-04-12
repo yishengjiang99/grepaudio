@@ -4,7 +4,7 @@ function DynamicCompressionModule(audioCtx)
     var compressors =[];
 
     var attributes =[
-         ['threshold', -24, -100, 0],
+         ['threshold', -1, -100, 0],
          ['knee', 30, 0, 40],
          ['ratio', 12, 1, 20],
         ['attack', 0.03, 0, 1],

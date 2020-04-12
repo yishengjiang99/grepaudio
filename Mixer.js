@@ -1,42 +1,3 @@
-
-GainNode.prototype.toString = function(){
-  return this.numberOfInputs();
-}
-
-
-
-
-
-const loadURLTo = function (url, output){
-  var source = output.context.createBufferSource()
-  const xhr = new XMLHttpRequest();
-
-  function loadURL(){
-    xhr.open("get", url,true);
-    xhr.responseType='arraybuffer';
-    source.connect(output);
-    var counter = 0;
-    xhr.onload= function(evt){
-      counter++;
-      log('loading '+url+ ' cpounter '+counter)
-      output.context.decodeAudioData(xhr.response, function(processed){
-          source.buffer = processed;
-          counter --;
-      });
-      source.autoplay=true;
-    }
-    xhr.onloadend = function(evt){
-      if(source.queue.length){
-        var next = source.queue.unshift();
-        loadURL(next);
-      }
-    }
-    xhr.send();
-  }
-
-  return source;
-}
-
 export default async function(ctx,containerId) {
   var inputs = [null,null,null,null,null];
   var channelQueues = [[],[],[],[],[]];
@@ -44,35 +5,37 @@ export default async function(ctx,containerId) {
   var masterGain = ctx.createGain(1);
   var controls = [ctx.createGain(1), ctx.createGain(1), ctx.createGain(1), ctx.createGain(1), ctx.createGain(1)];
 
-  const loadURLTo = function (url, output){
+
+  const loadURLTo = function (url, index){
     var source =  ctx.createBufferSource();
-
-
 
     function loadURL(url){
       const xhr = new XMLHttpRequest();
       xhr.open("get", url,true);
       xhr.responseType='arraybuffer';
-      source.connect(output);
       var counter = 0;
+    
       xhr.onload= function(evt){
         counter++;
         log('loading '+url+ ' cpounter '+counter)
-        output.context.decodeAudioData(xhr.response, function(processed){
+        ctx.decodeAudioData(xhr.response, function(processed){
             source.buffer = processed;
+             source.connect(controls[index]);
             counter --;
-        });
+           source.start();
+          });
         source.autoplay=true;
       }
       xhr.onloadend = function(evt){
-        if(source.queue.length){
+        if(channelQueues[index].length){
           var next = source.queue.unshift();
           loadURL(next);
         }
       }
       xhr.send();
     }
-
+ 
+    loadURL(url);
     return source;
   }
 
@@ -86,7 +49,7 @@ export default async function(ctx,containerId) {
       channelQueues[index].push(url);
     }else{
 
-      inputs[index] = loadURLTo(url, controls[index]);
+      inputs[index] = loadURLTo(url,index);
     }
 
   };
@@ -102,7 +65,11 @@ export default async function(ctx,containerId) {
 }
 
 const pauseAll = function(){
-    inputs.forEach( input=> input !== null & input.pause());;
+    inputs.forEach( input=>  {
+      input !== nul;
+      input.stop();
+      inputs[i]=null; 
+   });
 }
 const playAll =  function(){
   inputs.forEach((_,i)=> play(i) );
@@ -110,34 +77,32 @@ const playAll =  function(){
 var outputNode = masterGain;
 
 function connect(node) {this.masterGain.connect(node)};
-
-
-
 var container = document.getElementById(containerId);
 
 ['notes.csv', 'drum.csv', 'songs.csv'].forEach( async (indexfile, index)=>{
   const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split(/(\s+)/));
 
 
-  var form = document.createElement("form");
   var select = document.createElement("select");
   select.setAttribute("tabindex", index);
   select.innerHTML = song_db.filter(t=>t.trim()!=="").map(t=>"samples/"+t.trim()).map(n => `<option value=${n}>${n.replace('samples/','')}</option>`).join("");
-  form.onsubmit = e => {
+  var apply = document.createElement("button")
+  apply.innerHTML="go";
+  container.appendChild(select)
+  container.appendChild(apply); 
+
+  apply.onclick = e => {
+     add_from_URL(select.value, index);
     e.preventDefault();
     return false;
   }
-  form.addEventListener("input|submit|change|click", function(e){
+ 
+
+  select.addEventListener("input|submit|change|click", function(e){
     e.preventDefault();
     add_from_URL(select.value, index);
-    return true;
+    return false;
   });
-  var apply = document.createElement("input")
-  apply.type='submit';
-  form.appendChild(select)
-  form.appendChild(apply);
-  container.appendChild(form);
-
 })
 
 var playBtn = document.createElement("button");
@@ -165,11 +130,6 @@ return {
    add_audio_tag, playAll, add_from_URL,
    pauseAll, connect
   }
-}
-
-
-GainNode.prototype.toString = function(){
-  return this.numberOfInputs();
 }
 
 const bindAudioTag = function(tagId, output){
