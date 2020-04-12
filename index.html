@@ -1,3 +1,4 @@
+
 <html lang="en">
 
 <head>
@@ -19,7 +20,7 @@
             </span></div>
     </div>
     <div>
-        <h3>Mix Sounds </h3> 
+        <h3>Mix Sounds </h3>
     </div>
 
     <div class='container' style='margin:20px;position:relative'>
@@ -42,15 +43,23 @@
                             data-action="volume" /><span></span>
                     </div>
                 </td>
-                <td colspan=2 style='text-alighn:right'>
+                <td colspan=2 style='text-align:right'>
 
                     <span id=ctrls>
-                        <audio controls src='./samples/song.mp3'>
-                           
-                        </audio>
-                        <button id=mic-check>Mic Check!</button>
+                          <button id='miccheck'>use microphone</button>
+                          <select id='selectsong'>
+                            <option value='Ds4.mp3'>Ds4.mp3</option><option value='Ds5.mp3'>Ds5.mp3</option><option value='Ds6.mp3'>Ds6.mp3</option>
+
+                            <option value='Ds7.mp3'>Ds7.mp3</option><option value='Fs1.mp3'>Fs1.mp3</option><option value='Fs2.mp3'>Fs2.mp3</option>
+                            <option value='Fs3.mp3'>Fs3.mp3</option><option value='Fs4.mp3'>Fs4.mp3</option><option value='Fs5.mp3'>Fs5.mp3</option>
+                            <option value='Fs6.mp3'>Fs6.mp3</option><option value='Fs7.mp3'>Fs7.mp3</option><option value='lana.mp3'>lana.mp3</option>
+                            <option value='song.mp3'>song.mp3</option><option value='toxic.mp3'>toxic.mp3</option><option value=''></option>
+                          </option>
+                        </select>
+
+
                     </span>
-           
+
                 </td>
             </tr>
             <tr>
@@ -62,10 +71,7 @@
 
                 </td>
                 <td>
-           
                     <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
-        
-
                 </td>
                 <td>
                     <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
@@ -73,6 +79,7 @@
             </tr>
             <tr>
                 <td colspan=1>
+                    <audio id='audio' controls autoplay=true src='./samples/song.mp3'></audio>
                     <div id=console></div>
                 </td>
             </tr>
@@ -90,22 +97,25 @@
     <script type='module'>
 
         import equilizer from "./equalizer.js";
-        import Recorder from './components/record.js';
-        import AudioTag from './components/audiotag.js';
-        
+        import Mixer from './Mixer.js';
+
+
         let audioCtx, audioTag, eq;
 
-        $("#overlay").onclick = function (e) {
+        $("#overlay").onclick = async function (e) {
           $("#overlay").style.zIndex=-99;
-        
+
             this.style.display='none';
-     
+
             audioCtx = new AudioContext();
-            // audioCtx.start();
-            audioTag = AudioTag("#ctrls");
+
+            var audioTag =await Mixer(audioCtx, "ctrls");
+  
+            audioTag.add_audio_tag("audio");
             window.g_audioTag = audioTag;
             window.g_audioCtx = audioCtx;
-            eq = equilizer.initializeContext(audioCtx);
+
+            eq = equilizer.initializeContext(audioCtx, audioTag.outputNode);
           //  const recorder = new Recorder();
 
           }
@@ -118,3 +128,4 @@
 </body>
 
 </html>
+
