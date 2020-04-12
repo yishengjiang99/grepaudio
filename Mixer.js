@@ -20,9 +20,9 @@ export default async function(ctx,containerId) {
         log('loading '+url+ ' cpounter '+counter)
         ctx.decodeAudioData(xhr.response, function(processed){
             source.buffer = processed;
-             source.connect(controls[index]);
+            source.connect(controls[index]);
             counter --;
-           source.start();
+            source.start();
           });
         source.autoplay=true;
       }
@@ -30,6 +30,12 @@ export default async function(ctx,containerId) {
         if(channelQueues[index].length){
           var next = source.queue.unshift();
           loadURL(next);
+        }else{
+          source.onended=function(evttt){
+            con.log('gc self'); 
+              inputs[index] = null;;
+          }
+          inputs[index] = null;
         }
       }
       xhr.send();
