@@ -19,3 +19,4 @@ simulate/helpers/webaudiox.lineout.js
 simulate/helpers/webaudiox.loadbuffer.js
 simulate/helpers/webaudiox.shim.js
 simulate/helpers/webaudiox.three.js
+web-audio-examples
