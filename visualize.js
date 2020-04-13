@@ -6,25 +6,25 @@ export function line_chart(canvasId){
         canvas=document.createElement("canvas");
         canvas.setAttribute("id", canvasId);
         document.body.append(canvas);
-    } 
+    }
     var canvasCtx = canvas.getContext("2d");
     canvas.setAttribute('width',canvas.parentElement.clientWidth);
     canvas.setAttribute('height',canvas.parentElement.clientHeight);
     var WIDTH = canvas.width;
-    var HEIGHT = canvas.height;
+    var HEIGHT = canvas.height-15; // -15 for axis label;
     canvasCtx.clearRect(0,0,WIDTH,HEIGHT);
     canvasCtx.lineWidth = 2;
     canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
 
     var t = 0;
-    
+
     function drawTimeseries(dataArray){
-        
+
         var bufferLength = dataArray.length;
-        
+
         canvasCtx.beginPath();
         var sliceWidth = 1;
-        
+
         var ysum=0;
         var t0 = 0;
 
@@ -36,13 +36,13 @@ export function line_chart(canvasId){
 
             if(i - t0 < 2500){
                 ysum += (y*y);
-                continue;   
+                continue;
             }
             y = Math.sqrt(ysum);
                 t++;
                 t0 = i;
                 ysum=0;
-                
+
             if (i === 0) {
                 canvasCtx.moveTo(t,y);
             } else {
@@ -66,9 +66,9 @@ export function line_chart(canvasId){
     function drawFrame(dataArray){
         var bufferLength = dataArray.length;
         canvasCtx.fillStyle = 'rgb(200, 200, 200)';
-        canvasCtx.fillRect(0,0,WIDTH,HEIGHT);
+        canvasCtx.fillRect(0,20,WIDTH,HEIGHT);
 
-        canvasCtx.beginPath();  
+        canvasCtx.beginPath();
 
         var x = 0;
         var sliceWidth = Math.floor(WIDTH/bufferLength)+1;
@@ -88,10 +88,10 @@ export function line_chart(canvasId){
 
     }
 
-    function drawBars(dataArray){
+    function drawBars(dataArray,fftsize=255, samplerate=44180){
         var bufferLength = dataArray.length;
         canvasCtx.fillStyle = 'rgb(0, 0, 0)';
-        canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+        canvasCtx.fillRect(0, 15, WIDTH, HEIGHT);
 
         var barWidth = (WIDTH / 80) * 2.5;
         var barHeight;
@@ -106,12 +106,23 @@ export function line_chart(canvasId){
 
           x += barWidth + 1;
         }
-        
+        for(var i = 0; i < 80; i+=5) {
+          barHeight = dataArray[i];
+
+          canvasCtx.fillStyle = 'rgb(255,255,255)';
+          canvasCtx.strokeStyle='rgb(255,0,0)';
+          canvasCtx.textAlign ='center';
+          var f = i/fftsize*samplerate;
+          canvasCtx.strokeText(f+'hz', x, HEIGHT );
+
+          x += barWidth + 1;
+        }
+
     }
     return {
         canvas,canvasCtx,WIDTH,HEIGHT,
         drawFrame,drawBars,drawTimeseries
-    }  
+    }
 }
 
 
@@ -125,7 +136,7 @@ export function time_series(canvasId){
     canvasCtx.clearRect(0,0,WIDTH,HEIGHT);
     canvasCtx.lineWidth = 2;
     canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
-    
+
 
 
 }
@@ -135,6 +146,7 @@ function dbToY(db) {
     var y = (0.5 * height) - pixelsPerDb * db;
     return y;
 }
+
 export function drawCurve() {
 
         var curveColor = "rgb(192,192,192)";
@@ -149,12 +161,12 @@ export function drawCurve() {
     var pixelsPerDb;
     var width;
     var height;
-    
+
     function dbToY(db) {
         var y = (0.5 * height) - pixelsPerDb * db;
         return y;
     }
-        
+
 
 
     canvasContext.fillStyle = "rgb(0, 0, 0)";
@@ -167,25 +179,25 @@ export function drawCurve() {
     canvasContext.moveTo(0, 0);
 
     pixelsPerDb = (0.5 * height) / dbScale;
-    
+
     var noctaves = 11;
 
     var nyquist = 0.5 * context.sampleRate;
 
     canvasContext.stroke();
-    
+
     canvasContext.beginPath();
-    
+
     canvasContext.lineWidth = 1;
-    
+
     canvasContext.strokeStyle = gridColor;
-    
-    
-    
+
+
+
     // Draw frequency scale.
     for (var octave = 0; octave <= noctaves; octave++) {
         var x = octave * width / noctaves;
-        
+
         canvasContext.strokeStyle = gridColor;
         canvasContext.moveTo(x, 30);
         canvasContext.lineTo(x, height);
@@ -202,9 +214,9 @@ export function drawCurve() {
     canvasContext.moveTo(0, 0.5 * height);
     canvasContext.lineTo(width, 0.5 * height);
     canvasContext.stroke();
-    
+
     // Draw decibel scale.
-    
+
     for (var db = -dbScale; db < dbScale; db += 5) {
         var y = dbToY(db);
         canvasContext.strokeStyle = curveColor;
@@ -292,7 +304,7 @@ export function plot2(){
       function tickScale(axis) {
         // Compute scale
         var tickInfo = toms463(axis.min, axis.max, 4);
-      
+
         // Generate ticks now.
         var ticks = [];
         var val = tickInfo[0];
@@ -302,14 +314,14 @@ export function plot2(){
         }
         return ticks;
       }
-      
+
       function drawCurve() {
         var width = 1000;
 
         var freq = new Float32Array(width);
         var magResponse = new Float32Array(width);
         var phaseResponse = new Float32Array(width);
-       
+
 
         for (var k = 0; k < width; ++k) {
           var f = k / width;
@@ -328,7 +340,7 @@ export function plot2(){
           phaseDeg = 180 / Math.PI * phaseResponse[k];
           magData.push([freq[k] , db]);
           phaseData.push([freq[k], phaseDeg]);
-        } 
+        }
 
         // Figure out the y axis range based on the filter type.
 

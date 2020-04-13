@@ -1,7 +1,7 @@
 .simple-console {
     bottom: 10px;
     min-width: 70vw;
-    left:30vw;
+  ]
     position: relative;
     background-color: black;
     color: white;
@@ -54,7 +54,7 @@ table{
     display: table-row-group;
   vertical-align: top;
   border-color: inherit;
-  
+
 }
 td{
   vertical-align:top;

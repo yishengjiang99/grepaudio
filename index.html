@@ -60,7 +60,7 @@
                     <form id="eq_update_form">
 
                     </form>
-
+                    <audio id='audio' controls autoplay=true src='./samples/song.mp3'></audio>
                 </td>
                 <td>
                     <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
@@ -68,12 +68,19 @@
                 <td>
                     <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
                 </td>
+                <td>
+                  <iframe id="ytplayer" type="text/html" width="640" height="360"
+    src="https://www.youtube.com/embed/M7lc1UVf-VE?autoplay=1&origin=http://example.com"
+    frameborder="0"></iframe>
+                </td>
             </tr>
             <tr>
-                <td colspan=1>
-                    <audio id='audio' controls autoplay=true src='./samples/song.mp3'></audio>
+                <td align=left colspan=1>
                     <div id=console></div>
                 </td>
+                <td>
+
+  </td>
             </tr>
         </table>
         <div id="rx1"></div>
@@ -102,13 +109,16 @@
             audioCtx = new AudioContext();
 
             var audioTag =await Mixer(audioCtx, "ctrls");
-  
+
 //            audioTag.add_audio_tag("audio");
             window.g_audioTag = audioTag;
             window.g_audioCtx = audioCtx;
 
             eq = equilizer.initializeContext(audioCtx, audioTag.outputNode);
           //  const recorder = new Recorder();
+
+              var dest = audioCtx.createMediaStreamDestination();
+              var mediaRecorder = new MediaRecorder(dest.stream);
 
           }
 
@@ -120,4 +130,3 @@
 </body>
 
 </html>
-

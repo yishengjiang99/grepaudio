@@ -14,7 +14,7 @@ export default async function(ctx,containerId) {
       xhr.open("get", url,true);
       xhr.responseType='arraybuffer';
       var counter = 0;
-    
+
       xhr.onload= function(evt){
         counter++;
         log('loading '+url+ ' cpounter '+counter)
@@ -28,19 +28,18 @@ export default async function(ctx,containerId) {
       }
       xhr.onloadend = function(evt){
         if(channelQueues[index].length){
-          var next = source.queue.unshift();
+          var next = source.queue.shift();
           loadURL(next);
         }else{
           source.onended=function(evttt){
-            con.log('gc self'); 
+            con.log('gc self');
               inputs[index] = null;;
           }
-          inputs[index] = null;
         }
       }
       xhr.send();
     }
- 
+
     loadURL(url);
     return source;
   }
@@ -72,9 +71,8 @@ export default async function(ctx,containerId) {
 
 const pauseAll = function(){
     inputs.forEach( input=>  {
-      input !== nul;
       input.stop();
-      inputs[i]=null; 
+      //inputs[i]=null;
    });
 }
 const playAll =  function(){
@@ -95,14 +93,14 @@ var container = document.getElementById(containerId);
   var apply = document.createElement("button")
   apply.innerHTML="go";
   container.appendChild(select)
-  container.appendChild(apply); 
+  container.appendChild(apply);
 
   apply.onclick = e => {
      add_from_URL(select.value, index);
     e.preventDefault();
     return false;
   }
- 
+
 
   select.addEventListener("input|submit|change|click", function(e){
     e.preventDefault();

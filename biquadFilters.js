@@ -15,25 +15,25 @@ var BiquadFilters = function (ctx)
         { "label": "32","f": 32,"Q": 1,"gain": 1,"type": "highshelf" },
         { "label": "64","f": 64,"Q": 1,"gain": 1,"type": "highshelf" },
         { "label": "125","f": 125,"Q": 1,"gain": 1,"type": "peaking" },
-        { "label": "125","f": 125,"Q": 1,"gain": 1,"type": "highshelf" },
+        // { "label": "125","f": 125,"Q": 1,"gain": 1,"type": "highshelf" },
 
         { "label": "125","f": 220,"Q": 1,"gain": 1,"type": "peaking" },
-        { "label": "125","f": 220,"Q": 1,"gain": 1,"type": "highshelf" },
+        // { "label": "125","f": 220,"Q": 1,"gain": 1,"type": "highshelf" },
 
         { "label": "250","f": 250,"Q": 1,"gain": 1,"type": "peaking" },
-        { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "highshelf" },
+        // { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "highshelf" },
         { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "peaking" },
-        { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "lowshelf" },
-        { "label": "1005","f": 1000,"Q": 1,"gain": 1,"type": "highshelf" },
+        // { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "lowshelf" },
+        // { "label": "1005","f": 1000,"Q": 1,"gain": 1,"type": "highshelf" },
 
 
         { "label": "1005","f": 1000,"Q": 1,"gain": 1,"type": "peaking" },
-        { "label": "1005","f": 1000,"Q": 1,"gain": 1,"type": "lowshelf" },
+        // { "label": "1005","f": 1000,"Q": 1,"gain": 1,"type": "lowshelf" },
 
         { "label": "2k","f": 2000,"Q": 1,"gain": 1,"type": "peaking" },
 
         { "label": "4k","f": 4000,"Q": 1,"gain": 1,"type": "peaking" },
-        { "label": "4k","f": 4000,"Q": 1,"gain": 1,"type": "peaking" },
+        // { "label": "4k","f": 4000,"Q": 1,"gain": 1,"type": "peaking" },
         { "label": "8k","f": 8000,"Q": 1,"gain": 1,"type": "peaking" },
         { "label": "16k","f": 16000,"gain": 1,"type": "lowshelf" }
     ];
@@ -196,8 +196,8 @@ var BiquadFilters = function (ctx)
                 var freq_list = new Float32Array(biquadFilters.map(b => b.frequency.value));
                 var a = new Float32Array(freq_list.length);
                 var b = new Float32Array(freq_list.length);
+                // var newfrq = biquadFilters[i].getFrequencyResponse(freq_list,a,b);
                 var newfrq = biquadFilters[i].getFrequencyResponse(freq_list,a,b);
-
                 window.post_data("freq_resp_update",a,b);
 
             }
