@@ -14,28 +14,14 @@ var BiquadFilters = function (ctx)
     const bars = [
         { "label": "32","f": 32,"Q": 1,"gain": 1,"type": "highshelf" },
         { "label": "64","f": 64,"Q": 1,"gain": 1,"type": "highshelf" },
-        { "label": "125","f": 125,"Q": 1,"gain": 1,"type": "peaking" },
-        // { "label": "125","f": 125,"Q": 1,"gain": 1,"type": "highshelf" },
-
-        { "label": "125","f": 220,"Q": 1,"gain": 1,"type": "peaking" },
-        // { "label": "125","f": 220,"Q": 1,"gain": 1,"type": "highshelf" },
-
-        { "label": "250","f": 250,"Q": 1,"gain": 1,"type": "peaking" },
-        // { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "highshelf" },
-        { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "peaking" },
-        // { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "lowshelf" },
-        // { "label": "1005","f": 1000,"Q": 1,"gain": 1,"type": "highshelf" },
-
-
-        { "label": "1005","f": 1000,"Q": 1,"gain": 1,"type": "peaking" },
-        // { "label": "1005","f": 1000,"Q": 1,"gain": 1,"type": "lowshelf" },
-
-        { "label": "2k","f": 2000,"Q": 1,"gain": 1,"type": "peaking" },
-
-        { "label": "4k","f": 4000,"Q": 1,"gain": 1,"type": "peaking" },
-        // { "label": "4k","f": 4000,"Q": 1,"gain": 1,"type": "peaking" },
-        { "label": "8k","f": 8000,"Q": 1,"gain": 1,"type": "peaking" },
-        { "label": "16k","f": 16000,"gain": 1,"type": "lowshelf" }
+        { "label": "125","f": 125,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "250","f": 250,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "1000","f": 1000,"Q": 1,"gain": 1,"type": "highshelf"},
+        { "label": "2k","f": 2000,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "4k","f": 4000,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "8k","f": 8000,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "16k","f": 16000,"gain": 1,"type": "highshelf" }
     ];
 
     var highShelf;
@@ -114,14 +100,21 @@ var BiquadFilters = function (ctx)
     function default_filters()
     {
 
-        biquadFilters = bars.map((obj,i) =>
+        biquadFilters = []
+        bars.forEach((obj,i) =>
         {
             var filter = audioCtx.createBiquadFilter();
             filter.type = obj.type || 'lowpass';
             filter.gain.value = obj.gain || 1;
             filter.Q.value = 1;
-            filter.frequency.value = obj.f;
-            return filter;
+            filter.frequency.value = obj.f-30;
+            var filterlow = audioCtx.createBiquadFilter();
+            filterlow.type = 'lowshelf'
+            filterlow.gain.value = 1;
+            filterlow.Q.value = 1;
+            filterlow.frequency.value = obj.f+30;
+            biquadFilters.push(filter);
+//            biquadFilters.push(filterlow);    
         });
         filter_ui();
         return biquadFilters;
@@ -203,7 +196,7 @@ var BiquadFilters = function (ctx)
             }
 
             var nameLabel = document.createElement("label");
-            nameLabel.innerHTML = obj.label + " " + input.name;
+            nameLabel.innerHTML = obj.label;
 
             nameLabel.style.textAlign = 'right';
             var col = document.createElement("tr");

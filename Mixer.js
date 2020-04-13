@@ -53,7 +53,6 @@ export default async function(ctx,containerId) {
     if( inputs[index] !== null ){
       channelQueues[index].push(url);
     }else{
-
       inputs[index] = loadURLTo(url,index);
     }
 
@@ -83,22 +82,42 @@ var outputNode = masterGain;
 function connect(node) {this.masterGain.connect(node)};
 var container = document.getElementById(containerId);
 
-['notes.csv', 'drum.csv', 'songs.csv'].forEach( async (indexfile, index)=>{
-  const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split(/(\s+)/));
+['audioplayer.csv', 'notes.csv', 'drums.csv', 'songs.csv'].forEach( async (indexfile, index)=>{
+const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split("\n"));
 
 
-  var select = document.createElement("select");
-  select.setAttribute("tabindex", index);
-  select.innerHTML = song_db.filter(t=>t.trim()!=="").map(t=>"samples/"+t.trim()).map(n => `<option value=${n}>${n.replace('samples/','')}</option>`).join("");
+var select = document.createElement("select");
+select.setAttribute("tabindex", index);
+select.innerHTML = song_db.filter(t=>t.trim()!=="").map(t=>"samples/"+t.trim()).map(n => {
+ var url = n.split(",")[0];
+ var name = n.split(",")[1] || url;
+
+ return `<option value=${url}>${name}</option>`
+});
+
+
   var apply = document.createElement("button")
   apply.innerHTML="go";
+
+  var stop = document.createElement("button")
+  stop.innerHTML="stop";
+
   container.appendChild(select)
   container.appendChild(apply);
+  container.appendChild(stop);
 
+  stop.onclick = (e)=>{
+    inputs[i] instanceof MediaElementAudioSourceNode ?  inputs[i].mediaElement.pause() : inputs[i].stop();
+  }
   apply.onclick = e => {
-     add_from_URL(select.value, index);
-    e.preventDefault();
-    return false;
+    if(index==0){
+         document.querySelector('audio').src=select.value;
+         document.querySelector('audio').autoplay=true;
+    }else{
+      add_from_URL(select.value, index);
+      e.preventDefault();
+      return false;
+    }
   }
 
 
@@ -116,7 +135,7 @@ playBtn.onClick = function(){
 }
 var pauseBtn = document.createElement("button");
 pauseBtn.onclick = function(){
-  pauseAll();
+  inputs[index].stop();
 }
 pauseBtn.innerHTML = 'pause'
 

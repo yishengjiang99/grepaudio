@@ -69,9 +69,6 @@
                     <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
                 </td>
                 <td>
-                  <iframe id="ytplayer" type="text/html" width="640" height="360"
-    src="https://www.youtube.com/embed/M7lc1UVf-VE?autoplay=1&origin=http://example.com"
-    frameborder="0"></iframe>
                 </td>
             </tr>
             <tr>
@@ -110,15 +107,15 @@
 
             var audioTag =await Mixer(audioCtx, "ctrls");
 
-//            audioTag.add_audio_tag("audio");
+            audioTag.add_audio_tag("audio");
             window.g_audioTag = audioTag;
             window.g_audioCtx = audioCtx;
 
             eq = equilizer.initializeContext(audioCtx, audioTag.outputNode);
           //  const recorder = new Recorder();
 
-              var dest = audioCtx.createMediaStreamDestination();
-              var mediaRecorder = new MediaRecorder(dest.stream);
+//              var dest = audioCtx.createMediaStreamDestination();
+  //            var mediaRecorder = new MediaRecorder(dest.stream);
 
           }
 
