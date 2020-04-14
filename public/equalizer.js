@@ -71,7 +71,7 @@ async function initializeContext(audioCtx, activeInputSource)
 
     var optv = AnalyzerView(post_amp);
 
-    post_amp.connect(audioCtx.destination);
+    optv.analyzer.connect(audioCtx.destination);
     optv.histogram("output_freq",680,420)
 }
 

@@ -11,14 +11,10 @@ var AnalyzerView = function(audioNode, params){
   const ctx = fft.context;
   var zoomScale = 2;
   var xshift = 0;
-  // var yshift = 0;
+  audioNode.connect(fft);
 
-  var tee = ctx.createChannelSplitter(2);
-  audioNode.connect(tee);
-
-  tee.connect(fft);
-  fft.connect(ctx.destination);
-
+  var cummulativeFFT = new Uint8Array(fft.fftSize).fill(0);
+  var counter = 0;
   return {
     analyzer:fft,
     zoomIn: function(){
@@ -41,7 +37,7 @@ var AnalyzerView = function(audioNode, params){
     rms: function(){
       var sum = 0;
 
-      return this.fftU8().reduce(d=>sum+=d, 0);
+      return fftU8().reduce(d=>sum+=d, 0);
     },
     histogram_once:  function(elemId, width = 320, height= 200){
       return histogram(elemId, width, height, false);
@@ -63,10 +59,22 @@ var AnalyzerView = function(audioNode, params){
       var dataArray = new Uint8Array(fft.fftSize);
       if(!repeating) return dataArray;
 
+
       function drawBars(){
+
           requestAnimationFrame(drawBars);
+
           fft.getByteFrequencyData(dataArray);
 
+          var maxY = 0, currentMaxY=0;
+
+          for(let i=0; i<dataArray.length; i++){
+              cummulativeFFT[i] = (cummulativeFFT[i])*.9 + dataArray[i];
+              maxY = Math.max(maxY, cummulativeFFT[i]);
+              currentMaxY = Math.max(currentMaxY, dataArray[i]);
+          }
+
+          counter++;
           var bufferLength = dataArray.length;
           canvasCtx.fillStyle = 'rgb(0, 0, 0)';
           //
@@ -75,13 +83,20 @@ var AnalyzerView = function(audioNode, params){
 
           var barWidth = (width / 255) * 2.5;
           var barHeight;
+          var barHeigthCC;
           var x = 0;
-          for(var i = 0; i < 255; i++) {
-            barHeight = dataArray[i];
+          for(var i = 0; i < 160; i++) {
+            barHeight = dataArray[i]
 
+            barHeigthCC = cummulativeFFT[i];
             canvasCtx.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
 
-            canvasCtx.fillRect(x,height-barHeight/2-25,barWidth,(barHeight/2));
+           canvasCtx.fillRect(x,height-barHeight/2-25,barWidth,(barHeight/2));
+
+            canvasCtx.fillStyle = 'rgb(22, 22,'+(barHeigthCC+44)+')';
+
+           canvasCtx.fillRect(x,height-barHeigthCC/2-25,barWidth,(barHeigthCC/2));
+
 
             x += barWidth + 1;
           }

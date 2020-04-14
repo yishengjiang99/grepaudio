@@ -8,23 +8,18 @@ const wss = new WebSocket.Server({
 })
 
 wss.on('connection', (ws, request) => {
-  let fd;
+  let fd = fs.createWriteStream("./tmp/"+request.uuid);
+
   ws.send(JSON.stringify({message:"welcome"}));
 
   ws.onmessage = (msg) => {
-    console.log("msg "+JSON.stringify(msg));
+    console.log("msg ",msg.data);
+   
   }
 
-  ws.on('event', event=>{
-   if(event=='1'){
-      fd = fs.createWriteStream("./tmp/"+request.uuid);
-   }else{
-      fd.close();
-      ws.send(fd.uuid)
-    }
- })
 
   ws.on('data', data=>{
+    console.log(" DATA");
     fd.write(data);      
   })
 

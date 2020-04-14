@@ -5,11 +5,11 @@ var ctx, buffer, source;
 
 const read_url=function (url,params){
     params = params || {};
-    
+
     return new Promise((resolve,reject) =>{
         const container = params.elementId  && document.getElementById(params.elementId);
-        ctx = params.audioCtx; 
-       
+        ctx = params.audioCtx;
+
         source = params.source || ctx.createBufferSource();
 
         const playback = params.playback === true;
@@ -23,10 +23,10 @@ const read_url=function (url,params){
             var audioData = xhr.response;
             try{
                 ctx.decodeAudioData(audioData, function(buffer_){
-        
+
                     buffer = buffer_;
                     source.buffer = buffer;
-                    
+
                     if(!playback) {
                         resolve(source);
                         return;
@@ -62,7 +62,7 @@ const context_monitor = (interval, cb)=>{
             baseLatency: ctx.baseLatency,
             contextTime: t1.contextTime,
             performanceTime: t1.performanceTime,
-            source: source 
+            source: source
         }
         cb(info);
         context_monitor(interval, cb);
@@ -83,18 +83,18 @@ const load_via_tag = (url, containerId,ctx_)=>{
         document.body.appendChild(tag);
 
         window.addEventListener("load",function(e){
-            
+
             source = ctx.createMediaElementSource(tag);
             source.connect(node);
             node.connect(ctx.destination)
             resolve(node);
         })
-       
+
     })
 };
 
 const get_filter_db_response = (filter) =>{
-    
+
 }
 
 
