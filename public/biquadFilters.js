@@ -114,7 +114,7 @@ var BiquadFilters = function (ctx)
             filterlow.Q.value = 1;
             filterlow.frequency.value = obj.f+30;
             biquadFilters.push(filter);
-//            biquadFilters.push(filterlow);    
+//            biquadFilters.push(filterlow);
         });
         filter_ui();
         return biquadFilters;

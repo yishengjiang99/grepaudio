@@ -14,6 +14,7 @@ export default async function(ctx,containerId) {
       const xhr = new XMLHttpRequest();
       xhr.open("get", url,true);
       xhr.responseType='arraybuffer';
+      xhr.setRequestHeader("Range","Bytes:0-")
       var counter = 0;
 
       xhr.onload= function(evt){
@@ -86,7 +87,7 @@ var container = document.getElementById(containerId);
 ['YT_SEARCH', 'notes.csv', 'drums.csv', 'songs.csv'].forEach( async (indexfile, index)=>{
 
 if(indexfile=='YT_SEARCH'){
-  var select = document.getElementById("ytsearch"); 
+  var select = document.getElementById("ytsearch");
 }else{
   const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split("\n"));
   var select = document.createElement("select");
@@ -104,7 +105,8 @@ if(indexfile=='YT_SEARCH'){
 
   var stop = document.createElement("button")
   stop.innerHTML="stop";
-  container.appendChild(select)
+  if(indexfile != 'YT_SEARCH') container.appendChild(select);
+
   container.appendChild(apply);
   container.appendChild(stop);
   container.appendChild(nowPlayingLabel.wrap("p"));
@@ -112,7 +114,7 @@ if(indexfile=='YT_SEARCH'){
     inputs[index] instanceof MediaElementAudioSourceNode ?  inputs[index].mediaElement.pause() : inputs[index].stop();
   }
 
-  
+
   function loadURL(){
     var url = select.value;
     if(select.getAttribute("data-host")){
@@ -125,7 +127,7 @@ if(indexfile=='YT_SEARCH'){
 
   apply.onclick = loadURL;
   select.addEventListener("input|submit|change|click",loadURL);
-  
+
 
 
 })
@@ -144,8 +146,8 @@ pauseBtn.innerHTML = 'pause'
 var nowPlayingLabel = document.createElement("label");
 nowPlayingLabel.text="";
 container.append(nowPlayingLabel)
-container.append(playBtn)
-container.append(pauseBtn)
+// container.append(playBtn)
+// container.append(pauseBtn)
 
 
 

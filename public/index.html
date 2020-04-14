@@ -24,8 +24,6 @@
     </div>
 
     <div class='container' style='margin:20px;position:relative'>
-
-
         <table>
             <tr>
                 <td>
@@ -45,12 +43,21 @@
                 </td>
                           <button id='miccheck'>use microphone</button>
 
-                <td colspan=2 style='text-align:right'>
+                <td style='text-align:right'>
+<form>
+  <label for="search">Search</label>
 
+ <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='https://grepaudio.herokuapp.com/sudo/::QUERY::.mp3' />
+</form>
+ <div id='autosuggest'>
+
+ </div>
+</td>
+
+<td rowspan=2>
                     <span id=ctrls>
-                          <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='https://grepaudio.herokuapp.com/sudo/::QUERY::.mp3' />
-                                      
-        </select>
+
+                  </select>
 
 
                     </span>
@@ -63,7 +70,7 @@
                     <form id="eq_update_form">
 
                     </form>
-                    <audio id='audio' controls autoplay=true src='./samples/song.mp3'></audio>
+                    <audio id='audio' src='./samples/song.mp3'></audio>
                 </td>
                 <td>
                     <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
