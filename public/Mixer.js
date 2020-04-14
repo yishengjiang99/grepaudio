@@ -83,24 +83,24 @@ var outputNode = masterGain;
 function connect(node) {this.masterGain.connect(node)};
 var container = document.getElementById(containerId);
 
-['notes.csv', 'drums.csv', 'songs.csv'].forEach( async (indexfile, index)=>{
-const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split("\n"));
+['YT_SEARCH', 'notes.csv', 'drums.csv', 'songs.csv'].forEach( async (indexfile, index)=>{
 
-
-var select = document.createElement("select");
-select.setAttribute("tabindex", index);
-
-select.innerHTML = song_db.filter(t=>t.trim()!=="").map(t=>"samples/"+t.trim()).map(n => {
- var url = n.split(",")[0];
- var name = (n.split(",")[1] || url).split("/").pop();
- return `<option value='${encodeURIComponent(url)}'>${name}</option>`
-});
-
+if(indexfile=='YT_SEARCH'){
+  var select = document.getElementById("ytsearch"); 
+}else{
+  const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split("\n"));
+  var select = document.createElement("select");
+  select.setAttribute("tabindex", index);
+  select.innerHTML = song_db.filter(t=>t.trim()!=="").map(t=>"samples/"+t.trim()).map(n => {
+    var url = n.split(",")[0];
+    var name = (n.split(",")[1] || url).split("/").pop();
+     return `<option value='${encodeURIComponent(url)}'>${name}</option>`
+  });
+}
 
   var apply = document.createElement("button")
   apply.innerHTML="go";
   var nowPlayingLabel = document.createElement("label");
-
 
   var stop = document.createElement("button")
   stop.innerHTML="stop";
@@ -112,19 +112,22 @@ select.innerHTML = song_db.filter(t=>t.trim()!=="").map(t=>"samples/"+t.trim()).
     inputs[index] instanceof MediaElementAudioSourceNode ?  inputs[index].mediaElement.pause() : inputs[index].stop();
   }
 
-  apply.onclick = e => {
-      e.preventDefault();
-      nowPlayingLabel.innerHTML="now playing "+select.value;
-      add_from_URL(select.value, index);
-      return false;
+  
+  function loadURL(){
+    var url = select.value;
+    if(select.getAttribute("data-host")){
+      url = select.getAttribute("data-host").replace("::QUERY::", select.value);
     }
-
-  select.addEventListener("input|submit|change|click", function(e){
-    e.preventDefault();
-      nowPlayingLabel.innerHTML="now playing "+select.value;
-    add_from_URL(select.value, index);
+    nowPlayingLabel.innerHTML="Loading.."+url;
+    add_from_URL(url, index);
     return false;
-  });
+  }
+
+  apply.onclick = loadURL;
+  select.addEventListener("input|submit|change|click",loadURL);
+  
+
+
 })
 
 var playBtn = document.createElement("button");

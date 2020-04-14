@@ -43,11 +43,14 @@
                             data-action="volume" /><span></span>
                     </div>
                 </td>
+                          <button id='miccheck'>use microphone</button>
+
                 <td colspan=2 style='text-align:right'>
 
                     <span id=ctrls>
-                          <button id='miccheck'>use microphone</button>
-                        </select>
+                          <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='https://grepaudio.herokuapp.com/sudo/::QUERY::.mp3' />
+                                      
+        </select>
 
 
                     </span>
@@ -107,7 +110,7 @@
 
             var audioTag =await Mixer(audioCtx, "ctrls");
 
-            audioTag.add_audio_tag("audio");
+//            audioTag.add_audio_tag("audio");
             window.g_audioTag = audioTag;
             window.g_audioCtx = audioCtx;
 
