@@ -1,0 +1,157 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>rt</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./led.css">
+  <link rel="stylesheet" href="./simple-console.css">
+  <script src="./simple-console.js"></script>
+</head>
+<body>
+
+<div id='led-1' class='led-box'>
+ <div class='led-green'></div>
+</div>
+
+
+<div>
+
+  <input type=radio value='mic' name='media'>Record from mic</input>
+  <input type=radio checked  value='output' name='media'>Record from stdout</input>
+<div>
+<div>
+  <button style-'display:block' id='rec'>record</button>
+ <button style-'display:none' id='done'>Finish</button>
+</div>
+
+
+<canvas id=c1></canvas>
+<canvas id=c2></canvas>
+</div>
+</body>
+  <script src='./polyfills.js'></script>
+
+
+  <script type='module'>
+import AnalyzerView from './AnalyzerView.js';
+let ctx;
+let destination;
+let recorder;
+let worker;
+let btn;
+
+let doneButton = $("#done");
+let rec1=$("#rec");
+let rec2=$("#rec2");
+
+let         ws = new WebSocket('wss://dsp.grepawk.com/stdin');
+
+ws.onmessage = (msg)=>{
+  if( msg.data instanceof Blob){
+    log("blob..")
+  }else{
+    log(msg.data);
+  }
+
+}
+
+[rec1].forEach(btn=> btn.onclick=function(evt){
+
+  ctx = ctx || new AudioContext();
+  var lastState = evt.target.getAttribute("data-state") || "init";
+  var newState;
+
+  switch(lastState){
+    case "init":
+        newState= 'recording';
+
+        var media = $('input[name=media]:checked').value;
+
+        if(media == 'mic'){
+          recordUserMedia();
+        }else{
+          destination = ctx.createMediaStreamDestination();
+          recordStream(destination.stream);
+        }
+        ws.send({stream:1})
+
+        evt.target.innerHTML="stop";
+        evt.target.setAttribute("data-state", newState);
+
+        break;
+   case "recording":
+        recorder.pause();
+        doneButton.style.display='block';
+        newState = "stopped";
+        evt.target.innerHTML="resume";
+        evt.target.setAttribute("data-state", newState);
+        break;
+    case "stopped":
+        newState = "recording";
+        evt.target.innerHTML="stop";
+        doneButton.style.display = "none";
+        evt.target.setAttribute("data-state", newState);
+        ws.send({stream:0})
+        break;
+    default: throw new Error("..");
+
+    evt.target.setAttribute("data-state", newState);
+  }
+});
+
+doneButton.onclick = ()=>{
+  recorder.requestData();
+  recorder.stop();
+}
+
+
+var chunks = [];
+var decodedChunks = [];
+async function recordStream(stream){
+  var options = { mimeType: "video/webm; codecs=vp9" };
+  recorder = new MediaRecorder(stream);
+  recorder.start();
+  recorder.ondataavailable = function(evt){
+    console.log('recorde3d ', evt.data);
+    if(evt.data.length>0){
+        chunks.forEach(c=>{
+          ws.send(c);
+        })
+    }
+    if(recorder.state=='running'){
+      setTimeout(function(){
+        recorder.requestData();
+      },5000);
+    }
+
+  }
+
+  setTimeout(function(){
+      recorder.requestData();
+  },5000);
+}
+
+async function recordUserMedia(){
+  if(!navigator.mediaDevices.getUserMedia){
+    logErr("not supported on bhrowser");
+    return;
+  }
+
+  const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+  if(stream){
+    const audioNode = ctx.createMediaStreamSource(stream);
+    AnalyzerView(audioNode).histogram("c1");
+
+    recordStream(stream);
+
+  }else{
+    logError("get steam fail")
+  }
+}
+
+
+  </script>
+  </script>
