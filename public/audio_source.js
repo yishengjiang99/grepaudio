@@ -18,7 +18,7 @@ function PlayableAudioSource(ctx)
     }
   }
 
-  async function getAudioDevice(ctx)
+  async function getAudioDevice()
   {
     if (!navigator.mediaDevices) {
       throw new Error("web rtc not available")
@@ -26,15 +26,15 @@ function PlayableAudioSource(ctx)
     try {
       var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      var video = document.createElement("video")
-      video.srcObject = stream;
-      video.onloadedmetadata = function (e)
+      var audio = document.createElement("audio")
+      audio.srcObject = stream;
+      audio.onloadedmetadata = function (e)
       {
-        video.muted = true;
-        video.play();
+        audio.muted = true;
 
+        audio.play();
       };
-      document.body.appendChild(video);
+      document.body.appendChild(audio);
 
 
       var source = ctx.createMediaStreamSource(stream);
