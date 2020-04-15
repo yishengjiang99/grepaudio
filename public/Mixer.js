@@ -10,9 +10,9 @@ export default async function(ctx,containerId) {
 
   [0,1,2,3,4].forEach(i=> controls[i].connect(masterGain));
 
-  const loadURLTo = async function (url, index){
+  const loadURLTo = async function (url, index, deviceId){
     if(url=='user-audio'){
-      var source = await PlayableAudioSource(ctx).getAudioDevice();
+      var source = await PlayableAudioSource(ctx).getAudioDevice(deviceId);
 
       inputs[index]=source;
       source.connect(controls[index]);
@@ -75,11 +75,21 @@ export default async function(ctx,containerId) {
   ['YT_SEARCH', 'Microphone', 'notes.csv', 'drums.csv', 'songs.csv'].forEach( async (indexfile, index)=>{
 
     if(indexfile=='YT_SEARCH'){
+
       var select = document.getElementById("ytsearch");
 
     }else if(indexfile=='Microphone'){
       var select = document.getElementById("miccheck");
       select.setAttribute("data-userMedia", "audio");
+
+      var select = document.createElement("select");
+      select.setAttribute("tabindex", index);
+      select.setAttribute("data-userMedia", "audio");
+      navigator.mediaDevices.enumerateDevices().then(function(devices) {
+        select.innerHTML=devices.filter(device=>device.kind=='audioinput').map(function(device) {
+           return `<option value='${device.deviceId}'>${device.kind}: ${device.label}</option>`
+        }).join("");
+      }).catch(function(err) { select.innerHTML= err.message});
     }else{
       const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split("\n"));
       var select = document.createElement("select");
@@ -115,6 +125,9 @@ export default async function(ctx,containerId) {
         url = select.getAttribute("data-host").replace("::QUERY::", select.value);
       }else if(select.getAttribute("data-userMedia")){
         url = "user-audio";
+        var deviceId = select.value;
+        loadURLTo(url, index, deviceId);
+        return;
       }else{
         url = select.value;
       }

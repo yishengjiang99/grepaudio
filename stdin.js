@@ -1,26 +1,45 @@
-
-const WebSocket = require('ws')
-const port = process.env.fs_port || 8086;
-const fs = require('ws');
+const WebSocket = require('ws');
 
 const wss = new WebSocket.Server({
-    port: port
-})
-
-wss.on('connection', (ws, request) => {
-  let fd = fs.createWriteStream("./tmp/"+request.uuid);
-
-  ws.send(JSON.stringify({message:"welcome"}));
-
-  ws.onmessage = (msg) => {
-    console.log("msg ",msg.data);
-   
+  port: 8086,
+  perMessageDeflate: {
+    zlibDeflateOptions: {
+      // See zlib defaults.
+      chunkSize: 1024,
+      memLevel: 7,
+      level: 3
+    },
+    zlibInflateOptions: {
+      chunkSize: 10 * 1024
+    },
+    // Other options settable:
+    clientNoContextTakeover: true, // Defaults to negotiated value.
+    serverNoContextTakeover: true, // Defaults to negotiated value.
+    serverMaxWindowBits: 10, // Defaults to negotiated value.
+    // Below options specified as default values.
+    concurrencyLimit: 10, // Limits zlib concurrency for perf.
+    threshold: 1024 // Size (in bytes) below which messages
+    // should not be compressed.
   }
+});
 
+const fs = require("fs");
+console.log(fs);
+wss.on('connection',function connection(ws,req){
+  console.log(req.headers);
+  var uuid = req.headers['sec-websocket-key']
+  var fd =  fs.createWriteStream("./tmp/"+uuid+"_"+new Date());
+  req.pipe(fd);
 
-  ws.on('data', data=>{
-    console.log(" DATA");
-    fd.write(data);      
-  })
+  ws.on('message', function incoming(message) {
+    //ret = fd.write(message);
+    console.log(ret);
+// console.log(message);
 
-})
+  });
+  ws.on("close", function incoming(message){
+    fd.end();
+  });
+
+  ws.send('something');
+});

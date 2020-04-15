@@ -18,13 +18,13 @@ function PlayableAudioSource(ctx)
     }
   }
 
-  async function getAudioDevice()
+  async function getAudioDevice(deviceId)
   {
     if (!navigator.mediaDevices) {
       throw new Error("web rtc not available")
     }
     try {
-      var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      var stream = await navigator.mediaDevices.getUserMedia({ audio:  {deviceId: deviceId} });
 
       var audio = document.createElement("audio")
       audio.srcObject = stream;

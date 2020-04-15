@@ -23,142 +23,125 @@
   <input type=radio checked  value='output' name='media'>Record from stdout</input>
 <div>
 <div>
-  <button style-'display:block' id='rec'>record</button>
- <button style-'display:none' id='done'>Finish</button>
+  <button style='display:block' id='rec'>record</button>
+ <!-- <button style-'display:none' id='done'>Finish</button> -->
 </div>
 
 
 <canvas id=c1></canvas>
 <canvas id=c2></canvas>
 </div>
+<audio controls id='tagg'></audio>
 </body>
   <script src='./polyfills.js'></script>
 
 
   <script type='module'>
-import AnalyzerView from './AnalyzerView.js';
-let ctx;
-let destination;
-let recorder;
-let worker;
-let btn;
+// import AnalyzerView from './AnalyzerView.js';
+function Recorder(ctx){
+  var ctx = ctx;
+  var state = "init";
 
-let doneButton = $("#done");
-let rec1=$("#rec");
-let rec2=$("#rec2");
+  var chunks = [];
+  var decodedChunks = [];
+  var destination = ctx.createMediaStreamDestination();
 
-let   ws=false;
-      ws = new WebSocket('wss://dsp.grepawk.com/stdin');
-
-ws.onmessage = (msg)=>{
-  if( msg.data instanceof Blob){
-    log("blob..")
-  }else{
-    log(msg.data);
+  function test(){
+    try{
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      const now = ctx.currentTime;
+      gain.gain.setValueAtTime(3,now+1);
+      gain.gain.setValueAtTime(0,now+3);
+      gain.gain.setValueAtTime(3,now+5);
+      gain.gain.setValueAtTime(0,now+7);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      var r = Recorder(ctx);
+      r.start();
+      osc.start();
+      setTimeout(r.stop, 5);
+    }catch(e){
+      log(e.message);
+    }
   }
 
+  return{
+    recorder,
+    test,stop,start,
+    output:blob
+  }
 }
 
-[rec1].forEach(btn=> btn.onclick=function(evt){
+var ac = new AudioContext();
+var b = document.querySelector("button");
+var clicked = false;
+var r;
 
-  ctx = ctx || new AudioContext();
-  var lastState = evt.target.getAttribute("data-state") || "init";
-  var newState;
 
-  switch(lastState){
-    case "init":
-        newState= 'recording';
 
-        var media = $('input[name=media]:checked').value;
+b.addEventListener("click", function(e) {
+  if (!clicked) {
+    try{
+      var connection = new WebSocket( 'wss://dsp.grepawk.com/stdin');
+      connection.binaryType = "arraybuffer";
+      connection.onopen = () => console.log("connection open");
+      connection.onmessage = (m) => console.log(m);
+      connection.onclose = () => console.log("close")
+      connection.onerror = (e) => console.log(e);
+      var ctx = new AudioContext();
 
-        if(media == 'mic'){
-          recordUserMedia();
-        }else{
-          ctx = ctx || new AudioContext();
-          destination = ctx.createMediaStreamDestination();
-          recordStream(destination.stream);
-        }
-        ws.send({stream:1})
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      const now = ctx.currentTime;
+      gain.gain.setValueAtTime(3,now+1);
+      gain.gain.setValueAtTime(0,now+3);
+      gain.gain.setValueAtTime(3,now+5);
+      gain.gain.setValueAtTime(0,now+7);
+      osc.connect(gain);
 
-        evt.target.innerHTML="stop";
-        evt.target.setAttribute("data-state", newState);
+      var scriptNode = ctx.createScriptProcessor(4096, 1, 1);
+      gain.connect(scriptNode);
+      scriptNode.connect(ctx.destination);
+      console.log(scriptNode.bufferSize);
+      scriptNode.onaudioprocess = function(evt) {
+            connection.send(evt.inputBuffer);
+                    // The input buffer is the song we loaded earlier
+            var inputBuffer = evt.inputBuffer;
 
-        break;
-   case "recording":
-        recorder.pause();
-        doneButton.style.display='block';
-        newState = "stopped";
-        evt.target.innerHTML="resume";
-        evt.target.setAttribute("data-state", newState);
-        break;
-    case "stopped":
-        newState = "recording";
-        evt.target.innerHTML="stop";
-        doneButton.style.display = "none";
-        evt.target.setAttribute("data-state", newState);
-        ws.send({stream:0})
-        break;
-    default: throw new Error("..");
+            // The output buffer contains the samples that will be modified and played
+            var outputBuffer = evt.outputBuffer;
 
-    evt.target.setAttribute("data-state", newState);
+            // Loop through the output channels (in this case there is only one)
+            for (var channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
+              var inputData = inputBuffer.getChannelData(channel);
+              var outputData = outputBuffer.getChannelData(channel);
+
+              // Loop through the 4096 samples
+              for (var sample = 0; sample < inputBuffer.length; sample++) {
+                    outputData[sample] = inputData[sample];
+
+              }
+            }
+      }
+
+
+    osc.start();
+      // setTimeout(r.stop, 5);
+    }catch(e){
+      log(e.message);
+    }
+  } else {
+      r.stop();
+      osc.stop();
+connection.close();
+      b.disabled=true;
+      console.log(r.blob);
   }
 });
 
-doneButton.onclick = ()=>{
-//  recorder.requestData();
-  recorder.stop();
-}
 
-
-var chunks = [];
-var decodedChunks = [];
-async function recordStream(stream){
-  var options = { mimeType: "video/webm; codecs=vp9" };
-  recorder = new MediaRecorder(stream);
-
-  recorder.start();
-  recorder.ondataavailable = function(evt){
-    console.log('recorde3d ', evt.data);
-    if(evt.data.length>0){
-      decodedChunks.push(evt.data);
-      ws.send(evt.data);
-   }
-      setTimeout(function(){
-        if(recorder.state==='recording') recorder.requestData();
-      },5000);
-
-  }
-  recorder.onstopped =function(evt){
-      const blob = new Blob(recordedChunks, { 'type' : 'audio/ogg; codecs=opus' });
-      chunks = [];
-      const audioURL = window.URL.createObjectURL(blob);
-      audio.src = audioURL;
-
-
-  }
-
-  setTimeout(function(){
-      recorder.requestData();
-  },5000);
-}
-
-async function recordUserMedia(){
-  if(!navigator.mediaDevices.getUserMedia){
-    logErr("not supported on bhrowser");
-    return;
-  }
-
-  const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-  if(stream){
-    const audioNode = ctx.createMediaStreamSource(stream);
-    visualize(stream);
-    recordStream(stream);
-
-  }else{
-    logError("get steam fail")
-  }
-}
 
 
   </script>
-  </script>
+  </body>

@@ -25,45 +25,48 @@
 
     <div class='container' style='margin:20px;position:relative'>
         <table>
-            <tr>
-                <td>
-                    <div> pre-amp Volume:&nbsp;&nbsp;&nbsp;&nbsp;
-                        <input type="range" id="volume" class="control-volume" min="-1" max="4" value="1"
-                            list="gain-vals" step="0.01"
-                            oninput="event.target.nextElementSibling.innerText=event.target.value"
-                            data-action="volume" /> <span></span>
-                    </div>
+          <tr>
+            <td>
+              <div> pre-amp Volume:&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="range" id="volume" class="control-volume" min="-1" max="4" value="1"
+                list="gain-vals" step="0.01"
+                oninput="event.target.nextElementSibling.innerText=event.target.value"
+                data-action="volume" /> <span></span>
+              </div>
 
-                    <div> second amp Volume:
-                        <input type="range" id="volume2" class="control-volume" min="0" max="3" value="1"
-                            list="gain-vals" step="0.01"
-                            oninput="event.target.nextElementSibling.innerText=event.target.value"
-                            data-action="volume" /><span></span>
-                    </div>
-                </td>
-                          <button id='miccheck'>use microphone</button>
+              <div> second amp Volume:
+                <input type="range" id="volume2" class="control-volume" min="0" max="3" value="1"
+                list="gain-vals" step="0.01"
+                oninput="event.target.nextElementSibling.innerText=event.target.value"
+                data-action="volume" /><span></span>
+              </div>
+            </td>
+            <button id='miccheck'>use microphone</button>
 
-                <td style='text-align:right'>
-<form>
-  <label for="search">Search</label>
+            <td style='text-align:right'>
+              <form>
+                <label for="search">Search</label>
 
- <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='https://grepaudio.herokuapp.com/sudo/::QUERY::.mp3' />
-</form>
- <div id='autosuggest'>
+                <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='https://grepaudio.herokuapp.com/sudo/::QUERY::.mp3' />
+              </form>
+              <div id='autosuggest'>
 
- </div>
-</td>
+              </div>
+            </td>
 
-<td rowspan=2>
-                    <span id=ctrls>
-
-                  </select>
+            <td rowspan=2>
+              <span id=ctrls>
 
 
-                    </span>
-
-                </td>
-            </tr>
+              </span>
+              <div id='recorder'>
+                <button data-state='init' style='display:inline' id='rec'>record</button>
+                <button style='display:none' id='rec-done'>Finish</button>
+                <div id="rec-rx1"></div>
+                <canvas id=c1></canvas>
+              </div>
+            </td>
+          </tr>
             <tr>
                 <td rowspan=2 colspan=1>
                     <button id='reset'>reset</button>
@@ -79,6 +82,7 @@
                     <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
                 </td>
                 <td>
+
                 </td>
             </tr>
             <tr>
@@ -104,7 +108,7 @@
 
         import equilizer from "./equalizer.js";
         import Mixer from './Mixer.js';
-
+        import Recorder from './recording/index.js';
 
         let audioCtx, audioTag, eq;
 
@@ -122,6 +126,8 @@
             window.g_audioCtx = audioCtx;
 
             eq = equilizer.initializeContext(audioCtx, audioTag.outputNode);
+
+          var recorder=  Recorder(audioCtx, 'recorder');
           //  const recorder = new Recorder();
 
 //              var dest = audioCtx.createMediaStreamDestination();
