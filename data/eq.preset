@@ -1,24 +1,3 @@
-
-[Presets]
-Preset0=Classical
-Preset1=Club
-Preset2=Dance
-Preset3=Flat
-Preset4=Live
-Preset5=Laptop Speakers/Headphone
-Preset6=Rock
-Preset7=Pop
-Preset8=Full Bass and Treble
-Preset9=Full Bass
-Preset10=Full Treble
-Preset11=Soft
-Preset12=Party
-Preset13=Ska
-Preset14=Soft Rock
-Preset15=Large Hall
-Preset16=Reggae
-Preset17=Techno
-
 [Classical]
 Preamp=0.375
 Band0=0.375
