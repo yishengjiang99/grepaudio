@@ -12,18 +12,17 @@ var BiquadFilters = function (ctx)
 
 
     const bars = [
-        { "label": "32","f": 32,"Q": 1,"gain": 1,"type": "bandpass" },
-        { "label": "64","f": 64,"Q": 1,"gain": 1,"type": "bandpass" },
-        { "label": "125","f": 125,"Q": 1,"gain": 1,"type": "bandpass" },
-        { "label": "250","f": 250,"Q": 1,"gain": 1,"type": "bandpass" },
-        { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "bandpass" },
-        { "label": "1000","f": 1000,"Q": 1,"gain": 1,"type": "bandpass"},
-        { "label": "2k","f": 2000,"Q": 1,"gain": 1,"type": "bandpass" },
-        { "label": "4k","f": 4000,"Q": 1,"gain": 1,"type": "bandpass" },
-        { "label": "8k","f": 8000,"Q": 1,"gain": 1,"type": "bandpass" },
-        { "label": "16k","f": 16000,"gain": 1,"type": "bandpass" }
+        { "label": "32","f": 32,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "64","f": 64,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "125","f": 125,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "250","f": 250,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "1000","f": 1000,"Q": 1,"gain": 1,"type": "highshelf"},
+        { "label": "2k","f": 2000,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "4k","f": 4000,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "8k","f": 8000,"Q": 1,"gain": 1,"type": "highshelf" },
+        { "label": "16k","f": 16000,"gain": 1,"type": "highshelf" }
     ];
-
     var highShelf;
     var lowShelf;
     var highPass;
@@ -100,21 +99,25 @@ var BiquadFilters = function (ctx)
     function default_filters()
     {
 
-        biquadFilters = []
+        biquadFilters = [];
+        highshelFilters = [];
+
         bars.forEach((obj,i) =>
         {
             var filter = audioCtx.createBiquadFilter();
-            filter.type = obj.type || 'lowpass';
+            filter.type ="bandpass";
             filter.gain.value = obj.gain || 1;
-            filter.Q.value = 1;
-            filter.frequency.value = obj.f-30;
-            var filterlow = audioCtx.createBiquadFilter();
-            filterlow.type = 'lowshelf'
-            filterlow.gain.value = 1;
-            filterlow.Q.value = 1;
-            filterlow.frequency.value = obj.f+30;
+            filter.Q.value = 1.22;
+            filter.frequency.value = obj.f;
             biquadFilters.push(filter);
-//            biquadFilters.push(filterlow);
+
+            var highshelf = audioCtx.createBiquadFilter();
+            highshelf.type = 'highshelf'
+            highshelf.gain.value = 1;
+            highshelf.Q.value = 1;
+            highshelf.frequency.value = obj.f;
+            highshelFilters.push(highshelf);
+
         });
         filter_ui();
         return biquadFilters;
@@ -136,14 +139,6 @@ var BiquadFilters = function (ctx)
             input.setAttribute("data-index",i);
             input.valuetext = input.value;
             switch (obj.type) {
-                case "bandpass":
-                    input.name = "gain";
-                    input.value = obj.gain;
-                    input.max = 12;
-                    input.min = 0;
-                    input.ddefaultValue = 1;
-                    break;
-                    
                 case "lowshelf":
                 case "highshelf":
                     input.name = "gain";
@@ -193,7 +188,7 @@ var BiquadFilters = function (ctx)
 
                 }
                 con.logHTML("updated filter " + i + " " + name + " to " + value);
-
+                // post_FR_update();
                 var freq_list = new Float32Array(biquadFilters.map(b => b.frequency.value));
                 var a = new Float32Array(freq_list.length);
                 var b = new Float32Array(freq_list.length);
@@ -204,7 +199,7 @@ var BiquadFilters = function (ctx)
             }
 
             var nameLabel = document.createElement("label");
-            nameLabel.innerHTML = obj.label;
+            nameLabel.innerHTML = obj.type+ obj.frequency.value;
 
             nameLabel.style.textAlign = 'right';
             var col = document.createElement("tr");
@@ -257,7 +252,7 @@ var BiquadFilters = function (ctx)
     function post_FR_update()
     {
         var frps = aggregate_frequency_response(biquadFilters,hz_bands);
-        window.post_data("freq_resp_update",frps);
+        window.post_data("freq_resp_update", frps.amp_response);
     }
 
     function aggregate_frequency_response(filters,frequency_list)
@@ -275,7 +270,7 @@ var BiquadFilters = function (ctx)
             filter.getFrequencyResponse(frequency_list,amp_response,phase_shift);
             amp_response.forEach((val,i) =>
             {
-                aggregateAmps[i] *= val;
+                aggregateAmps[i] += val;
             })
             amp_list.push(amp_response);
         }
