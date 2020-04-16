@@ -62,8 +62,14 @@ async function initializeContext(audioCtx, activeInputSource)
     var cursor = pre_amp;
     for (let i in biquadFilters) {
         const filter = biquadFilters[i];
-        cursor.connect(filter);
-        cursor = filter;
+
+        if (filter.type=='bandpass'){
+            pre_amp.connect(filter).connect(post_amp)
+        }else{
+            cursor.connect(filter);
+            cursor = filter;
+        }
+ 
       //  pre_amp.connect(filter).connect(compressors[i]).connect(post_amp)
 
     }
@@ -72,7 +78,7 @@ async function initializeContext(audioCtx, activeInputSource)
     var optv = AnalyzerView(post_amp);
 
     optv.analyzer.connect(audioCtx.destination);
-    optv.histogram("output_freq",680,420)
+    optv.histogram("output_freq",680,220)
 }
 
 
@@ -87,8 +93,6 @@ function debug()
 
 function eq_stdin(str)
 {
-
-
     const cmd = str.split(" ")[0];
     const arg1 = str.split(" ")[1] || "";
     const arg2 = str.split(" ")[2] || "";

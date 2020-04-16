@@ -12,16 +12,16 @@ var BiquadFilters = function (ctx)
 
 
     const bars = [
-        { "label": "32","f": 32,"Q": 1,"gain": 1,"type": "highshelf" },
-        { "label": "64","f": 64,"Q": 1,"gain": 1,"type": "highshelf" },
-        { "label": "125","f": 125,"Q": 1,"gain": 1,"type": "highshelf" },
-        { "label": "250","f": 250,"Q": 1,"gain": 1,"type": "highshelf" },
-        { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "highshelf" },
-        { "label": "1000","f": 1000,"Q": 1,"gain": 1,"type": "highshelf"},
-        { "label": "2k","f": 2000,"Q": 1,"gain": 1,"type": "highshelf" },
-        { "label": "4k","f": 4000,"Q": 1,"gain": 1,"type": "highshelf" },
-        { "label": "8k","f": 8000,"Q": 1,"gain": 1,"type": "highshelf" },
-        { "label": "16k","f": 16000,"gain": 1,"type": "highshelf" }
+        { "label": "32","f": 32,"Q": 1,"gain": 1,"type": "bandpass" },
+        { "label": "64","f": 64,"Q": 1,"gain": 1,"type": "bandpass" },
+        { "label": "125","f": 125,"Q": 1,"gain": 1,"type": "bandpass" },
+        { "label": "250","f": 250,"Q": 1,"gain": 1,"type": "bandpass" },
+        { "label": "500","f": 500,"Q": 1,"gain": 1,"type": "bandpass" },
+        { "label": "1000","f": 1000,"Q": 1,"gain": 1,"type": "bandpass"},
+        { "label": "2k","f": 2000,"Q": 1,"gain": 1,"type": "bandpass" },
+        { "label": "4k","f": 4000,"Q": 1,"gain": 1,"type": "bandpass" },
+        { "label": "8k","f": 8000,"Q": 1,"gain": 1,"type": "bandpass" },
+        { "label": "16k","f": 16000,"gain": 1,"type": "bandpass" }
     ];
 
     var highShelf;
@@ -136,6 +136,14 @@ var BiquadFilters = function (ctx)
             input.setAttribute("data-index",i);
             input.valuetext = input.value;
             switch (obj.type) {
+                case "bandpass":
+                    input.name = "gain";
+                    input.value = obj.gain;
+                    input.max = 12;
+                    input.min = 0;
+                    input.ddefaultValue = 1;
+                    break;
+                    
                 case "lowshelf":
                 case "highshelf":
                     input.name = "gain";

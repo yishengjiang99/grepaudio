@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="./simple-console.css">
     <script src="./simple-console.js"></script>
+  <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+
+
 </head>
 
 <body>
@@ -20,7 +24,7 @@
             </span></div>
     </div>
     <div>
-        <h3>Mix Sounds </h3>
+        <h3>Mix Sounds </h3> 
     </div>
 
     <div class='container' style='margin:20px;position:relative'>
@@ -65,6 +69,8 @@
                 <div id="rec-rx1"></div>
                 <canvas id=c1></canvas>
               </div>
+          <div id='like_button_container'></div>
+
             </td>
           </tr>
             <tr>
@@ -76,22 +82,29 @@
                     <audio id='audio' src='./samples/song.mp3'></audio>
                 </td>
                 <td>
-                    <div class='canvas_wrapper'><canvas id='output_freq'></canvas></div>
+                    <div class='canvas_wrapper'>
+                      <span>
+                      <input id='showfft' type=checkbox checked>show</input></span>
+                      <input id='showcummulative' type=checkbox checked>show cummulative fft</input>
+                      <input id='showtimeseries' type=checkbox checked>showtimesseries</input>
+                      <button id='zoomin'>+</button>    <button id='zoomin'>-</button>
+                      </span>
+                      <canvas id='output_freq'></canvas></div>
                 </td>
                 <td>
                     <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
                 </td>
-                <td>
-
-                </td>
             </tr>
+            <tr><td>
+              <div id="equalizer" style="margin-top: 10px">
+              </div>
+            </td>
             <tr>
                 <td align=left colspan=1>
                     <div id=console></div>
                 </td>
                 <td>
-
-  </td>
+                </td>
             </tr>
         </table>
         <div id="rx1"></div>
@@ -139,6 +152,7 @@
     </script>
 
 
+  <script type='module' src="/components/index.js"></script>
 
 </body>
 
