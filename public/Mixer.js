@@ -18,9 +18,8 @@ export default async function(ctx,containerId) {
       source.connect(controls[index]);
       return;
     }else{
-      var source = inputs[index] || ctx.createBufferSource();
+      var source = ctx.createBufferSource();
       loadURL(url);
-
     }
     function loadURL(url){
       const xhr = new XMLHttpRequest();
@@ -90,6 +89,16 @@ export default async function(ctx,containerId) {
            return `<option value='${device.deviceId}'>${device.kind}: ${device.label}</option>`
         }).join("");
       }).catch(function(err) { select.innerHTML= err.message});
+    }else if(indexfile==='notes.csv'){
+      const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split("\n"));
+      var select = document.createElement("span");
+      select.setAttribute("tabindex", index);
+      select.innerHTML = song_db.filter(t=>t.trim()!=="").map(t=>"samples/"+t.trim()).map(n => {
+        var url = n.split(",")[0];
+        var name = (n.split(",")[1] || url).split("/").pop();
+        return `<button value='${encodeURIComponent(url)}'>${name}</button>`
+      }); 
+
     }else{
       const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split("\n"));
       var select = document.createElement("select");
@@ -115,11 +124,16 @@ export default async function(ctx,containerId) {
     stop.onclick = (e)=>{
       inputs[index] instanceof MediaElementAudioSourceNode ?  inputs[index].mediaElement.pause() : inputs[index].stop();
     }
+    debugger;
+    select.querySelectorAll("button").forEach( button=> button.addEventListener("click", (e)=>{
+      var url = e.target.value;
+      inputs[index]=loadURLTo(url, index);
+    }))
 
     apply.onclick = loadURL;
     select.addEventListener("input|submit|change|click|touchup",loadURL);
 
-    function loadURL(){
+    async function loadURL(){
       var url = select.value;
       if(select.getAttribute("data-host")){
         url = select.getAttribute("data-host").replace("::QUERY::", select.value);
@@ -133,10 +147,10 @@ export default async function(ctx,containerId) {
       }
 
       if( inputs[index] !== null ){
-        channelQueues[index].push(url);
-      }else{
-        inputs[index] = loadURLTo(url,index);
-      }
+        await inputs[index].stop();
+        inputs[index]=null;
+        }
+      inputs[index] = await loadURLTo(url,index);
       nowPlayingLabel.innerHTML="Loading.."+url + " channel "+index;
 
     }
