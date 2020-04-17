@@ -39,6 +39,42 @@ var AnalyzerView = function(audioNode, params){
 
       return fftU8().reduce(d=>sum+=d, 0);
     },
+    timeseries: function(elemId, sampleSize=1024, width=320, height=200){
+      var canvas = document.getElementById(elemId);
+      const canvasCtx = canvas.getContext('2d');
+      canvas.setAttribute('width', width);
+      canvas.setAttribute('height', height);
+      canvasCtx.lineWidth = 1;
+      canvasCtx.strokeStyle = 'rgb(122, 122, 122)';
+      var dataArray = new Float32Array(sampleSize);
+      
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(0, 0);
+      var x = 0; 
+      function draw(){
+         fft.getFloatTimeDomainData(dataArray);
+         var sum = 0;
+         for(let i =0; i < sampleSize; i++){
+            sum += (dataArray[i] * dataArray[i]);
+         }
+         var rms = Math.sqrt(sum/sampleSize)*200;
+         if(x >= width){
+          canvasCtx.fillStyle = 'rgb(0, 0, 0)';
+            x=0;
+            canvasCtx.closePath();
+            canvasCtx.clearRect(0, 0, width, height);
+            canvasCtx.fillRect(0, 0, width, height);
+            canvasCtx.beginPath();//ADD THIS LINE!<<<<<<<<<<<<<
+            canvasCtx.moveTo(0,0);
+
+         }
+         canvasCtx.lineTo(x, rms);
+         x++;
+         canvasCtx.stroke();
+         requestAnimationFrame(draw);
+      }
+      draw();
+    },
     histogram_once:  function(elemId, width = 320, height= 200){
       return histogram(elemId, width, height, false);
     },

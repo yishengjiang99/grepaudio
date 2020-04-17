@@ -2,7 +2,7 @@ var BiquadFilters = function (ctx)
 {
     var biquadFilters = [];
     var audioCtx = ctx;
-
+    var highshelFilters;
     const hz_bands = new Float32Array(
         32,64,125,
         250,500,1000,
@@ -100,8 +100,7 @@ var BiquadFilters = function (ctx)
     {
 
         biquadFilters = [];
-        highshelFilters = [];
-
+        highshelFilters=[];
         bars.forEach((obj,i) =>
         {
             var filter = audioCtx.createBiquadFilter();
@@ -199,7 +198,7 @@ var BiquadFilters = function (ctx)
             }
 
             var nameLabel = document.createElement("label");
-            nameLabel.innerHTML = obj.type+ obj.frequency.value;
+            nameLabel.innerHTML = obj.type+ obj.f; 
 
             nameLabel.style.textAlign = 'right';
             var col = document.createElement("tr");

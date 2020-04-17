@@ -54,7 +54,7 @@ export function line_chart(canvasId){
                 canvasCtx.clearRect(0,0,WIDTH,HEIGHT);
 
             }
-            canvasCtx.clearRect(t+100,0,t+80,HEIGHT);
+            canvasCtx.clearRect(t, 0, 80,HEIGHT);
             t++;
 
         }

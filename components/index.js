@@ -1,3 +1,3 @@
-import {SliderGroup} from './slidergroup.js';
+import {SliderGroup} from './slidergroup.jsx';
 import {LikeButton} from './like_button.js';
 

@@ -42,21 +42,7 @@ export class SliderGroup extends React.Component {
     const max_db = 12;
     const { bands, preset, presetMenu } = this.props;
 
-    return e(
-      'div',
-      {},
-      [
-        e('select',
-          { name: 'preset' },
-          presetMenu.map(p => e('option', { value: p }, p))
-        ),
-        e('div', {},
-          HZ_LIST.map( (hz, index) => e('Slider',{min:12, max:12, onSliderUpdate: this.onSliderUpdate, value: hz, index: index}))
-
-        )
-      ]
-    )
-
+    return ()
   }
 }
  

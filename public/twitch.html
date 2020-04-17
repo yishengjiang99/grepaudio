@@ -1,20 +1,81 @@
 <html>
   <body>
-    <!-- Add a placeholder for the Twitch embed -->
-    <div id="twitch-embed"></div>
+<script>
 
-    <!-- Load the Twitch embed script -->
-    <script src="https://embed.twitch.tv/embed/v1.js"></script>
+window.onload = init;
+var context;
+var bufferLoader;
 
-    <!-- Create a Twitch.Embed object that will render within the "twitch-embed" root element. -->
-    <script type="text/javascript">
-      new Twitch.Embed("twitch-embed", {
-        width: 854,
-        height: 480,
-        channel: "monstercat",
-        // only needed if your site is also embedded on embed.example.com and othersite.example.com 
-        parent: ["embed.example.com", "othersite.example.com"]
-      });
-    </script>
+function init() {
+  context = new AudioContext();
+
+  bufferLoader = new BufferLoader(
+    context,
+    [
+      './samples/song.mp3',
+      './samples/A0.mp3',
+    ],
+    finishedLoading
+    );
+
+  bufferLoader.load();
+}
+
+function finishedLoading(bufferList) {
+  // Create two sources and play them both together.
+  var source1 = context.createBufferSource();
+  var source2 = context.createBufferSource();
+  source1.buffer = bufferList[0];
+  source2.buffer = bufferList[1];
+debugger;
+
+  source1.connect(context.destination);
+  source2.connect(context.destination);
+source2.loop=true;
+  source1.start(0);
+  source2.start(3);
+}
+function BufferLoader(context, urlList, callback) {
+  this.context = context;
+    this.urlList = urlList;
+    this.onload = callback;
+    this.bufferList = new Array();
+    this.loadCount = 0;
+}
+
+BufferLoader.prototype.loadBuffer = function(url, index) {
+    var request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.responseType = "arraybuffer";
+
+    var loader = this;
+
+    request.onload = function() {
+        loader.context.decodeAudioData(
+            request.response,
+            function(buffer) {
+                if (!buffer) {
+                    alert('error decoding file data: ' + url);
+                    return;
+                }
+                loader.bufferList[index] = buffer;
+                if (++loader.loadCount == loader.urlList.length)
+                    loader.onload(loader.bufferList);
+            }    
+        );
+    }
+
+    request.onerror = function() {
+        alert('BufferLoader: XHR error');        
+    }
+
+    request.send();
+}
+
+BufferLoader.prototype.load = function() {
+    for (var i = 0; i < this.urlList.length; ++i)
+        this.loadBuffer(this.urlList[i], i);
+}
+</script>
   </body>
 </html>
