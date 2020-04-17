@@ -1,72 +1,113 @@
-var express = require('express');
-const cookieParser = require("cookie-parser");
-var app = express();
-const promoRouter = require('./routes/promoRouter');
-const leaderRouter = require('./routes/leaderRouter');
-const port = process.env.port || 3001;
-app.use(cookieParser('12345-67890-09876-54321'));
+const ytdl = require('ytdl-core')
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const FFmpeg = require('fluent-ffmpeg');
+const { PassThrough } = require('stream')
+const { exec } = require('child_process')
 
+const express = require('express')
+const app = express()
+const httpport = process.env.PORT || 3333
+const https = require('https');
 
-function auth (req, res, next) {
-  console.log(req.headers);
-  var authHeader = req.headers.authorization;
-  if (!authHeader) {
-      var err = new Error('You are not authenticated!');
-      res.setHeader('WWW-Authenticate', 'Basic');
-      err.status = 401;
-      next(err);
+//
+
+app.use(function (req,res,next)
+{
+  res.header("Access-Control-Allow-Origin","*");
+  res.header("Access-Control-Allow-Methods","GET, POST, OPTIONS, PUT");
+  next();
+});
+
+app.use("/samples", express.static("/samples"));
+
+app.get("/api/yt",function (req,res,next){
+  const query = req.params.q;
+  const youtube_api_key = 'AIzaSyBCXMcymaqef8RmYskmdVOJcQA5e06Zvyg';
+  const url =`https://www.googleapis.com/youtube/v3/search?type=video&part=snippet&maxResults=10&q=${req.params.query}&key=${youtube_api_key}`
+  const request = require("request");
+
+  request({
+    url: url,
+    json: true
+  }, function(error, response, body) {
+    if(error){
+      callres.stats=500;
+      res.end(error.messsage);
       return;
-  }
+    }
+    if(body.items){
+      ret =  body.items.map(item=> {
 
-  var auth = new Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-  var user = auth[0];
-  var pass = auth[1];
-  if (user == 'admin' && pass == 'password') {
-      next(); // authorized
-  } else {
-      var err = new Error('You are not authenticated!');
-      res.setHeader('WWW-Authenticate', 'Basic');      
-      err.status = 401;
-      next(err);
-  }
+        return { 
+          vid: item.id.videoId,
+          title: item.snippet.title,
+          channelTitle: item.snippet.channelTitle
+        };
+      });
+         
+    if(req.params.format !=='options')
+    {
+      
+       res.end(JSON.stringify(ret));
+    }else{
+
+      var rr= body.items.map(item=>{
+        return `<option value='${item.id.videoId}'>${item.snippet.title} - ${item.snippet.channelTitle}</option>`;
+      }).join("")
+        res.end(rr);
+      }
+    }
+    
+  });
+});  
+
+async function yt_search(query){
+  var rp = require('request-promise');
+  const youtube_api_key = 'AIzaSyBCXMcymaqef8RmYskmdVOJcQA5e06Zvyg';
+  const url =`https://www.googleapis.com/youtube/v3/search?type=video&part=snippet&maxResults=1&q=${query}&key=${youtube_api_key}`
+  try{
+    return await rp({url:url, json:true});
+  }catch(e){
+    return false;
+  }  
 }
 
-app.use(auth);
-
-
-
-app.use('/promotions', promoRouter);
-app.use('/leaders', leaderRouter);
-
-const mongoose = require("mongoose");
-const url = process.env.mongo_uri || 'mongodb://localhost:27017/conFusion';
-mongoose.connect(url).then(() =>{
-  console.log("mongo db connected");
-}).catch((err)=>{
-  console.error("mongo db not connected", err);
-})
-
-app.use("/", express.static("../public"));
-// app.set('views', path.join(__dirname, 'views'));
-// app.set('view engine', 'jade');
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+app.use("/api/sudo/(:q).mp3", async (req,res,next)=>{
+  yt_search(req.params.q).then(resp=>{
+    if(resp.items[0]){
+      const vid = resp.items[0].id.videoId;
+      FFmpeg.setFfmpegPath(ffmpegPath);
+       const video = ytdl(vid,{ audioFormat: 'mp3' });
+       const ffmpeg = new FFmpeg(video);
+      process.nextTick(() => ffmpeg.format('mp3').pipe(new PassThrough()).pipe(res))
+    }
+  })
+  .catch(e=>{
+    res.status=500;   
+    console.log(e);
+    res.end(e.message+" ..");
+  })  
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+app.use("/api/(:vid).mp3",async (req,res,next) =>
+{
+  try {
+    vid = req.params.vid;
+    FFmpeg.setFfmpegPath(ffmpegPath);
+    const video = ytdl(vid,{ audioFormat: 'mp3' });
 
-  // render the error page
-  res.status(err.status || 500);
-  res.end(err.message); 
+    const ffmpeg = new FFmpeg(video);
+    process.nextTick(() => ffmpeg.format('mp3').pipe(new PassThrough()).pipe(res))
+  } catch (e) {
+    res.status=500;
+    res.end(e.message);
+  }
 });
 
-app.listen(port,()=>{
-  console.log("listenign on port ",port);
+
+app.use(function(req,res){
+  res.end(req.path);
 })
-module.exports = app;
+app.listen(httpport);
+
+require("./stdin.js");

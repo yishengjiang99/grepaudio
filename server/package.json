@@ -1,19 +1,21 @@
 {
-  "name": "assignment2",
+  "name": "server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js",
-    "start": "nodemon app.js --ignore /data"
+    "prestart": "lsof -i tcp:8086 |awk '{print $2}' |grep -v PID|xargs kill -9; lsof -i tcp:3333 |awk '{print $2}' |grep -v PID|xargs kill -9", 
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cookie-parser": "^1.4.3",
+    "@ffmpeg-installer/ffmpeg": "^1.0.20",
     "express": "^4.17.1",
-    "mongoose": "^5.1.7",
-    "mongoose-currency": "^0.2.0",
-    "morgan": "^1.9.1"
+    "ffmpeg": "0.0.4",
+    "fluent-ffmpeg": "^2.1.2",
+    "ws": "^7.2.3",
+    "ytdl": "^1.3.0"
   }
 }
