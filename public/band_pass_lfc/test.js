@@ -1,7 +1,12 @@
 $("button").onclick = async function(e){
   var ctx;
   ctx = new AudioContext();
-  await ctx.audioWorklet.addModule('./processor.js');
+  try{
+    await ctx.audioWorklet.addModule('./processor.js');
+
+  }catch(e){
+    alert(e.message);
+  }
 
   log("loadding processor")
   var r = new AudioWorkletNode(ctx, 'band_pass_lfc_processor');

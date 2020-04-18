@@ -3,13 +3,15 @@ import DynamicCompressionModule from './compression.js';
 import PlayableAudioSource from './audio_source.js';
 import AnalyzerView from './AnalyzerView.js'
 import './polyfills.js'
+import loadBandPassFilters from './band_pass_lfc/index.js'
+
 const NYQUIST_SAMPLE_RATE_x2 = 441000;
 
 var configs = window.location.hash.includes("parallel") ? 3 : 1;
 log('config ios ' + configs)
 
 let audioCtx,pre_amp,post_amp;
-var biquadFilters,compressors;
+var biquadFilters,compressors,bandpassFilters;
 let mod_compressor;
 let activeInputSource;
 var bqModule;
@@ -44,22 +46,24 @@ window.post_data = function (arr, arg1, arg2)
     }
 }
 
+var bandpassFilters;
 async function initializeContext(audioCtx, activeInputSource)
 {
     var ctx = audioCtx ||  window.g_audioCtx;
     if(audioCtx.state == 'suspended') await audioCtx.resume();
-
     pre_amp = audioCtx.createGain(1);
     post_amp = audioCtx.createGain(1);
     activeInputSource.connect(pre_amp);
 
+    bandpassFilters = await loadBandPassFilters(audioCtx, 'eq_bandpass_update');
+    pre_amp.connect(bandpassFilters);
+
     bqModule = new BiquadFilters(audioCtx);
-    biquadFilters = bqModule.default_filters();
+    biquadFilters = bqModule.default_filters(bandpassFilters);
     mod_compressor = DynamicCompressionModule(audioCtx);
     mod_compressor.addDefaults(biquadFilters.length);
     compressors = mod_compressor.list;
-
-    var cursor = pre_amp;
+    var cursor = bandpassFilters;
     for (let i in biquadFilters) {
         const filter = biquadFilters[i];
 
@@ -102,6 +106,9 @@ function eq_stdin(str)
 
     var resp = "";
     switch (cmd) {
+        case 'lfc':
+            bandpassFilters.port.postMessage({msg:(arg1+" "+arg2).trim()});
+            break;
         case 'rreset': audioCtx = null && initializeContext(); break;
         case 'init': initializeContext(); break;
         case "debug": debug(); break;

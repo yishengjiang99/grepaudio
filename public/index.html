@@ -11,7 +11,7 @@
     <script src="./simple-console.js"></script>
 </head>
 
-<body onclick="void(0);">
+<body0 onclick="void(0);">
   <div id="overlay" title="Click to turn off the overlay effect" style="display: block;">
         <div class="text">overlay blocker</div>
         <div class="text"><br>
@@ -70,11 +70,14 @@
             </td>
           </tr>
             <tr>
-                <td rowspan=2 colspan=1>
+                <td rowspan=3 colspan=1>
                     <button id='reset'>reset</button>
                     <form id="eq_update_form">
 
                     </form>
+                    <div id="eq_bandpass_update">
+
+                    </div>
                     <audio id='audio' src='./samples/song.mp3'></audio>
                 </td>
                 <td>
@@ -83,7 +86,7 @@
                       <input id='showfft' type=checkbox checked>show</input></span>
                       <input id='showcummulative' type=checkbox checked>show cummulative fft</input>
                       <input id='showtimeseries' type=checkbox checked>showtimesseries</input>
-                      <button id='zoomin'>+</button>    <button id='zoomin'>-</button>
+                      <button id='zoomin'>+</button>    <button id='zoomout'>-</button>
                       </span>
                       <canvas id='output_freq'></canvas></div>
                       <canvas id='output_timeline'></canvas></div>
@@ -94,10 +97,10 @@
                 </td>
             </tr>
             <tr><td>
-              <div id="equalizer"></div>
+            
             </td></tr>
             <tr>
-                <td align=left colspan=1>
+                <td colspan=1>
                     <div id=console></div>
                 </td>
                 <td>
@@ -131,7 +134,7 @@
 
             var audioTag =await Mixer(audioCtx, "ctrls");
 
-//            audioTag.add_audio_tag("audio");
+             audioTag.add_audio_tag("audio");
             window.g_audioTag = audioTag;
             window.g_audioCtx = audioCtx;
 

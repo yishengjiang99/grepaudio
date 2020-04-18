@@ -19,7 +19,7 @@ export default async function(ctx,containerId) {
       return;
     }else{
       var source = ctx.createBufferSource();
-      loadURL(url);
+     return loadURL(url);
     }
     function loadURL(url){
       const xhr = new XMLHttpRequest();
@@ -53,14 +53,6 @@ export default async function(ctx,containerId) {
     return source;
   }
 
-  const add_from_URL = function(url, index){
-    if( inputs[index] !== null ){
-      channelQueues[index].push(url);
-    }else{
-      inputs[index] = loadURLTo(url,index);
-    }
-
-  };
 
   const add_audio_tag = function(tagId,i){
     inputs[i] =  (tagId, controls[i]);
@@ -124,7 +116,6 @@ export default async function(ctx,containerId) {
     stop.onclick = (e)=>{
       inputs[index] instanceof MediaElementAudioSourceNode ?  inputs[index].mediaElement.pause() : inputs[index].stop();
     }
-    debugger;
     select.querySelectorAll("button").forEach( button=> button.addEventListener("click", (e)=>{
       var url = e.target.value;
       inputs[index]=loadURLTo(url, index);
@@ -164,7 +155,7 @@ export default async function(ctx,containerId) {
 return {
   inputs, outputNode, controls,
   connect,
-  add_audio_tag, add_from_URL,
+  add_audio_tag
 }
 }
 

@@ -127,7 +127,7 @@ var BiquadFilters = function (ctx)
     function filter_ui()
     {
         var container = document.querySelector("#eq_update_form");
-
+        container.append(document.createDocumentFragment())
         bars.map((obj,i) =>
         {
 
@@ -198,15 +198,16 @@ var BiquadFilters = function (ctx)
             }
 
             var nameLabel = document.createElement("label");
-            nameLabel.innerHTML = obj.type+ obj.f; 
+            nameLabel.innerHTML = obj.label;
 
             nameLabel.style.textAlign = 'right';
             var col = document.createElement("tr");
-
+            var bpinput = document.getElementById("bp_"+i);
 
             col.append(nameLabel.wrap("td"));
             col.append(input.wrap("td"));
             col.append(label.wrap("td"));
+            if(bpinput) col.append(bpinput.wrap("td"));
             col.append(meter.wrap("td"));
 
             container.append(col);

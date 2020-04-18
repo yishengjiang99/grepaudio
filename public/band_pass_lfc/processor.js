@@ -1,13 +1,18 @@
-
-const HZ_LIST = new Float32Array([31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]);
-const Q = 1.2247449;
-const DEFAULT_PRESET_GAINS = new Float32Array([0.375, 0.375, 0.375, 0.375, 0.375, 0.375, 0.375, 4.6, 4.5, 6]);
+import {Q,HZ_LIST, DEFAULT_PRESET_GAINS} from '../contants.js';
 
 class BandPassLRCProcessor extends AudioWorkletProcessor {
 	constructor() {
 		super();
 		this.ring_buffer = [ new Float32Array(), new Float32Array()];
-		this.n = 0;		
+		this.n = 0;	
+		this.gains = [0.375, 0.375, 0.375, 0.375, 0.375, 0.375, 0.375, 4.6, 4.5, 6];
+		var self = this;
+		this.port.onmessage = function(evt){
+			if(evt.data.gainUpdate){
+				self.gains[evt.data.gainUpdate.index] = evt.data.gainUpdate.value;
+				self.port.postMessage({msg: "gains set to "+self.gains.join(",")})
+			}
+		}
 	}
 	static get parameterDescriptor() {
 		{
@@ -40,7 +45,7 @@ class BandPassLRCProcessor extends AudioWorkletProcessor {
 	}
 
 	process(inputs, outputs, params) {
-		const gains = params.presetGains || DEFAULT_PRESET_GAINS
+
 		const bands = params.bands || HZ_LIST;
 		const input = inputs[0];
 		const output = outputs[0];
@@ -62,7 +67,7 @@ class BandPassLRCProcessor extends AudioWorkletProcessor {
 					var v1 = this.ring_buffer[i1][channel*k] || v;
 					var coef = z_params[k];
 					var wq = coef.b0 * v + coef.a0 * v0 + v1 * coef.a1;
-					v += (wq + v1 * coef.b1) * gains[k];
+					v += (wq + v1 * coef.b1) * (Math.pow(10, this.gains[k]/20) -1 )
 					this.ring_buffer[this.n % 2][channel*k] = wq;
 				}
 				sum += v * v; ns++;
@@ -72,7 +77,7 @@ class BandPassLRCProcessor extends AudioWorkletProcessor {
 		}
 		this.n++;
 
-		if(this.n % 100 == 1){
+		if(this.n % 100 == 1 && sumin > 0){
 			this.port.postMessage({msg:"processed "+this.n+` rms in: ${Math.sqrt(sumin/ns)} rms out: ${Math.sqrt(sum/ns)}`});
 		}
 		return true;
