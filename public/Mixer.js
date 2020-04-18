@@ -19,7 +19,8 @@ export default async function(ctx,containerId) {
       return;
     }else{
       var source = ctx.createBufferSource();
-     return loadURL(url);
+      inputs[index]=source;
+      return loadURL(url);
     }
     function loadURL(url){
       const xhr = new XMLHttpRequest();
@@ -114,11 +115,13 @@ export default async function(ctx,containerId) {
     container.appendChild(stop);
     container.appendChild(nowPlayingLabel.wrap("p"));
     stop.onclick = (e)=>{
-      inputs[index] instanceof MediaElementAudioSourceNode ?  inputs[index].mediaElement.pause() : inputs[index].stop();
+      inputs[index].disconnect();
+      inputs[index]=null;
+      // instanceof MediaElementAudioSourceNode ?  inputs[index].mediaElement.pause() : inputs[index].stop();
     }
     select.querySelectorAll("button").forEach( button=> button.addEventListener("click", (e)=>{
       var url = e.target.value;
-      inputs[index]=loadURLTo(url, index);
+      loadURLTo(url, index);
     }))
 
     apply.onclick = loadURL;
@@ -141,7 +144,7 @@ export default async function(ctx,containerId) {
         await inputs[index].stop();
         inputs[index]=null;
         }
-      inputs[index] = await loadURLTo(url,index);
+      loadURLTo(url,index);
       nowPlayingLabel.innerHTML="Loading.."+url + " channel "+index;
 
     }

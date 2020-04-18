@@ -34,7 +34,6 @@ function PlayableAudioSource(ctx)
         audio.control=true;
         audio.play();
       };
-      $("")..appendChild(audio);
       var source = ctx.createMediaStreamSource(stream);
       return source;
     } catch (e) {

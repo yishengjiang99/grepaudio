@@ -190,6 +190,17 @@ function setBubble(range, bubble) {
   // Sorta magic numbers based on size of the native UI thumb
   bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15}px))`;
 }
+window.index_stdin = function(str){
+  const cmd = str.split(" ")[0];
+    const arg1 = str.split(" ")[1] || "";
+    const arg2 = str.split(" ")[2] || "";
+    switch(cmd){
+      case "ls":
+        return JSON.stringify(window.g_audioTag)
+        break;
+      default: return false;
+    }
+}
 
     </script>
       

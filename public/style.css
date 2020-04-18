@@ -1,7 +1,6 @@
 .simple-console {
     bottom: 10px;
     min-width: 70vw;
-  ]
     position: relative;
     background-color: black;
     color: white;
@@ -13,6 +12,12 @@
 }
 td{
   min-width:25px;
+}
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 40%;
 }
 .relative{
   position:relative;
@@ -49,6 +54,7 @@ body{
   height: 100%;
   position:fixed;
   overflow:hidden;
+  width:100%;
 }
 table{
     display: table-row-group;

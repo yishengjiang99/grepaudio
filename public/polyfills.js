@@ -20,7 +20,8 @@ var con = new SimpleConsole({
     handleCommand: function (command)
     {
         try {
-            con.log(eq_stdin(command));
+            var resp = index_stdin(command) || eq_stdin(command) || con.log("..");
+            con.log(resp)
         } catch (error) {
             con.log(error);
         }

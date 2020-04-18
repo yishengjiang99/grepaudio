@@ -21,13 +21,13 @@ const volumeControl = document.getElementById("volume");
 const volumeControl2 = document.getElementById("volume2");
 const rx2 =  document.getElementById("rx2");
 
-document.querySelectorAll("input[name=q]").forEach(d => d.min = '1.0');
-document.querySelectorAll("input[name=gain]").forEach(d => d.value = 0.0);
+// document.querySelectorAll("input[name=q]").forEach(d => d.min = '1.0');
+// document.querySelectorAll("input[name=gain]").forEach(d => d.value = 0.0);
 window.logrx1 = (txt) => rx1.innerHTML = txt;
 window.logrx2 = (txt) => rx2.innerHTML = txt;
 
-volumeControl.addEventListener('input',() => pre_amp.gain.value = event.target.value);
-volumeControl2.addEventListener('input',() => post_amp.gain.value = event.target.value);
+// volumeControl.addEventListener('input',() => pre_amp.gain.value = event.target.value);
+// volumeControl2.addEventListener('input',() => post_amp.gain.value = event.target.value);
 
 const hz_bands = new Float32Array(
     32,64,125,
@@ -49,6 +49,10 @@ window.post_data = function (arr, arg1, arg2)
 var bandpassFilters;
 async function initializeContext(audioCtx, activeInputSource)
 {
+    volumeControl.addEventListener('input',() => pre_amp.gain.value = event.target.value);
+volumeControl2.addEventListener('input',() => post_amp.gain.value = event.target.value);
+    volumeControl.addEventListener('input',() => pre_amp.gain.value = event.target.value);
+volumeControl2.addEventListener('input',() => post_amp.gain.value = event.target.value);
     var ctx = audioCtx ||  window.g_audioCtx;
     if(audioCtx.state == 'suspended') await audioCtx.resume();
     pre_amp = audioCtx.createGain(1);
