@@ -78,6 +78,18 @@
                     <div id="eq_bandpass_update">
 
                     </div>
+                    <div id='noisegate'>
+                      <div class="range-wrap">
+                        noisegate threshold
+                        <input type="range" min='-90' max='-10' value='-50' class="range" id='ng_thres'>
+                        <output class="bubble"></output>
+                      </div>
+                      <div class="range-wrap">
+                        center freq 
+                        <input type="range" min='50' max='5000' value='355' class="range" id='ng_freq'>
+                        <output class="bubble"></output>
+                      </div>
+                    </div>
                     <audio id='audio' src='./samples/song.mp3'></audio>
                 </td>
                 <td>
@@ -122,7 +134,7 @@
         import equilizer from "./equalizer.js";
         import Mixer from './Mixer.js';
         import Recorder from './recording/index.js';
-
+        import NoiseGateNode from './NoiseGateNode.js'
         let audioCtx, audioTag, eq;
 
         $("#overlay").onclick = async function (e) {
@@ -136,9 +148,19 @@
 
              audioTag.add_audio_tag("audio");
             window.g_audioTag = audioTag;
-            window.g_audioCtx = audioCtx;
+             let noiseGate = new NoiseGateNode(audioCtx);
+            $("#ng_thres").oninput = function(evt){
+              debugger;
+              noiseGate.setCompressorThreshold(evt.target.value);
+            }
+            $("#ng_freq").oninput = function(evt){
+              noiseGate.frequency.setValueAtTime(evt.target.value, audioCtx.currentTime);
+            }
+             audioTag.outputNode.connect(noiseGate);
 
-            eq = equilizer.initializeContext(audioCtx, audioTag.outputNode);
+            window.g_audioCtx = audioCtx;
+               
+            eq = equilizer.initializeContext(audioCtx, noiseGate);
 
           var recorder=  Recorder(audioCtx, 'recorder');
           //  const recorder = new Recorder();
@@ -147,7 +169,27 @@
   //            var mediaRecorder = new MediaRecorder(dest.stream);
 
           }
+          const allRanges = document.querySelectorAll(".range-wrap");
+allRanges.forEach(wrap => {
+  const range = wrap.querySelector(".range");
+  const bubble = wrap.querySelector(".bubble");
 
+  range.addEventListener("input", () => {
+    setBubble(range, bubble);
+  });
+  setBubble(range, bubble);
+});
+
+function setBubble(range, bubble) {
+  const val = range.value;
+  const min = range.min ? range.min : 0;
+  const max = range.max ? range.max : 100;
+  const newVal = Number(((val - min) * 100) / (max - min));
+  bubble.innerHTML = val;
+
+  // Sorta magic numbers based on size of the native UI thumb
+  bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15}px))`;
+}
 
     </script>
       

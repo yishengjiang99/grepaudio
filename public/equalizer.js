@@ -264,7 +264,6 @@ function query(q)
     fetch(url,{ mode: 'no-cors' }).then(resp => resp.text()).then(text => text.match(regExp))
         .then(match =>
         {
-            debugger;
             if (match && match[7].length > 11) {
                 return match[7];
             } else {

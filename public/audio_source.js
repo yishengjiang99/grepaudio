@@ -24,19 +24,17 @@ function PlayableAudioSource(ctx)
       throw new Error("web rtc not available")
     }
     try {
-      var stream = await navigator.mediaDevices.getUserMedia({ audio:  {deviceId: deviceId} });
+      var stream = await navigator.mediaDevices.getUserMedia({ audio:  {deviceId: deviceId, echoCancellation:true} });
 
       var audio = document.createElement("audio")
       audio.srcObject = stream;
       audio.onloadedmetadata = function (e)
       {
         audio.muted = true;
-
+        audio.control=true;
         audio.play();
       };
-      document.body.appendChild(audio);
-
-
+      $("")..appendChild(audio);
       var source = ctx.createMediaStreamSource(stream);
       return source;
     } catch (e) {
