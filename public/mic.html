@@ -1,0 +1,100 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>rt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mui/3.7.1/css/mui.min.css"
+        integrity="sha256-Ryx96brW7LDribCqmld/zV3Rnt2cEGIo0XnhSPkbkTM=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <link rel="stylesheet" href="./simple-console.css">
+    <script src="./simple-console.js"></script>
+</head>
+
+<body onclick="void(0);">
+
+
+
+    <div class=center>
+        <i class="material-icons" style="font-size:48px">mic</i>
+    </div>
+    <ul id='devices'>
+
+    </ul>
+    <canvas id=c0></canvas>
+
+<canvas id=c1></canvas>
+</body>
+<script src='polyfills.js'></script>
+
+<script type='module'>
+    import AnalyzerView from './AnalyzerView.js'
+
+
+    let ctx;
+
+    async function connect(deviceId) {
+        try {
+            ctx = new AudioContext();
+            var stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId, echoCancellation: true } });
+
+            var audio = document.createElement("audio")
+            audio.srcObject = stream;
+            audio.onloadedmetadata = function (e) {
+                 audio.muted = true;
+               // audio.controls = true;
+                // audio.srcObject = stream;
+                $("#devices").append(audio);
+                audio.play();
+            };
+
+            var source = ctx.createMediaStreamSource(stream);
+            source.start();
+
+         //   source.connect(ctx.destination);
+            // await ctx.audioWorklet.addModule('./band_pass_lfc/processor.js');
+            // var r = new AudioWorkletNode(ctx, 'band_pass_lfc_processor');
+            // r.port.onmessage = e => {
+            //     log("msg: "+e.data.msg);
+            // }
+            // source.connect(r);
+
+            await ctx.audioWorklet.addModule('./NoiseGate/Processor.js');
+            var ng = new AudioWorkletNode(ctx, 'noise_gate');
+            ng.port.onmessage = e => {
+                log("ng msg: "+e.data.msg);
+            }
+
+            var av = ctx.createAnalyser();
+            // source.connect(ctx.destination);
+            source.connect(ng);
+     
+            ng.connect(ctx.destination);
+            var optv = AnalyzerView(ng);
+            optv.analyzer.connect(ctx.destination);
+            optv.histogram("c1",680,220) 
+            optv.timeseries("c0",1024, 680, 220);
+            return source;
+        } catch (eerrr) {
+       console.log(eerrr.message);
+        }
+    }
+
+    navigator.mediaDevices.enumerateDevices().then(function (devices) {
+        $("#devices").innerHTML = devices.filter(device => device.kind == 'audioinput').map(function (device) {
+            return `<li> <button src='${device.deviceId}'> ${device.kind}: ${device.label}</button></li>`
+        }).join("")
+        $("#devices").onclick=(e)=>connect(e.target.src);
+    });
+
+
+
+</script>
+
+</body>
+
+</html>
