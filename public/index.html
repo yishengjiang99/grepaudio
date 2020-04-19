@@ -1,209 +1,245 @@
-
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>rt</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="./simple-console.css">
-    <script src="./simple-console.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>rt</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./simple-console.css">
+  <script src="./simple-console.js"></script>
 </head>
 
 <body0 onclick="void(0);">
   <div id="overlay" title="Click to turn off the overlay effect" style="display: block;">
-        <div class="text">overlay blocker</div>
-        <div class="text"><br>
-            <br><span style="font-size:20px;" class="w3-black w3-padding w3-hide-medium w3-hide-small">
-                Click anywhere to turn off the overlay effect
-            </span></div>
-    </div>
-    <div>
-        <h3>Mix Sounds </h3> 
-    </div>
+    <div class="text">overlay blocker</div>
+    <div class="text"><br>
+      <br><span style="font-size:20px;" class="w3-black w3-padding w3-hide-medium w3-hide-small">
+        Click anywhere to turn off the overlay effect
+      </span></div>
+  </div>
+  <div>
+    <h3>Mix Sounds </h3>
+  </div>
 
-    <div class='container' style='margin:20px;position:relative'>
-        <table>
-          <tr>
-            <td>
-              <div> pre-amp Volume:&nbsp;&nbsp;&nbsp;&nbsp;
-                <input type="range" id="volume" class="control-volume" min="-1" max="4" value="1"
-                list="gain-vals" step="0.01"
-                oninput="event.target.nextElementSibling.innerText=event.target.value"
-                data-action="volume" /> <span></span>
-              </div>
+  <div class='container' style='margin:20px;position:relative'>
+    <table>
+      <tr>
+        <td>
+          <span>Preamp
+            <input type="range" id="volume" class="control-volume" min="-1" max="4" value="1" list="gain-vals"
+              step="0.01" oninput="event.target.nextElementSibling.innerText=event.target.value" data-action="volume" />
+            <span></span>
+          </span>
 
-              <div> second amp Volume:
-                <input type="range" id="volume2" class="control-volume" min="0" max="3" value="1"
-                list="gain-vals" step="0.01"
-                oninput="event.target.nextElementSibling.innerText=event.target.value"
-                data-action="volume" /><span></span>
-              </div>
-            </td>
+          <span>Postamp:
+            <input type="range" id="volume2" class="control-volume" min="0" max="3" value="1" list="gain-vals"
+              step="0.01" oninput="event.target.nextElementSibling.innerText=event.target.value"
+              data-action="volume" /><span></span>
+          </span>
+        </td>
+
+        <td style='text-align:right'>
+          <form>
+            <label for="search">Search</label>
+            <input type=text id='ytsearch' placeholder='search youtube' size=30
+              data-host='https://dsp.grepawk.com/api/sudo/::QUERY::.mp3' />
+          </form>
+          <div id='autosuggest'>
+
+          </div>
+        </td>
+
+        <td rowspan=2>
+          <span id=ctrls>
+
             <button id='miccheck'>use microphone</button>
+          </span>
+          <script src="./RecordRTC.js"></script>
+          <div id='recorder'>
+            <button data-state='init' style='display:inline' id='rec'>record</button>
+            <button data-state='init' disabled style='display:inline' id='rec'>download</button>
+            <button style='display:inline' disabled id='rec-done'>Finish</button>
+            <div id="rec-rx1"></div>
+            <canvas id=c1></canvas>
+            <audio id=recordrtcplayer></audio>
+          </div>
+          <script src='polyfills.js'></script>
 
-            <td style='text-align:right'>
-              <form>
-                <label for="search">Search</label>
+          <script>
 
-                <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='https://dsp.grepawk.com/api/sudo/::QUERY::.mp3' />
-              </form>
-              <div id='autosuggest'>
+          </script>
+          <div id='like_button_container'></div>
 
-              </div>
-            </td>
+        </td>
+      </tr>
+      <tr>
+        <td rowspan=3 colspan=1>
+          <span> <button id='reset'>reset</button></span> <select id=preset_options></select>
+          <form id="eq_update_form">
 
-            <td rowspan=2>
-              <span id=ctrls>
+          </form>
+          <div id="eq_bandpass_update">
 
+          </div>
+          <div id='noisegate'>
+            <div class="range-wrap">
+              noisegate threshold
+              <input type="range" min='-90' max='-10' value='-50' class="range" id='ng_thres'>
+              <output class="bubble"></output>
+            </div>
+            <div class="range-wrap">
+              center freq
+              <input type="range" min='50' max='5000' value='355' class="range" id='ng_freq'>
+              <output class="bubble"></output>
+            </div>
+          </div>
+          <audio id='audio' src='./samples/song.mp3'></audio>
+        </td>
+        <td>
+          <div class='canvas_wrapper'>
+            <span>
+              <input id='showfft' type=checkbox checked>show</input></span>
+            <input id='showcummulative' type=checkbox checked>show cummulative fft</input>
+            <input id='showtimeseries' type=checkbox checked>showtimesseries</input>
+            <button id='zoomin'>+</button> <button id='zoomout'>-</button>
+            </span>
+            <canvas id='output_freq'></canvas></div>
+          <canvas id='output_timeline'></canvas>
+  </div>
 
-              </span>
-              <div id='recorder'>
-                <button data-state='init' style='display:inline' id='rec'>record</button>
-                <button style='display:none' id='rec-done'>Finish</button>
-                <div id="rec-rx1"></div>
-                <canvas id=c1></canvas>
-              </div>
-                <div id='like_button_container'></div>
+  </td>
+  <td>
+    <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
+  </td>
+  </tr>
+  <tr>
+    <td>
 
-            </td>
-          </tr>
-            <tr>
-                <td rowspan=3 colspan=1>
-                    <button id='reset'>reset</button>
-                    <form id="eq_update_form">
+    </td>
+  </tr>
+  <tr>
+    <td colspan=1>
+      <div id=console></div>
+    </td>
+    <td>
+    </td>
+  </tr>
+  </table>
+  <div id="rx1"></div>
+  <div id='rx1'></div>
+  <div id='rx2log'></div>
 
-                    </form>
-                    <div id="eq_bandpass_update">
-
-                    </div>
-                    <div id='noisegate'>
-                      <div class="range-wrap">
-                        noisegate threshold
-                        <input type="range" min='-90' max='-10' value='-50' class="range" id='ng_thres'>
-                        <output class="bubble"></output>
-                      </div>
-                      <div class="range-wrap">
-                        center freq 
-                        <input type="range" min='50' max='5000' value='355' class="range" id='ng_freq'>
-                        <output class="bubble"></output>
-                      </div>
-                    </div>
-                    <audio id='audio' src='./samples/song.mp3'></audio>
-                </td>
-                <td>
-                    <div class='canvas_wrapper'>
-                      <span>
-                      <input id='showfft' type=checkbox checked>show</input></span>
-                      <input id='showcummulative' type=checkbox checked>show cummulative fft</input>
-                      <input id='showtimeseries' type=checkbox checked>showtimesseries</input>
-                      <button id='zoomin'>+</button>    <button id='zoomout'>-</button>
-                      </span>
-                      <canvas id='output_freq'></canvas></div>
-                      <canvas id='output_timeline'></canvas></div>
-
-                </td>
-                <td>
-                    <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
-                </td>
-            </tr>
-            <tr><td>
-            
-            </td></tr>
-            <tr>
-                <td colspan=1>
-                    <div id=console></div>
-                </td>
-                <td>
-                </td>
-            </tr>
-        </table>
-        <div id="rx1"></div>
-        <div id='rx1'></div>
-        <div id='rx2log'></div>
-
-    </div>
+  </div>
 
 
-    <script src='polyfills.js'></script>
+  ]
+
+  <script type='module'>
+
+    import equilizer from "./equalizer.js";
+    import Mixer from './Mixer.js';
+    import Recorder from './recording/index.js';
+    import NoiseGateNode from './NoiseGateNode.js'
+    let audioCtx, audioTag, eq;
+
+    $("#overlay").onclick = async function (e) {
+      $("#overlay").style.zIndex = -99;
+
+      this.style.display = 'none';
+
+      audioCtx = new AudioContext();
+
+      var audioTag = await Mixer(audioCtx, "ctrls");
+
+      audioTag.add_audio_tag("audio");
+      window.g_audioTag = audioTag;
+      let noiseGate = new NoiseGateNode(audioCtx);
+      $("#ng_thres").oninput = function (evt) {
+        noiseGate.setCompressorThreshold(evt.target.value);
+      }
+      $("#ng_freq").oninput = function (evt) {
+        noiseGate.frequency.setValueAtTime(evt.target.value, audioCtx.currentTime);
+      }
+      audioTag.outputNode.connect(noiseGate);
+
+      window.g_audioCtx = audioCtx;
+
+      eq = equilizer.initializeContext(audioCtx, noiseGate);
+
+      // var recorder=  Recorder(audioCtx, 'recorder');
+      //  const recorder = new Recorder();
+
+      //              var dest = audioCtx.createMediaStreamDestination();
+      //            var mediaRecorder = new MediaRecorder(dest.stream);
+
+      var recordrtc
+      $("#rec").onclick = function (evt) {
+        var destination = audioCtx.createMediaStreamDestination();
+        recordrtc = RecordRTC(destination.stream, {
+          type: 'audio',
+          numberOfAudioChannels: 2,
+          bufferSize: 16384
+        });
+
+        recordrtc.startRecording();
+        $("#rec-done").disabled = false;
+        $("#rec").disabled = true;
+      }
+
+      $("#rec-done").onclick = function (evt) {
+        recordrtc.stopRecording(function () {
+          const url = URL.createObjectURL(recordrtc.getBlob());
+          $("#recordrtcplayer").src = url;
+          $("#rec").disabled = false;
+          $("#recordrtcplayer").controls = true;
+
+        })
+      }
+      // $("#download").click = function (evt) {
+      //   this.disabled = true;
+      //   if (!recorder || !recorder.getBlob()) return;
+
+      //   blobToDataURL(recorder.getBlob());
+      // }
 
 
-    <script type='module'>
-
-        import equilizer from "./equalizer.js";
-        import Mixer from './Mixer.js';
-        import Recorder from './recording/index.js';
-        import NoiseGateNode from './NoiseGateNode.js'
-        let audioCtx, audioTag, eq;
-
-        $("#overlay").onclick = async function (e) {
-          $("#overlay").style.zIndex=-99;
-
-            this.style.display='none';
-
-            audioCtx = new AudioContext();
-
-            var audioTag =await Mixer(audioCtx, "ctrls");
-
-             audioTag.add_audio_tag("audio");
-            window.g_audioTag = audioTag;
-             let noiseGate = new NoiseGateNode(audioCtx);
-            $("#ng_thres").oninput = function(evt){
-              debugger;
-              noiseGate.setCompressorThreshold(evt.target.value);
-            }
-            $("#ng_freq").oninput = function(evt){
-              noiseGate.frequency.setValueAtTime(evt.target.value, audioCtx.currentTime);
-            }
-             audioTag.outputNode.connect(noiseGate);
-
-            window.g_audioCtx = audioCtx;
-               
-            eq = equilizer.initializeContext(audioCtx, noiseGate);
-
-          var recorder=  Recorder(audioCtx, 'recorder');
-          //  const recorder = new Recorder();
-
-//              var dest = audioCtx.createMediaStreamDestination();
-  //            var mediaRecorder = new MediaRecorder(dest.stream);
-
-          }
-          const allRanges = document.querySelectorAll(".range-wrap");
-allRanges.forEach(wrap => {
-  const range = wrap.querySelector(".range");
-  const bubble = wrap.querySelector(".bubble");
-
-  range.addEventListener("input", () => {
-    setBubble(range, bubble);
-  });
-  setBubble(range, bubble);
-});
-
-function setBubble(range, bubble) {
-  const val = range.value;
-  const min = range.min ? range.min : 0;
-  const max = range.max ? range.max : 100;
-  const newVal = Number(((val - min) * 100) / (max - min));
-  bubble.innerHTML = val;
-
-  // Sorta magic numbers based on size of the native UI thumb
-  bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15}px))`;
-}
-window.index_stdin = function(str){
-  const cmd = str.split(" ")[0];
-    const arg1 = str.split(" ")[1] || "";
-    const arg2 = str.split(" ")[2] || "";
-    switch(cmd){
-      case "ls":
-        return JSON.stringify(window.g_audioTag)
-        break;
-      default: return false;
     }
-}
+    const allRanges = document.querySelectorAll(".range-wrap");
+    allRanges.forEach(wrap => {
+      const range = wrap.querySelector(".range");
+      const bubble = wrap.querySelector(".bubble");
 
-    </script>
-      
-</body>
+      range.addEventListener("input", () => {
+        setBubble(range, bubble);
+      });
+      setBubble(range, bubble);
+    });
+
+    function setBubble(range, bubble) {
+      const val = range.value;
+      const min = range.min ? range.min : 0;
+      const max = range.max ? range.max : 100;
+      const newVal = Number(((val - min) * 100) / (max - min));
+      bubble.innerHTML = val;
+
+      // Sorta magic numbers based on size of the native UI thumb
+      bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15}px))`;
+    }
+    window.index_stdin = function (str) {
+      const cmd = str.split(" ")[0];
+      const arg1 = str.split(" ")[1] || "";
+      const arg2 = str.split(" ")[2] || "";
+      switch (cmd) {
+        case "ls":
+          return JSON.stringify(window.g_audioTag)
+          break;
+        default: return false;
+      }
+    }
+
+  </script>
+
+  </body>
 
 </html>

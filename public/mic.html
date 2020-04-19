@@ -25,60 +25,152 @@
     <ul id='devices'>
 
     </ul>
+<div>
+    <audio id="audio" controls></audio>
+
     <canvas id=c0></canvas>
 
-<canvas id=c1></canvas>
+    <canvas id=c1></canvas>
+</div>
 </body>
 <script src='polyfills.js'></script>
 
 <script type='module'>
-    import AnalyzerView from './AnalyzerView.js'
+    import AnalyzerView from './AnalyzerView.js';
+    import Envelope from './envelope.js';
 
-
-    let ctx;
+    let ctx= new AudioContext();
 
     async function connect(deviceId) {
         try {
             ctx = new AudioContext();
-            var stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId, echoCancellation: true } });
 
-            var audio = document.createElement("audio")
-            audio.srcObject = stream;
-            audio.onloadedmetadata = function (e) {
-                 audio.muted = true;
-               // audio.controls = true;
-                // audio.srcObject = stream;
-                $("#devices").append(audio);
-                audio.play();
-            };
+            var context = ctx;
+            var ampEnvelopeGain = context.createGain();
 
-            var source = ctx.createMediaStreamSource(stream);
-            source.start();
+            var ampAttack = 2;
+            var ampDecay = 3;
+            var ampSustain = 5;
+            var ampRelease = 0.02;
+            var adsrs=[];
+            const keys = 'asdfghj'.split("");
+            const nodes= '65.41, 73.42, 82.41,87.31,98.00,110.00,123.47'.split(",");
+            var masterGain = ctx.createGain();
 
-         //   source.connect(ctx.destination);
+            keys.forEach((l,i)=>{
+                var LFO = ctx.createOscillator();
+                LFO.frequency.value=nodes[i];
+                var gain = ctx.createGain();
+                gain.gain.value=0;
+                var gainEnvelope = new Envelope(0, 5, ampAttack, ampDecay, ampSustain, ampRelease, gain.gain);
+                adsrs.push(gainEnvelope)
+                LFO.connect(gain);
+                LFO.start(0);
+                gain.connect(masterGain);
+       
+            })
+
+            // var scriptNode = ctx.createScriptProcessor(4096, 1, 1);
+            // masterGain.connect(scriptNode);
+   
+            // scriptNode.connect(ctx.destination);
+            // var offlineCtx = new OfflineAudioContext(2,44100*40,44100);;
+            // var myArrayBuffer = ctx.createBuffer(2, 44100*40, ctx.sampleRate);  
+
+            // scriptNode.onaudioprocess = function(evt) {
+      
+     
+            //             // The input buffer is the song we loaded earlier
+            //     var inputBuffer = evt.inputBuffer;
+
+            //     // The output buffer contains the samples that will be modified and played
+            //     var outputBuffer = evt.outputBuffer;
+
+            //     // Loop through the output channels (in this case there is only one)
+            //     for (var channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
+            //         var inputData = inputBuffer.getChannelData(channel);
+            //         myArrayBuffer.copyFromChannel(evt.inputBuffer, 0, inputData.length);
+            //         offlineCtx.decodeAudioData(myArrayBuffer, function(decuded){
+                        
+            //             console.log(decuded);
+            //         });
+            //         var outputData = outputBuffer.getChannelData(channel);
+
+            //         // Loop through the 4096 samples
+            //         for (var sample = 0; sample < inputBuffer.length; sample++) {
+            //                 outputData[sample] = inputData[sample];
+
+            //         }
+            //     }
+
+                
+            // }
+
+
+            window.addEventListener("keydown", function(e){
+                    if(keys.indexOf(e.key)>-1){        
+                        log('keydown')
+                        var env = adsrs[keys.indexOf(e.key)];
+                        env.trigger(ctx.currentTime);
+                    }
+                }) 
+            // window.addEventListener("keyup",function(e){
+            //     if(keys.indexOf(e.key)>-1){        
+            //         log('keyu '+e.key)
+            //         var env = adsrs[keys.indexOf(e.key)];
+
+            //         env.release(ctx.currentTime);
+            //     }
+                
+            // })      
+            // window.addEventListener("keypress",function(e){
+            //     if(keys.indexOf(e.key)>-1){     
+            //         var env = adsrs[keys.indexOf(e.key)];
+            //         console.log('keypress');
+            //         env.release(ctx.currentTime);
+            //     }
+            // })  
+
+
+
+            // var stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId, echoCancellation: true } });
+
+            // var audio = document.createElement("audio")
+            // audio.srcObject = stream;
+            // audio.onloadedmetadata = function (e) {
+            //      audio.muted = true;
+            //    // audio.controls = true;
+            //     // audio.srcObject = stream;
+            //     $("#devices").append(audio);
+            //     audio.play();
+            // };
+
+            // var source = ctx.createMediaStreamSource(stream);
+            // source.start();
+
             // await ctx.audioWorklet.addModule('./band_pass_lfc/processor.js');
             // var r = new AudioWorkletNode(ctx, 'band_pass_lfc_processor');
             // r.port.onmessage = e => {
             //     log("msg: "+e.data.msg);
             // }
-            // source.connect(r);
+            // masterGain.connect(r);r.connect(ctx.destination);
 
             await ctx.audioWorklet.addModule('./NoiseGate/Processor.js');
-            var ng = new AudioWorkletNode(ctx, 'noise_gate');
-            ng.port.onmessage = e => {
+            var r = new AudioWorkletNode(ctx, 'noise_gater');
+            r.port.onmessage = e => {
                 log("ng msg: "+e.data.msg);
             }
-
-            var av = ctx.createAnalyser();
-            // source.connect(ctx.destination);
-            source.connect(ng);
+            masterGain.connect(r);
+            r.connect(ctx.destination);
+            // var av = ctx.createAnalyser();
+            // // source.connect(ctx.destination);
+            // gain.connect(ng);
      
-            ng.connect(ctx.destination);
-            var optv = AnalyzerView(ng);
-            optv.analyzer.connect(ctx.destination);
-            optv.histogram("c1",680,220) 
-            optv.timeseries("c0",1024, 680, 220);
-            return source;
+            // var optv = AnalyzerView(ng);
+            // optv.analyzer.connect(ctx.destination);
+            // optv.histogram("c1",680,220) 
+            // optv.timeseries("c0",1024, 680, 220);
+            // return source;
         } catch (eerrr) {
        console.log(eerrr.message);
         }

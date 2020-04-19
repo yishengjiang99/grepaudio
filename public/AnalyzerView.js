@@ -6,19 +6,19 @@ var AnalyzerView = function(audioNode, params){
 
   var fft = audioNode.context.createAnalyser();
   
-  fft.fftSize = configs.fft || 256;
-  fft.minDecibels = configs.min_dec || -90;
-  fft.maxDecibels = configs.max_dec || -10;
-  fft.smoothingTimeConstant = configs.smtc || 0.1;
+  fft.fftSize = configs.fft || 2048;
+  fft.smoothingTimeConstant = configs.smtc || 0.5;
   const bins = fft.fftSize;
 
   const ctx = fft.context;
-  var zoomScale = 2;
+  var zoomScale = 1;
   var xshift = 0;
   audioNode.connect(fft);
-
   var cummulativeFFT = new Uint8Array(fft.fftSize).fill(0);
   var counter = 0;
+  var hz_per_bin = ctx.sampleRate / bins;
+  
+
   function zoomIn(){
     zoomScale += 0.1;
   }
@@ -27,6 +27,23 @@ var AnalyzerView = function(audioNode, params){
   }
   if($("#zoomin")) $("#zoomin").onclick=zoomIn;
   if($("#zoomout")) $("#zoomout").onclick=zoomOut;
+
+  function fft_in_hz_list(){
+    var dataArray = new Uint8Array(bins);
+    var hz_index=0;
+    var hz_histram = new Uint8Array(hz_index.length).fill(0);
+    fft.getByteFrequencyData(dataArray);
+    for(let i = 0; i < bins; i++){
+      
+      if( i*hz_per_bin > HZ_LIST[hz_index]){
+         hz_histram[hz_index++] = dataArray[i];
+      }else{
+         hz_histram[hz_index] = dataArray[i];
+      }
+    }
+    window.postMessage("freq_resp_update", Object.values(hz_histram));
+    
+  }
 
   return {
     analyzer:fft,
@@ -78,10 +95,10 @@ var AnalyzerView = function(audioNode, params){
             canvasCtx.moveTo(0,0);
          }
          
-         if(rms >0){
-           canvasCtx.lineTo(x, rms);
+         if(rms > 4){
+            canvasCtx.lineTo(x, rms);
             x++;
-          canvasCtx.stroke();
+            canvasCtx.stroke();
          }
          requestAnimationFrame(draw);
       }
@@ -131,11 +148,11 @@ var AnalyzerView = function(audioNode, params){
             canvasCtx.clearRect(0, 0, width, height);
           canvasCtx.fillRect(0, 0, width, height);
 
-          var barWidth = (width / (255/zoomScale)) * 2.5;
+          var barWidth = (width / (bins/zoomScale)) * 2.5;
           var barHeight;
           var barHeigthCC;
           var x = 0;
-          for(var i = 0; i < 255/zoomScale; i++) {
+          for(var i = 0; i < bins/zoomScale; i++) {
             barHeight = dataArray[i] * zoomScale
 
             barHeigthCC = cummulativeFFT[i];
@@ -156,14 +173,14 @@ var AnalyzerView = function(audioNode, params){
 
           x=10;
           var axisIndex=0;
-          for(var i = 0; i < 255/zoomScale; i++) {
+          for(var i = 0; i < bins/zoomScale; i++) {
           
             barHeight = dataArray[i];
             canvasCtx.fillStyle= 'rgb(233,233,233)'
             canvasCtx.textAlign ='left'
             var f = i/bins  * 24000;
             if(f>HZ_LIST[axisIndex]){
-              canvasCtx.fillText(HZ_LIST[axisIndex].toFixed(0)+'hz', x, height-5);
+              canvasCtx.fillText(HZ_LIST[axisIndex].toFixed(0)+'', x, height-(axisIndex % 2 ? 15 : 0));
               axisIndex++;
             }
 

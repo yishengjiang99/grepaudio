@@ -4,6 +4,7 @@ import PlayableAudioSource from './audio_source.js';
 import AnalyzerView from './AnalyzerView.js'
 import './polyfills.js'
 import loadBandPassFilters from './band_pass_lfc/index.js'
+import Presets from './presets.js'
 
 const NYQUIST_SAMPLE_RATE_x2 = 441000;
 
@@ -39,6 +40,7 @@ const hz_bands = new Float32Array(
 window.post_data = function (arr, arg1, arg2)
 {
   if(arr=='freq_resp_update'){
+
         var chartdata = arg1;
         var meters =this.document.querySelectorAll("meter.freq_resp_meter");
 
@@ -50,9 +52,9 @@ var bandpassFilters;
 async function initializeContext(audioCtx, activeInputSource)
 {
     volumeControl.addEventListener('input',() => pre_amp.gain.value = event.target.value);
-volumeControl2.addEventListener('input',() => post_amp.gain.value = event.target.value);
-    volumeControl.addEventListener('input',() => pre_amp.gain.value = event.target.value);
-volumeControl2.addEventListener('input',() => post_amp.gain.value = event.target.value);
+    volumeControl2.addEventListener('input',() => post_amp.gain.value = event.target.value);
+        volumeControl.addEventListener('input',() => pre_amp.gain.value = event.target.value);
+    volumeControl2.addEventListener('input',() => post_amp.gain.value = event.target.value);
     var ctx = audioCtx ||  window.g_audioCtx;
     if(audioCtx.state == 'suspended') await audioCtx.resume();
     pre_amp = audioCtx.createGain(1);
@@ -60,6 +62,14 @@ volumeControl2.addEventListener('input',() => post_amp.gain.value = event.target
     activeInputSource.connect(pre_amp);
 
     bandpassFilters = await loadBandPassFilters(audioCtx, 'eq_bandpass_update');
+    $("#preset_options").innerHTML = Presets.menu();
+    $("#preset_options").oninput = function(e){
+        var name= e.target.value;
+        var gains = Presets.presetGains(name);
+       bandpassFilters.port.postMessage({gainUpdates: gains.map( (gain, index)=>{
+            return {index:index, value:gain} 
+       })});
+    }
     pre_amp.connect(bandpassFilters);
 
     bqModule = new BiquadFilters(audioCtx);
