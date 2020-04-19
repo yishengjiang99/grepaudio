@@ -29,7 +29,7 @@ var con = new SimpleConsole({
     autofocus: true, // if the console is to be the primary interface of the page
     storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
 })
-// document.getElementById("console") ? document.getElementById("console").append(con.element) : document.body.append(con.element);
+ document.getElementById("console") ? document.getElementById("console").append(con.element) : document.body.append(con.element);
 
 window.con = con;
 // add the console to the page

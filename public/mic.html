@@ -26,6 +26,8 @@
 
     </ul>
 <div>
+    <div id=rx0></div>
+    <div id=rx1></div>
     <audio id="audio" controls></audio>
 
     <canvas id=c0></canvas>
@@ -40,11 +42,39 @@
     import Envelope from './envelope.js';
 
     let ctx= new AudioContext();
-
     async function connect(deviceId) {
         try {
             ctx = new AudioContext();
 
+            var LFO = ctx.createOscillator();
+                LFO.frequency.value=55;
+                var gain = ctx.createGain();
+                gain.gain.value=5;
+
+                LFO.connect(gain);
+                LFO.start(0);
+debugger;
+            await ctx.audioWorklet.addModule('./NoiseGate/Processor.js');
+            var r = new AudioWorkletNode(ctx, 'noise_gater');
+            r.port.onmessage = e => {
+                if(e.data.sumin){
+                    $("#rx0").innerHTML = e.data.sumin
+                }
+                if(e.data.sumout){
+                    $("#rx1").innerHTML = e.data.sumout
+                }
+            }
+            gain.connect(r);
+            r.connect(ctx.destination);
+
+        }
+        catch(e){
+            console.log(e);
+        }
+    }
+
+    async function c2(){
+        try{
             var context = ctx;
             var ampEnvelopeGain = context.createGain();
 
@@ -155,12 +185,20 @@
             // }
             // masterGain.connect(r);r.connect(ctx.destination);
 
+            var LFO = ctx.createOscillator();
+                LFO.frequency.value=nodes[i];
+                var gain = ctx.createGain();
+                gain.gain.value=5;
+
+                LFO.connect(gain);
+                LFO.start(0);
+
             await ctx.audioWorklet.addModule('./NoiseGate/Processor.js');
             var r = new AudioWorkletNode(ctx, 'noise_gater');
             r.port.onmessage = e => {
                 log("ng msg: "+e.data.msg);
             }
-            masterGain.connect(r);
+            gain.connect(r);
             r.connect(ctx.destination);
             // var av = ctx.createAnalyser();
             // // source.connect(ctx.destination);

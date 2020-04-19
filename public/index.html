@@ -55,7 +55,7 @@
 
             <button id='miccheck'>use microphone</button>
           </span>
-          <script src="./RecordRTC.js"></script>
+  
           <div id='recorder'>
             <button data-state='init' style='display:inline' id='rec'>record</button>
             <button data-state='init' disabled style='display:inline' id='rec'>download</button>
@@ -82,18 +82,31 @@
           <div id="eq_bandpass_update">
 
           </div>
-          <div id='noisegate'>
+          <form id='noisegate'>
+            Noise Gate:
             <div class="range-wrap">
-              noisegate threshold
-              <input type="range" min='-90' max='-10' value='-50' class="range" id='ng_thres'>
+              <output id=threshold_l>Gate: </output><output class="bubble"></output>
+
+              <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='0' class="range" name='threshold'>
+            </div>
+            <div class="range-wrap">
+              <output id=attack_l>Attack:</output>
+              <input aria-labelledby='attack_l' type="range" min='0' max='1' value='0.01' step='0.01' class="range" name='attack'>
               <output class="bubble"></output>
             </div>
             <div class="range-wrap">
-              center freq
-              <input type="range" min='50' max='5000' value='355' class="range" id='ng_freq'>
+              <output id=release_l>Release: </output>
+              <input aria-labelledby='release_l' type="range" min='0' max='1' value='0.01' step='0.01' class="range" name='release'>
               <output class="bubble"></output>
             </div>
-          </div>
+            <div class="range-wrap">
+              <output id=threshold_l>Sustain:</output>
+              <input aria-labelledby='threshold_l' type="range" min='0.001' max='1' value='0.0025' class="range" name='timeConstant'>
+              <output class="bubble"></output>
+            </div>
+            <div id="rx1"></div>
+            <div id='rx0'></div>
+          </form>
           <audio id='audio' src='./samples/song.mp3'></audio>
         </td>
         <td>
@@ -126,8 +139,7 @@
     </td>
   </tr>
   </table>
-  <div id="rx1"></div>
-  <div id='rx1'></div>
+
   <div id='rx2log'></div>
 
   </div>
@@ -140,7 +152,7 @@
     import equilizer from "./equalizer.js";
     import Mixer from './Mixer.js';
     import Recorder from './recording/index.js';
-    import NoiseGateNode from './NoiseGateNode.js'
+    import NoiseGate from './NoiseGate/NoiseGate.js'
     let audioCtx, audioTag, eq;
 
     $("#overlay").onclick = async function (e) {
@@ -154,48 +166,28 @@
 
       audioTag.add_audio_tag("audio");
       window.g_audioTag = audioTag;
-      let noiseGate = new NoiseGateNode(audioCtx);
-      $("#ng_thres").oninput = function (evt) {
-        noiseGate.setCompressorThreshold(evt.target.value);
+
+      var noiseGate = new NoiseGate(audioCtx);
+
+      noiseGate.port.postMessage("ping");
+      noiseGate.port.onmessage=(evt)=>{
+        log(JSON.stringify(evt.data));
       }
-      $("#ng_freq").oninput = function (evt) {
-        noiseGate.frequency.setValueAtTime(evt.target.value, audioCtx.currentTime);
+      $("#noisegate").oninput=function(e){
+        noiseGate[e.target.name] !== null ? noiseGate[e.target.name] = e.target.value : alert("property not found on noise gate")
+
       }
-      audioTag.outputNode.connect(noiseGate);
+     audioTag.outputNode.connect(noiseGate.input);
 
       window.g_audioCtx = audioCtx;
 
-      eq = equilizer.initializeContext(audioCtx, noiseGate);
+      eq = equilizer.initializeContext(audioCtx, noiseGate.output);
 
       // var recorder=  Recorder(audioCtx, 'recorder');
       //  const recorder = new Recorder();
 
       //              var dest = audioCtx.createMediaStreamDestination();
       //            var mediaRecorder = new MediaRecorder(dest.stream);
-
-      var recordrtc
-      $("#rec").onclick = function (evt) {
-        var destination = audioCtx.createMediaStreamDestination();
-        recordrtc = RecordRTC(destination.stream, {
-          type: 'audio',
-          numberOfAudioChannels: 2,
-          bufferSize: 16384
-        });
-
-        recordrtc.startRecording();
-        $("#rec-done").disabled = false;
-        $("#rec").disabled = true;
-      }
-
-      $("#rec-done").onclick = function (evt) {
-        recordrtc.stopRecording(function () {
-          const url = URL.createObjectURL(recordrtc.getBlob());
-          $("#recordrtcplayer").src = url;
-          $("#rec").disabled = false;
-          $("#recordrtcplayer").controls = true;
-
-        })
-      }
       // $("#download").click = function (evt) {
       //   this.disabled = true;
       //   if (!recorder || !recorder.getBlob()) return;

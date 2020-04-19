@@ -12,6 +12,14 @@ export default function loadBandPassFilters(ctx, containerId){
                         inputs[index].value = gain;
                     })
                 }
+                if(e.data.spl_in){
+                 $("#rx0").innerHTML = e.data.spl_in;
+                }
+
+                if(e.data.spl_out){
+                    
+                    $("#rx1").innerHTML = e.data.spl_out;
+                   }
             }
             r.port.onmessageerror = e =>{
                 log("msg error "+e.message);

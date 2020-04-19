@@ -1,4 +1,4 @@
-class NoiseGate {
+export default class NoiseGate {
   /**
    * @constructor
    * @param {BaseAudioContext} context The audio context
@@ -69,6 +69,13 @@ class NoiseGate {
     this.channel_ = new Float32Array(this.noiseGateKernel_.bufferSize);
     this.envelope_ = new Float32Array(this.noiseGateKernel_.bufferSize);
     this.weights_ = new Float32Array(this.noiseGateKernel_.bufferSize);
+
+    var channel = new MessageChannel();
+    this.port = channel.port1;
+    this.port.onmessage=(msg)=>{
+        this.postMessage("pong")
+    }
+    this.postMessage = (msg)=> channel.port2.postMessage(msg);
   }
 
   /**
