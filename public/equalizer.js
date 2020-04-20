@@ -2,7 +2,6 @@ import BiquadFilters from './biquadFilters.js'
 import DynamicCompressionModule from './compression.js';
 import PlayableAudioSource from './audio_source.js';
 import AnalyzerView from './AnalyzerView.js'
-import './polyfills.js'
 import loadBandPassFilters from './band_pass_lfc/index.js'
 import Presets from './presets.js'
 
