@@ -93,7 +93,7 @@ class BandPassLRCProcessor extends AudioWorkletProcessor {
 		this.n++;
 
 		if(this.n % 22 == 1 && sumin > 0){
-			this.port.postMessage({spl_in: Math.sqrt(sumin/ns), spl_out:Math.sqrt(sum/ns)});
+			this.port.postMessage({spl_in: 10* Math.log10(Math.sqrt(sumin/ns)), spl_out: 10* Math.log10(Math.sqrt(sum/ns)) });
 		}
 		return true;
 

@@ -66,6 +66,7 @@ var AnalyzerView = function(audioNode, params){
       return fftU8().reduce(d=>sum+=d, 0);
     },
     timeseries: function(elemId, sampleSize=1024, width=320, height=200){
+
       var canvas = document.getElementById(elemId);
       const canvasCtx = canvas.getContext('2d');
       canvas.setAttribute('width', width);
@@ -80,13 +81,20 @@ var AnalyzerView = function(audioNode, params){
       function draw(){
          fft.getFloatTimeDomainData(dataArray);
          var sum = 0;
+         var peakplus =0;
+         var peakminus =0;
+         
          for(let i =0; i < sampleSize; i++){
+           if(dataArray[i]>peakplus) peakplus=dataArray[i];
+           if(dataArray[i]<peakminus) peakminus=dataArray[i];
+
             sum += (dataArray[i] * dataArray[i]);
          }
          var rms = Math.sqrt(sum/sampleSize)*200;
-
+ 
          if(x >= width){
-          canvasCtx.fillStyle = 'rgb(0, 0, 0)';
+           
+           canvasCtx.fillStyle = 'rgb(255, 255, 255)';
             x=0;
             canvasCtx.closePath();
             canvasCtx.clearRect(0, 0, width, height);
@@ -95,10 +103,13 @@ var AnalyzerView = function(audioNode, params){
             canvasCtx.moveTo(0,0);
          }
          
-         if(rms > 4){
+         if(rms > 1 || true){
             canvasCtx.lineTo(x, rms);
-            x++;
+            x += 3;
+  
+            canvasCtx.fillStyle = 'rgb(111,111,255)';
             canvasCtx.stroke();
+            canvasCtx.fillRect(x,peakminus+50,3,(peakplus-peakminus)*50);
          }
          requestAnimationFrame(draw);
       }
@@ -118,8 +129,8 @@ var AnalyzerView = function(audioNode, params){
       canvas.setAttribute('width', width);
       canvas.setAttribute('height', height);
       canvasCtx.lineWidth = 2;
-      canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
-      canvasCtx.fillStyle = 'black';
+      canvasCtx.strokeStyle = 'black';
+      canvasCtx.fillStyle = 'white';
       canvasCtx.fillRect(0,0,width, height);
       var dataArray = new Uint8Array(fft.fftSize);
       if(!repeating) return dataArray;

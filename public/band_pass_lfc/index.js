@@ -5,7 +5,6 @@ export default function loadBandPassFilters(ctx, containerId){
         ctx.audioWorklet.addModule('../band_pass_lfc/processor.js').then(_=>{
             var r = new AudioWorkletNode(ctx, 'band_pass_lfc_processor');
             r.port.onmessage = e => {
-                log("msg: "+e.data.msg);
                 if(e.data.gainupdates_processed){
                     var inputs =document.querySelectorAll(".bandpass");
                     e.data.gainupdates_processed.forEach((gain,index)=>{
