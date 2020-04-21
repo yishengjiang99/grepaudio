@@ -8,9 +8,10 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="./simple-console.css">
   <script src="./simple-console.js"></script>
-</head>
 
-<body0 onclick="void(0);">
+</head>
+<bgsound src='./samples/toxic.mp3'></bgsound>
+<body=onclick="void(0);">
   <div id="overlay" title="Click to turn off the overlay effect" style="display: block;">
     <div class="text">overlay blocker</div>
     <div class="text"><br>
@@ -53,24 +54,34 @@
         <td rowspan=2>
           <span id=ctrls>
 
-            <button id='miccheck'>use microphone</button>
           </span>
   
           <div id='recorder'>
-            <button data-state='init' style='display:inline' id='rec'>record</button>
-            <button data-state='init' disabled style='display:inline' id='rec'>download</button>
-            <button style='display:inline' disabled id='rec-done'>Finish</button>
-            <div id="rec-rx1"></div>
-            <canvas id=c1></canvas>
-            <audio id=recordrtcplayer></audio>
+            <button id="btn-start-recording">Start Recording</button>
+            <button id="btn-stop-recording" disabled>Stop Recording</button>
+            <button id="btn-release-microphone" disabled>Release Microphone</button>
+            <button id="btn-download-recording" disabled>Download</button>
+          </div>            
+          <div>
+            <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
+            <br><input type='file' id='file'></div>
+            <script>audio1
+              // Check for BlobURL support
+                var blob = window.URL || window.webkitURL;
+                
+                document.getElementById('file').addEventListener('change', function(event){
+                        var file = this.files[0];
+                        var fileURL = blob.createObjectURL(file);
+                        $("#audio1").src = fileURL;
+                        $("#audio1").autoplay=true;
+                });
+            </script>
           </div>
-          <script src='polyfills.js'></script>
+            <script src='./RecordRTC.js'></script>
+            <script src='polyfills.js'></script>
 
-          <script>
-
-          </script>
-          <div id='like_button_container'></div>
-
+            <script tyle='module' src='./recording/index.js'></script>
+      
         </td>
       </tr>
       <tr>
@@ -87,16 +98,16 @@
             <div class="range-wrap">
               <output id=threshold_l>Gate: </output><output class="bubble"></output>
 
-              <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='0' class="range" name='threshold'>
+              <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range" name='threshold'>
             </div>
             <div class="range-wrap">
               <output id=attack_l>Attack:</output>
-              <input aria-labelledby='attack_l' type="range" min='0' max='1' value='0.01' step='0.01' class="range" name='attack'>
+              <input aria-labelledby='attack_l' type="range" min='0' max='1' value='0.03' step='0.01' class="range" name='attack'>
               <output class="bubble"></output>
             </div>
             <div class="range-wrap">
               <output id=release_l>Release: </output>
-              <input aria-labelledby='release_l' type="range" min='0' max='1' value='0.01' step='0.01' class="range" name='release'>
+              <input aria-labelledby='release_l' type="range" min='0' max='1' value='0.03' step='0.01' class="range" name='release'>
               <output class="bubble"></output>
             </div>
             <div class="range-wrap">
@@ -107,7 +118,6 @@
             <div id="rx1"></div>
             <div id='rx0'></div>
           </form>
-          <audio id='audio' src='./samples/song.mp3'></audio>
         </td>
         <td>
           <div class='canvas_wrapper'>
@@ -151,7 +161,6 @@
 
     import equilizer from "./equalizer.js";
     import Mixer from './Mixer.js';
-    import Recorder from './recording/index.js';
     import NoiseGate from './NoiseGate/NoiseGate.js'
     let audioCtx, audioTag, eq;
 
@@ -164,7 +173,8 @@
 
       var audioTag = await Mixer(audioCtx, "ctrls");
 
-      audioTag.add_audio_tag("audio");
+      audioTag.add_audio_tag("audio1",5);
+
       window.g_audioTag = audioTag;
 
       var noiseGate = new NoiseGate(audioCtx);
@@ -177,7 +187,7 @@
         noiseGate[e.target.name] !== null ? noiseGate[e.target.name] = e.target.value : alert("property not found on noise gate")
 
       }
-     audioTag.outputNode.connect(noiseGate.input);
+      audioTag.outputNode.connect(noiseGate.input);
 
       window.g_audioCtx = audioCtx;
 

@@ -1,6 +1,6 @@
 function split_band(input, low_freq, high_freq){
     var ctx = input.context;
-    var Q = context.createConstantSource();
+    var Q = ctx.createConstantSource();
 
     var lpf = input.context.createBiquadFilter();
     lpf.frequency.value = low_freq;
@@ -60,43 +60,11 @@ function split_band(input, low_freq, high_freq){
     low.connect(fbcDelay[0]).connect(fbcAttenuate[0]).connect(masterGain);
     high.connect(fbcDelay[1]).connect(fbcAttenuate[1]).connect(masterGain);
     mid.connect(fbcDelay[2]).connect(fbcAttenuate[2]).connect(masterGain);
-
-    var form_inputs = [[low_freq, high_freq], compressors, gains, fbcDelay, fbAttenuate].map((attr,index)=>{
-        var row = document.createElement("row");
-        [0, 1, 2, 3].forEach(index => {
-            var g = new GainNode().gain(gain)
-            var p = document.createElement("input");
-            p.name = $(attr);
-            var output = document.createElement("output")
-            var c = document.ccreateElement("c";
-            )
-            
-        })
-    })
     
     return {
         bands:[low,high,mid],
+        output: masterGain
     }
     
 }
-function createInputForProperty(p,val,bindTo){
-    var span = document.createElement("span");
-    return `<div class="range-wrap">
-            <output id=${val}>${p}: aria-labelledby='threshold_l' </output><output class="bubble"></output>
-
-             <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-100' defaultValue="-100" class="range" name='threshold'>
-        </div>`;
-
-
-    /*
-               <div class="range-wrap">
-              <output id=threshold_l>Gate: </output><output class="bubble"></output>
-
-              <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-100' defaultValue="-100" class="range" name='threshold'>
-            </div>*/
-}
-function canvas(split_band){
-
-}
-
 export default split_band;

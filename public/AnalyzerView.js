@@ -103,13 +103,13 @@ var AnalyzerView = function(audioNode, params){
             canvasCtx.moveTo(0,0);
          }
          
-         if(rms > 1 || true){
+         if(rms > 3){
             canvasCtx.lineTo(x, rms);
-            x += 3;
+            x += 1;
   
             canvasCtx.fillStyle = 'rgb(111,111,255)';
             canvasCtx.stroke();
-            canvasCtx.fillRect(x,peakminus+50,3,(peakplus-peakminus)*50);
+            // canvasCtx.fillRect(x,peakminus+50,3,(peakplus-peakminus)*50);
          }
          requestAnimationFrame(draw);
       }
@@ -137,8 +137,8 @@ var AnalyzerView = function(audioNode, params){
 
 
       function drawBars(){
-          var draw= $("#showfft").checked;
-          var draw_accum = $("#showcummulative").checked;
+          var draw= !($("#showfft") && $("#showfft").checked == false)
+          var draw_accum = !($("#showcummulative") && $("#showcummulative").checked == false)
           requestAnimationFrame(drawBars);
 
           fft.getByteFrequencyData(dataArray);

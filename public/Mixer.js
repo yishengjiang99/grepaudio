@@ -2,11 +2,11 @@ import PlayableAudioSource from './audio_source.js'
 export default async function(ctx,containerId) {
   var ctx = ctx;
 
-  var inputs = [null,null,null,null,null];
-  var channelQueues = [[],[],[],[],[]];
+  var inputs =new Array(6);
+  var channelQueues = new Array(6).fill(new Array())
   var masterGain = ctx.createGain(1);
-  var controls =new Array(5).fill( ctx.createGain(1));
-  var rx1 = new Array(5).fill("");
+  var controls =new Array(6).fill( ctx.createGain(1));
+  var rx1 = new Array(6).fill("");
 
   [0,1,2,3,4].forEach(i=> controls[i].connect(masterGain));
 
@@ -53,10 +53,20 @@ export default async function(ctx,containerId) {
     }
     return source;
   }
-
+  var audioPlayer
 
   const add_audio_tag = function(tagId,i){
-    inputs[i] =  (tagId, controls[i]);
+    audioPlayer = document.querySelector('audio#'+tagId);
+    if(!audioPlayer) return false;
+    var source = ctx.createMediaElementSource(audioPlayer);
+    inputs[i] = source;
+    inputs[i].connect(controls[i]).connect(masterGain);
+    audioPlayer.oncanplay=function(){
+      audioPlayer.play();
+      // this.[i].play();
+    }
+
+    return source;
   };
 
   var outputNode = masterGain;
@@ -71,8 +81,7 @@ export default async function(ctx,containerId) {
       var select = document.getElementById("ytsearch");
 
     }else if(indexfile=='Microphone'){
-      var select = document.getElementById("miccheck");
-      select.setAttribute("data-userMedia", "audio");
+    
 
       var select = document.createElement("select");
       select.setAttribute("tabindex", index);
@@ -131,6 +140,10 @@ export default async function(ctx,containerId) {
       var url = select.value;
       if(select.getAttribute("data-host")){
         url = select.getAttribute("data-host").replace("::QUERY::", select.value);
+        audioPlayer.src=url;
+        audioPlayer.oncanplay = function(evt){ audioPlayer.play()}
+        inputs[index] =inputs[5];
+        return;
       }else if(select.getAttribute("data-userMedia")){
         url = "user-audio";
         var deviceId = select.value;
