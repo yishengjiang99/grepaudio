@@ -40,20 +40,18 @@
         </td>
 
         <td style='text-align:right'>
-          <form>
             <label for="search">Search</label>
             <input type=text id='ytsearch' placeholder='search youtube' size=30
-              data-host='https://dsp.grepawk.com/api/sudo/::QUERY::.mp3' />
-          </form>
+              data-host='/api/sudo/::QUERY::.mp3' />
           <div id='autosuggest'>
 
           </div>
         </td>
 
         <td rowspan=2>
+<button id='miccheck'></button>
           <span id=ctrls>
 
-            <button id='miccheck'>use microphone</button>
           </span>
   
           <div id='recorder'>
@@ -87,7 +85,7 @@
             <div class="range-wrap">
               <output id=threshold_l>Gate: </output><output class="bubble"></output>
 
-              <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='0' class="range" name='threshold'>
+              <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range" name='threshold'>
             </div>
             <div class="range-wrap">
               <output id=attack_l>Attack:</output>
@@ -112,9 +110,9 @@
         <td>
           <div class='canvas_wrapper'>
             <span>
-              <input id='showfft' type=checkbox checked>show</input></span>
-            <input id='showcummulative' type=checkbox checked>show cummulative fft</input>
-            <input id='showtimeseries' type=checkbox checked>showtimesseries</input>
+              <input id='showfft' type=checkbox checked>fft</input></span>
+            <input id='showcummulative' type=checkbox checked>cumulative fft</input>
+            <input id='showtimeseries' type=checkbox checked>timeseries</input>
             <button id='zoomin'>+</button> <button id='zoomout'>-</button>
             </span>
             <canvas id='output_freq'></canvas></div>

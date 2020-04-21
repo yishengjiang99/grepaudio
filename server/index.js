@@ -13,36 +13,21 @@ const https = require('https');
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
+  res.header("Transfer-Encoding","chunked");
   next();
 });
 
 app.use("/samples", express.static("/samples"));
 
 app.get("/api/twitch/(:uri)", function (req, res, next) {
-  https.get("https://api/twitch.tv"+req.params.uri.split("--").join("/"), {
-    port: 443,
-    method: "GET",
-    headers: {
-      'Accept': 'application/vnd, twitchtv.v5+json',
-      'Client-ID': 'e8e2av260ltgocmm62aw6zkojeems3'
-    }
-  }, (resp) => {
-    let data = '';
 
-    // A chunk of data has been recieved.
-    resp.on('data', (chunk) => {
-      data += chunk;
-    });
-
-    // The whole response has been received. Print out the result.
-    resp.on('end', () => {
-      res.end(JSON.parse(data));
-    });
-
-  }).on("error", (err) => {
-    console.log("Error: " + err.message);
-  });
-  res.send("hold on")
+	exec('sh ../twitch.sh', (error, stdout, stderr) => {
+   if (error) {
+ 	   console.error(`exec error: ${error}`);
+    	return;
+  	}
+	res.end(stdout);
+});
 });
 
 app.get("/api/yt", function (req, res, next) {

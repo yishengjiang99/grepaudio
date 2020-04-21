@@ -29,6 +29,20 @@ export default async function(ctx,containerId) {
       xhr.setRequestHeader("Range","Bytes:0-")
       var counter = 0;
 
+xhr.onreadystatechange = function() { 
+  if(xhr.readyState > 2) {
+    // process newData
+	if(xhr.response!==null){
+        ctx.decodeAudioData(xhr.response, function(processed){
+          source.buffer = processed;
+          source.connect(controls[index]);
+          counter --;
+          source.start();
+        });
+        source.autoplay=true;
+	}
+  }
+};
       xhr.onload= function(evt){
         counter++;
         log('loading '+url+ ' cpounter '+counter)
