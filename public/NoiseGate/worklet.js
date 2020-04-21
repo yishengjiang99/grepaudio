@@ -30,7 +30,6 @@ class NoiseGate extends AudioWorkletProcessor{
         return Math.exp(-1 / (sampleRate * timeConstant));
       }
     process(inputs,outputs,parameters){
-debugger;
         this.alpha =0;
         this.attack = parameters.attack[0];
         this.release = parameters.release[0];

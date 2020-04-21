@@ -1,0 +1,176 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>rt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+</head>
+
+<body>
+    <button>start</button>
+</body>
+<script src='polyfills.js'></script>
+
+<script type='module'>
+    import AnalyzerView from './AnalyzerView.js';
+    import Envelope from './envelope.js';
+    import Comb from './comb.js';
+    import SplitBand from './splitband.js'
+    const SAMPLE_LIBRARY = {
+        'Grand Piano': [
+            { note: 'A', octave: 4, file: 'Samples/Grand Piano/piano-f-a4.wav' },
+            { note: 'A', octave: 5, file: 'Samples/Grand Piano/piano-f-a5.wav' },
+            { note: 'A', octave: 6, file: 'Samples/Grand Piano/piano-f-a6.wav' },
+            { note: 'C', octave: 4, file: 'Samples/Grand Piano/piano-f-c4.wav' },
+            { note: 'C', octave: 5, file: 'Samples/Grand Piano/piano-f-c5.wav' },
+            { note: 'C', octave: 6, file: 'Samples/Grand Piano/piano-f-c6.wav' },
+            { note: 'D#', octave: 4, file: 'Samples/Grand Piano/piano-f-d#4.wav' },
+            { note: 'D#', octave: 5, file: 'Samples/Grand Piano/piano-f-d#5.wav' },
+            { note: 'D#', octave: 6, file: 'Samples/Grand Piano/piano-f-d#6.wav' },
+            { note: 'F#', octave: 4, file: 'Samples/Grand Piano/piano-f-f#4.wav' },
+            { note: 'F#', octave: 5, file: 'Samples/Grand Piano/piano-f-f#5.wav' },
+            { note: 'F#', octave: 6, file: 'Samples/Grand Piano/piano-f-f#6.wav' }
+        ]
+    };
+
+    const OCTAVE = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+    const LOOPS = [
+        { instrument: 'Grand Piano', note: 'F4', duration: 19.7, delay: 4 },
+        { instrument: 'Grand Piano', note: 'Ab4', duration: 17.8, delay: 8.1 },
+        { instrument: 'Grand Piano', note: 'C5', duration: 21.3, delay: 5.6 },
+        { instrument: 'Grand Piano', note: 'Db5', duration: 18.5, delay: 12.6 },
+        { instrument: 'Grand Piano', note: 'Eb5', duration: 20.0, delay: 9.2 },
+        { instrument: 'Grand Piano', note: 'F5', duration: 20.0, delay: 14.1 },
+        { instrument: 'Grand Piano', note: 'Ab5', duration: 17.7, delay: 3.1 }
+    ];
+
+
+    let ctx;
+    async function start(deviceId) {
+        try {
+            ctx = new AudioContext();
+            var audioCtx = ctx;
+            var audioContext = ctx;
+            var ampEnvelopeGain = ctx.createGain();
+
+            var ampAttack = 0.5;
+            var ampDecay = 0.6;
+            var ampSustain = 1.0;
+            var ampRelease = 0.5;
+            var adsrs = [];
+            const keys = ('asdfghj'+'qwerty').split("");
+            const nodes = '555,666,777'.split(",");
+   
+            var masterGain = ctx.createGain();
+
+            keys.forEach((l, i) => {
+                var LFO = ctx.createOscillator();
+                LFO.frequency.value = nodes[i];
+                LFO.type = 'square'
+                var gain = ctx.createGain();
+                adsrs.push(gainEnvelope)
+                gain.gain.value = 0;
+                debugger;
+                var gainEnvelope = new Envelope(0, 5, ampAttack, ampDecay, ampSustain, ampRelease, gain.gain);
+                var splitband= SplitBand(LFO,200, 500);
+                splitband.output.connect(masterGain)
+                LFO.start(0);
+            })
+            adsrs[0].trigger();
+            
+
+            window.addEventListener("keydown", function (e) {
+                debugger;
+                if (keys.indexOf(e.key) > -1) {
+                    log('keydown ' + ctx.currentTime)
+                    var env = adsrs[keys.indexOf(e.key)];
+                    env.trigger(ctx.currentTime);
+                }
+                if (keys2.indexOf(e.key) > -1) {
+                    log('keydown ' + ctx.currentTime)
+                    var env = adsrs[keys.indexOf(e.key)];
+                    env.trigger(ctx.currentTime);
+                }
+            })
+
+            window.addEventListener("keyup", function (e) {
+                if (keys.indexOf(e.key) > -1) {
+                    log('keyup')
+                    var env = adsrs[keys.indexOf(e.key)];
+                    env.release(ctx.currentTime);
+                }
+            })
+            var analyser = audioCtx.createAnalyser();
+            masterGain.connect(audioCtx.destination)
+            // Bind our analyser to the media element source.
+            masterGain.connect(analyser);
+
+
+
+            analyser.connect(audioCtx.destination);
+
+            var frequencyData = new Uint8Array(200);
+            var svgHeight = '700';
+            var svgWidth = '1200';
+            var barPadding = '1';
+
+
+
+            function createSvg(parent, height, width) {
+                return d3.select(parent).append('svg').attr('height', height).attr('width', width);
+            }
+
+
+            var svg = createSvg('body', svgHeight, svgWidth);
+
+            // Create our initial D3 chart.
+            svg.selectAll('rect')
+                .data(frequencyData)
+                .enter()
+                .append('rect')
+                .attr('x', function (d, i) {
+                    return i * (svgWidth / frequencyData.length);
+                })
+                .attr('width', svgWidth / frequencyData.length - barPadding);
+
+            function renderChart() {
+                requestAnimationFrame(renderChart);
+
+                // Copy frequency data to frequencyData array.
+                analyser.getByteFrequencyData(frequencyData);
+                // Update d3 chart with new data.
+                svg.selectAll('rect')
+                    .data(frequencyData)
+                    .attr('y', function (d) {
+                        return svgHeight - d;
+                    })
+                    .attr('height', function (d) {
+                        return d;
+                    })
+                    .attr('fill', function (d) {
+                        return 'rgb(0, 0, ' + d + ')';
+                    });
+            }
+
+            // Run the loop
+            renderChart();
+
+
+
+            return source;
+        } catch (eerrr) {
+            console.log(eerrr.message);
+        }
+    }
+    $("button").onclick = function (e) {
+        start();
+    }
+</script>
+
+</body>
+
+</html>

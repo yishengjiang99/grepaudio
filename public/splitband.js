@@ -1,70 +1,132 @@
-function split_band(input, low_freq, high_freq){
-    var ctx = input.context;
-    var Q = ctx.createConstantSource();
+var GrepAudio = GrepAudio || {};
+GrepAudio.context = window.g_audioCtx || new AudioContext();
+var gctx = GrepAudio.context;
 
-    var lpf = input.context.createBiquadFilter();
-    lpf.frequency.value = low_freq;
-    lpf.type='lowpass';
-    Q.connect(lpf.Q);
-    
-
-    var lhpf = input.context.createBiquadFilter();
-    lhpf.frequency.value = low_freq;
-    lhpf.type = 'highpass'
-    Q.connect(lhpf.Q);
+class Band {
 
 
-    var hlpf = input.context.createBiquadFilter();
-    hlpf.frequency.value = high_freq;
-    hlpf.type = 'lowpass'
-    Q.connect(hlpf.Q);
+  constructor(minFrequency, maxFrequency, params) {
 
-    var hpf = input.context.createBiquadFilter();
-    hpf.frequency.value = high_freq;
-    hpf.type = 'lowpass'
-    Q.connect(hpf.Q);
+    this.incomingFilters;  //Band is created when source is applied wtih a sequence of filters
+    this.minFrequency, maxFrequency;
+    this.preAmpGain.compressor;
+    this.input, output;
+    this.feedbackDelay, feedbackAttenuate;
+    this.analyzerNode;
+    this.volumeCap;
 
-    input.disconnect();
-    input.connect(lpf);
-    input.connect(lhpf);
-    input.connect(hpf);
-    input.connect(hpf);
-
-    var masterGain = ctx.createGain();
-    var preamp = ctx.createGain();   
-    // var passthrough_components = [
-
-    // ]
-    var passthrough_compression = 0;
-
-    var compressors = [
-        ctx.createDynamicsCompressor(),
-        ctx.createDynamicsCompressor(),
-        ctx.createDynamicsCompressor()
-    ]
-    var gains = [
-        ctx.createGain(0),
-        ctx.createGain(0),
-        ctx.createGain(0),
-    ]
-    var fbcDelay = Array(3).fill(ctx.createDelay());
-    var fbcAttenuate = Array(3).fill(ctx.createGain());
-    var fftProbe = Array(3).fill(ctx.createAnalyser());
+    this.currentVolume = 0;
+    this.isMuted = false;
+    this.isSolo = false;
+    this.ledIndicator = { color: gray, bars: 0 };
 
 
-    
-    var low = input.connect(preamp).connect(lpf).connect(compressors[0]).connect(gains[0]).connect(masterGain)
-    var high = input.connect(preamp).connect(hpf).connect(compressors[1]).connect(gains[1]).connect(masterGain)
-    var mid = input.connect(preamp).connect(hlpf).connect(lhpf).connect(compressors[2]).connect(gains[2]).connect(masterGain)
-   
-    low.connect(fbcDelay[0]).connect(fbcAttenuate[0]).connect(masterGain);
-    high.connect(fbcDelay[1]).connect(fbcAttenuate[1]).connect(masterGain);
-    mid.connect(fbcDelay[2]).connect(fbcAttenuate[2]).connect(masterGain);
-    
-    return {
-        bands:[low,high,mid],
-        output: masterGain
+    this.minFrequency = minFrequency;
+    if (minFrequency !== null) {
+      var hpf = gctx.createBiquadFilter();
+      hpf.type = 'highpass';
+      hpf.frequency.value = minFrequency;
+      this.incomingFilters.push(hpf);
     }
-    
+
+    if (maxFrequency !== null) {
+      this.lpf = gctx.creatBiquadFilter();
+      lpf.type = 'lowpass';
+      lpf.frequncy.value = maxFrequency;
+      this.incomingFilters.push(lpf);
+    }
+
+    this.volumeCap = ctx.createDynamicCompression();
+    this.volumeCap.threshold = params.volumeCap || 0;
+    this.volumeCap.attack = 0;
+    this.volumeCap.release = 0;
+    this.volumeCap.ratio = 60;
+
+
+    this.highPassFilter = minFrequency !== null ? gctx.createBiquadFilter() : null;
+
+
+    this.preAmpGain = gctx.createGain();
+    this.preAmpGain.gain.value = params.preAmpGain || 1;
+
+    this.postAmp = gctx.createGain();
+    this.postAmp.gain.value = params.postAmpGain || 1;
+
+    this.compressor = gctx.createDyanmicCompression();
+    this.compressor.threshold.value = params.compression.threshold || -80; //dbfs
+
+    const compressionDefaults = { 'threshold': -80, 'knee': 30, 'ratio': 12, 'attack': 0.03, 'release': 0.03 };
+    ['threshold', 'knee', 'ratio', 'attack', 'release'].forEach(key => {
+      this.compressor[key].value = compressionDefaults[key];
+    });
+
+    this.feedbackDelay = gctx.createDelay();
+    this.feedbackDelay['delay'].value = params.feedbackDelay || 0.005;
+    this.feedbackAttenuate = gctx.createGain();
+    this.feedbackAttenuate.gain = params.feedbackAttenuate || 0.5;
+    this.feedbackPhaseshift = gctx.createBiquadFilter();
+    compressionDefaultsthis.feedbackPhaseshift.type = 'allpass';
+
+
+  }
+
+  probe() {
+    this.analyzerNode = gctx.createAnalyserNode();
+    return this.analyzerNode;
+  }
+
+  get inputNode() {
+    if (this.incomingFilters[0]) return this.incomingFilters[0];
+    else return this.preAmpGain;
+  }
+
+  get outputNode() {
+
+    this.analyzerNode || this.postAmp;
+  }
+
+  static getDefault() {
+    return new Band(400, 2500, { preAmpGain: 1, feedbackDelay: 0.005, feedbackAttenuate:0.005});
+  }
+
+  get components() {
+    return {
+      incomingFilters: this.incomingFilters,
+      preAmpGain: this.preAmpGain,
+      compressor: this.compressor,
+      volumeCap: this.volumeCap,
+      feedbackDelay: this.feedbackDelay,
+      feedbackAttenuate: this.feedbackAttenuate
+      
+    }
+  }
+  get state() {
+    return [this.currentVolume, this.isMuted, this.isSolo, this.ledColor, this.ledBars];
+  }
 }
-export default split_band;
+
+
+
+export function split_band(input, hz_list) {
+  var ctx = input.context;
+  var min = new Band(hz_list[0], null);
+  var max = new Band(null, hz_list[1]);
+  switch (hz_list.length) {
+    case 1: return [new Band()];
+    case 2: return [min, max];
+    case 3: return [min, new Band(hz_list[0], hz_list[1]), max];
+    case 4:
+    case 5:
+    case 6: return
+      [min].concat(split_band(input, hz_list.slice(1, hz_list.length - 1))).concat[max];
+    default:
+      return
+      [split_band(input, hz_list.slice(0, hz_list.length / 3))]
+        .concat([split_band(input, hz_list.slice(hz_list.length / 3, 2 * hz_list.length / 3))])
+        .concat([split_band(input, hz_list.slice(2*hz_list.length / 3, hz_list.length - 1)) ]);
+  }
+
+}
+
+
+
