@@ -1,16 +1,14 @@
-
 <html>
-
     <head>
       <style>
         body{ color:gray; background-color:black}
-        #overlay{width:100vw; height:100wh};
+        #overlay{width:100vw; height:100vh};
       </style>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.6.0/Tone.js"></script>
     </head>
     
     <body onclick="void(0);">
-      <div id="overlay" title="Click to turn off the overlay effect" style="display: block;">ffff
+      <div id="overlay" title="Click to turn off the overlay effect" style="display: block;">click to start
       </div>
       <div id='stdout'>Hello</div>
       <div id='stderr'></div>
@@ -19,6 +17,8 @@
         import { split_band } from './splitband.js'
         import { Q, HZ_LIST, DEFAULT_PRESET_GAINS } from '../contants.js';
         const $=(selector)=>document.querySelector(selector);
+        const stdout = (msg)=> $("#stdout").innerText += msg+"<br>"
+         const stdin = (msg)=> $("#stdin").innerText += msg+"<br>"
         $("#overlay").onclick = init;
         
         function init() {
@@ -27,11 +27,10 @@
           const audioCtx = new AudioContext();
           const osc = audioCtx.createOscillator();
           const bands = split_band(osc, HZ_LIST);
-          console.log(bands);
-         
+          stdout(bands.map(b=>{ b.toString() }));
+         console.log(bands);
         }
-        const stdout = (msg)=> $("#stdout").innerText += msg+"<br>"
-         const stdin = (msg)=> $("#stdin").innerText += msg+"<br>"
+
     
     
     
