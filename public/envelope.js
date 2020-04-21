@@ -11,8 +11,10 @@ export default function Envelope(min, max, attack, decay, sustain, release, para
 }
 
 Envelope.prototype.trigger = function (time) {
+
     if(time < this.attackTime){
-        return;
+        this.param.linearRampToValueAtTime(this.max, time+this.attack);
+        this.attackTime = time+this.attack;
     }
     if(this.param.value < this.max){
         this.param.setValueAtTime(this.min, time);
@@ -28,10 +30,7 @@ Envelope.prototype.trigger = function (time) {
 
 Envelope.prototype.release = function (time) {
 
-    this.releaseTime = time > this.sustainTime ? time : this.sustainTime;
-    log(this.releaseTime);
-
-    this.param.setTargetAtTime(this.min, this.releaseTime, this.releaseTimeConstant);
+    this.param.setTargetAtTime(this.min,time+this.sustain, this.releaseTimeConstant);
 }
 
 
