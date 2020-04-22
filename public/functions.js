@@ -1,3 +1,7 @@
+function  toDecibel(powerLevel) {
+    return 10 * Math.log10(powerLevel);
+  }
+
 
 export const HZ_LIST = new Float32Array([31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]);
 export const Q = 1.2247449;
@@ -15,7 +19,7 @@ export const DEFAULT_PRESET_GAINS =
 	'62.5': 0.375
 }
 
-export const NYQUIST_DOGMA_f32 = new Float32Array(
+const NYQUIST_DOGMA_f32 = new Float32Array(
 	[10.7861328125, 10.868687288802747, 10.951873617287943, 11.035696634000777, 11.120161212000435, 11.205272261643263,
 		11.291034730868356, 11.377453605485098, 11.464533909463114, 11.552280705224238, 11.640699093936908, 11.729794215812682,
 		11.819571250405023, 11.910035416910512, 12.00119197447216, 12.093046222485242, 12.18560350090529, 12.278869190558613,
@@ -40,33 +44,33 @@ HTMLElement.prototype.wrap = function (parent_tag) {
 	p.appendChild(this)
 	return p;
 }
+
 export function numeric(container, options) {
 	var params = options || {};
 	params.type = 'numeric'
 	slider(container, params);
 }
+
 export function slider(container, options) {
 	var params = options || {};
 	var input = document.createElement("input");
-
-
 	input.min = params.min || (params.prop && params.prop.minValue )|| "-12";
 	input.max = params.max || (params.prop && params.prop.maxValue )|| "12";
 	input.type = params.type || 'range';
-	input.value = params.value || (params.prop && params.prop.value.toFixed(3)) || ''
+	input.value = params.value || (params.prop && params.prop.value.toFixed(3)) ||  (params.prop && params.prop.defaultValue.toFixed(3)) 
 	input.step = params.step || "0.1"
-	input.oninput = params.oninput || (params.prop && function (e) { params.prop.setValueAtTime(e.target.value, gctx.currentTime); }) || console.log;
 	var label = document.createElement("span");
 
 	if (input.type == 'range') {
 		label.innerHTML = params.label || (params.prop && params.prop.value) || "";
-
-		label.style.color = "white";
-		input.onchange = (evt) => label.innerHTML = evt.target.value;
-
-
+		
 	} else {
-		input.size = "5"
+		input.size = "10"
+	}
+
+	input.onchange = (e) => { 
+		params.prop.setValueAtTime( e.target.value, 0);  
+		label.innerHTML = e.target.value 
 	}
 	var contain = document.createElement(params.wrapper || "td");
 	contain.style.position = 'relative';
@@ -77,12 +81,16 @@ export function slider(container, options) {
 }
 export function selector(container, params) {
 	var input = document.createElement("select");
+
+	input.value = params.prop;
+
 	for (const option of params.options) {
 		var elem = document.createElement("option");
 		elem.innerHTML = option;
 		elem.value = option;
-		if (params.prop && params.prop.value === option) {
-			elem.checked = true;
+		if (params.prop && params.prop === option) {
+			elem.selected="selected";
+	
 		}
 		input.appendChild(elem);
 

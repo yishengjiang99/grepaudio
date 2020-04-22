@@ -77,7 +77,6 @@ class BandPassLRCProcessor extends AudioWorkletProcessor {
 				var v = inputChannel[i];
 				sumin += (v*v);
 				for (let k = 0; k < bands.length; k++) {
-					debugger;
 					var v0 = this.ring_buffer[i0][channel*k] || 0;  //FOR firs t2 frames. assume previosu 2 aws  samem value
 					var v1 = this.ring_buffer[i1][channel*k] || 0;
 					var coef = z_params[k];

@@ -11,12 +11,13 @@
 
 </head>
 <bgsound src='./samples/toxic.mp3'></bgsound>
+
 <body onclick="void(0);">
   <div id="overlay" title="Click to turn off the overlay effect" style="display: block;">
-    <div class="text">overlay blocker</div>
+    <div class="text">click anywhere to start</div>
     <div class="text"><br>
       <br><span style="font-size:20px;" class="w3-black w3-padding w3-hide-medium w3-hide-small">
-        Click anywhere to turn off the overlay effect
+       (chrome requires user-triggered event to access audio ctx)
       </span></div>
   </div>
   <div>
@@ -24,145 +25,117 @@
   </div>
 
   <div class='container' style='margin:20px;position:relative'>
-    <table>
-      <tr>
-        <td>
-          <span>Preamp
-            <input type="range" id="volume" class="control-volume" min="-1" max="4" value="1" list="gain-vals"
-              step="0.01" oninput="event.target.nextElementSibling.innerText=event.target.value" data-action="volume" />
-            <span></span>
-          </span>
 
-          <span>Postamp:
-            <input type="range" id="volume2" class="control-volume" min="0" max="3" value="1" list="gain-vals"
-              step="0.01" oninput="event.target.nextElementSibling.innerText=event.target.value"
-              data-action="volume" /><span></span>
-          </span>
+    <div id="eq_update_form">
+
+    </div>
+  <table>
+    <tr>
+      <td>
+        <div class='canvas_wrapper'>
+          <div><input id='showfft' type=checkbox checked>fft</input>
+          <input id='showcummulative' type=checkbox>cumulative fft</input>
+          <input id='showtimeseries' type=checkbox checked>timeseries</input>
+          <button id='zoomin'>+</button> <button id='zoomout'>-</button></div>
+          <canvas id='output_freq'></canvas>
         </td>
-
-        <td style='text-align:right'>
-            <label for="search">Search</label>
-            <input type=text id='ytsearch' placeholder='search youtube' size=30
-              data-host='/api/sudo/::QUERY::.mp3' />
-          <div id='autosuggest'>
-
-          </div>
-        </td>
-
-        <td rowspan=2>
-<button id='miccheck'></button>
-          <span id=ctrls>
-
-          </span>
-  
-          <div id='recorder'>
-            <button id="btn-start-recording">Start Recording</button>
-            <button id="btn-stop-recording" disabled>Stop Recording</button>
-            <button id="btn-release-microphone" disabled>Release Microphone</button>
-            <button id="btn-download-recording" disabled>Download</button>
-          </div>            
-          <div>
-            <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
-            <audio controls="controls" id='audio2' src=''></audio>
-
-            <br><input type='file' id='file'></div>
-            <script>audio1
-              // Check for BlobURL support
-                var blob = window.URL || window.webkitURL;
-                
-                document.getElementById('file').addEventListener('change', function(event){
-                        var file = this.files[0];
-                        var fileURL = blob.createObjectURL(file);
-                        $("#audio2").src = fileURL;
-                        $("#audio2").autoplay=true;
-                });
-            </script>
-          </div>
-            <script src='./RecordRTC.js'></script>
-            <script src='polyfills.js'></script>
-
-            <script tyle='module' src='./recording/index.js'></script>
-      
-        </td>
-      </tr>
-      <tr>
-        <td rowspan=3 colspan=1>
-          <span> <button id='reset'>reset</button></span> <select id=preset_options></select>
-          <form id="eq_update_form">
-
-          </form>
-          <div id="eq_bandpass_update">
-
-          </div>
-          <form id='noisegate'>
-            Noise Gate:
-            <div class="range-wrap">
-              <output id=threshold_l>Gate: </output><output class="bubble"></output>
-
-              <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range" name='threshold'>
-            </div>
-            <div class="range-wrap">
-              <output id=attack_l>Attack:</output>
-              <input aria-labelledby='attack_l' type="range" min='0' max='1' value='0.03' step='0.01' class="range" name='attack'>
-              <output class="bubble"></output>
-            </div>
-            <div class="range-wrap">
-              <output id=release_l>Release: </output>
-              <input aria-labelledby='release_l' type="range" min='0' max='1' value='0.03' step='0.01' class="range" name='release'>
-              <output class="bubble"></output>
-            </div>
-            <div class="range-wrap">
-              <output id=threshold_l>Sustain:</output>
-              <input aria-labelledby='threshold_l' type="range" min='0.001' max='1' value='0.0025' class="range" name='timeConstant'>
-              <output class="bubble"></output>
-            </div>
-            <div id="rx1"></div>
-            <div id='rx0'></div>
-          </form>
-        </td>
-        <td>
-          <div class='canvas_wrapper'>
-            <span>
-              <input id='showfft' type=checkbox checked>fft</input></span>
-            <input id='showcummulative' type=checkbox checked>cumulative fft</input>
-            <input id='showtimeseries' type=checkbox checked>timeseries</input>
-            <button id='zoomin'>+</button> <button id='zoomout'>-</button>
-            </span>
-            <canvas id='output_freq'></canvas></div>
-          <canvas id='output_timeline'></canvas>
-  </div>
-
-  </td>
-  <td>
-    <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
-  </td>
-  </tr>
-  <tr>
-    <td>
-
-    </td>
-  </tr>
-  <tr>
-    <td colspan=1>
-      <div id=console></div>
-    </td>
-    <td>
-    </td>
-  </tr>
+      <td align='right'>
+        <div id=ctrls>
+          <label for="search">Search</label>
+          <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='/api/sudo/::QUERY::.mp3' />
+        </div>    
+      </td>
+    </tr>
   </table>
+
+
+      <canvas id='output_freq'></canvas></div>
+    <canvas id='output_timeline'></canvas>
+  </span>
+  <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
+
+    <div id='recorder'>
+      <button id="btn-start-recording">Start Recording</button>
+      <button id="btn-stop-recording" disabled>Stop Recording</button>
+      <button id="btn-release-microphone" disabled>Release Microphone</button>
+      <button id="btn-download-recording" disabled>Download</button>
+    </div>
+    <div>
+
+      <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
+      <audio id='audio2' src=''></audio>
+      <input type='file' id='file'>
+    </div>
+    <script>audio1
+      // Check for BlobURL support
+      var blob = window.URL || window.webkitURL;
+
+      document.getElementById('file').addEventListener('change', function (event) {
+        var file = this.files[0];
+        var fileURL = blob.createObjectURL(file);
+        $("#audio2").src = fileURL;
+        $("#audio2").autoplay = true;
+      });
+    </script>
+
+    <script src='./RecordRTC.js'></script>
+    <script src='polyfills.js'></script>
+
+    <script tyle='module' src='./recording/index.js'></script>
+
+    <span> <button id='reset'>reset</button></span> <select id=preset_options></select>
+
+    <div id="eq_bandpass_update">
+
+    </div>
+    
+    <form id='noisegate'>
+      Noise Gate:
+      <div class="range-wrap">
+        <output id=threshold_l>Gate: </output><output class="bubble"></output>
+
+        <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range" name='threshold'>
+      </div>
+      <div class="range-wrap">
+        <output id=attack_l>Attack:</output>
+        <input aria-labelledby='attack_l' type="range" min='0' max='1' value='0.03' step='0.01' class="range"
+          name='attack'>
+        <output class="bubble"></output>
+      </div>
+      <div class="range-wrap">
+        <output id=release_l>Release: </output>
+        <input aria-labelledby='release_l' type="range" min='0' max='1' value='0.03' step='0.01' class="range"
+          name='release'>
+        <output class="bubble"></output>
+      </div>
+      <div class="range-wrap">
+        <output id=threshold_l>Sustain:</output>
+        <input aria-labelledby='threshold_l' type="range" min='0.001' max='1' value='0.0025' class="range"
+          name='timeConstant'>
+        <output class="bubble"></output>
+      </div>
+      <div id="rx1"></div>
+      <div id='rx0'></div>
+    </form>
+
+
+
+
+
+
+  <div id=console></div>
 
   <div id='rx2log'></div>
 
   </div>
-
-
-  ]
-
   <script type='module'>
 
     import equilizer from "./equalizer.js";
     import Mixer from './Mixer.js';
     import NoiseGate from './NoiseGate/NoiseGate.js'
+    import { split_band } from './splitband.js'
+    import AnalyzerView from "./AnalyzerView.js"
+
     let audioCtx, audioTag, eq;
 
     $("#overlay").onclick = async function (e) {
@@ -174,17 +147,18 @@
 
       var audioTag = await Mixer(audioCtx, "ctrls");
 
-      audioTag.add_audio_tag("audio1",5);
+      audioTag.add_audio_tag("audio1", 5);
 
       window.g_audioTag = audioTag;
 
       var noiseGate = new NoiseGate(audioCtx);
 
       noiseGate.port.postMessage("ping");
-      noiseGate.port.onmessage=(evt)=>{
+      noiseGate.port.onmessage = (evt) => {
         log(JSON.stringify(evt.data));
       }
-      $("#noisegate").oninput=function(e){
+
+      $("#noisegate").oninput = function (e) {
         noiseGate[e.target.name] !== null ? noiseGate[e.target.name] = e.target.value : alert("property not found on noise gate")
 
       }
@@ -192,7 +166,19 @@
 
       window.g_audioCtx = audioCtx;
 
-      eq = equilizer.initializeContext(audioCtx, noiseGate.output);
+
+      var group = split_band(audioCtx, [31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]);
+
+
+      $("#eq_update_form").appendChild(group.UI_EQ());
+      noiseGate.output.connect(group.input);
+      var ctv = AnalyzerView(group.output);
+      ctv.analyzer.connect(audioCtx.destination);
+      ctv.analyzer.connect(audioCtx.destination);
+      ctv.histogram("output_freq",680,220) 
+      ctv.timeseries("output_timeline",1024, 680, 220);
+
+      //      eq = equilizer.initializeContext(audioCtx, noiseGate.output);
 
       // var recorder=  Recorder(audioCtx, 'recorder');
       //  const recorder = new Recorder();
@@ -243,6 +229,6 @@
 
   </script>
 
-  </body>
+</body>
 
 </html>

@@ -15,32 +15,64 @@
 
 
   </style>
-
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./simple-console.css">
+  <script src="./simple-console.js"></script>
 </head>
 
 <body onclick="void(0);">
   <div id="overlay" title="Click to turn off the overlay effect" style="display: block;">click to start
   </div>
   <main>
+    <div id='ctrls'></div>
     <div class='row wrapper' class='wrapper' id='canvas_wrapper' style='margin-bottom:20px'></div>
     <div id='controls_wrapper' class='row wrapper'></div>
   </main>
-  <div id='stdout'>Hello</div>
-
+  <div id="rx1"></div>
+            <div id='rx0'></div>
+  <div id="rx2"></div>
+            <div id='rx3'></div>
   <div><input type='text' size=80 id='stdin'></div>
   </form>
   </div>
+            <script src='polyfills.js'></script>
+
   <script type='module'>
     import { split_band, UI_band, UI_parameter_EQ } from './splitband.js'
-    import { Q, HZ_LIST, DEFAULT_PRESET_GAINS } from '../contants.js';
+    import { Q, HZ_LIST, DEFAULT_PRESET_GAINS } from '../functions.js';
     import PlayableAudioSource from './audio_source.js';
-    const $ = (selector) => document.querySelector(selector);
-    const stdout = (msg) => $("#stdout").innerText += msg + "<br>"
-    const stdin = (msg) => $("#stdin").innerText += msg + "<br>"
+    import Mixer from './Mixer.js';
+    import NoiseGate from './NoiseGate/NoiseGate.js'
+
     $("#overlay").onclick = init;
     const main = $("main");
-    function init() {
+    async function init() {
       var ctx = new AudioContext();
+      const audioCtx=ctx;
+      var audioTag = await Mixer(audioCtx, "ctrls");
+
+      audioTag.add_audio_tag("audio1",5);
+
+      window.g_audioTag = audioTag;
+
+     var noiseGate = new NoiseGate(audioCtx);
+
+      noiseGate.port.postMessage("ping");
+      noiseGate.port.onmessage=(evt)=>{
+        log(JSON.stringify(evt.data));
+      }
+      $("#noisegate").oninput=function(e){
+        noiseGate[e.target.name] !== null ? noiseGate[e.target.name] = e.target.value : alert("property not found on noise gate")
+
+      }
+      audioTag.outputNode.connect(noiseGate.input);
+
+      window.g_audioCtx = audioCtx;
+
+ //     eq = equilizer.initializeContext(audioCtx, noiseGate.output);
+
+
+
       $("#overlay").style.zIndex = -99;
       this.style.display = 'none';
       const noise = PlayableAudioSource(ctx).random_noise(ctx);

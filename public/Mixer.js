@@ -43,17 +43,6 @@ xhr.onreadystatechange = function() {
 	}
   }
 };
-      xhr.onload= function(evt){
-        counter++;
-        log('loading '+url+ ' cpounter '+counter)
-        ctx.decodeAudioData(xhr.response, function(processed){
-          source.buffer = processed;
-          source.connect(controls[index]);
-          counter --;
-          source.start();
-        });
-        source.autoplay=true;
-      }
       xhr.onloadend = function(evt){
         if(channelQueues[index].length){
           var next = source.queue.shift();
@@ -100,7 +89,7 @@ xhr.onreadystatechange = function() {
       var select = document.createElement("select");
       select.setAttribute("tabindex", index);
       select.setAttribute("data-userMedia", "audio");
-      navigator.mediaDevices.enumerateDevices().then(function(devices) {
+      navigator.mediaDevices && navigator.mediaDevices.enumerateDevices().then(function(devices) {
         select.innerHTML=devices.filter(device=>device.kind=='audioinput').map(function(device) {
            return `<option value='${device.deviceId}'>${device.kind}: ${device.label}</option>`
         }).join("");
@@ -108,11 +97,11 @@ xhr.onreadystatechange = function() {
     }else if(indexfile==='notes.csv'){
       const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split("\n"));
       var select = document.createElement("span");
-      select.setAttribute("tabindex", index);
-      select.innerHTML = song_db.filter(t=>t.trim()!=="").map(t=>"samples/"+t.trim()).map(n => {
+      
+      select.innerHTML = song_db.filter(t=>t.trim()!=="").map(t=>"samples/"+t.trim()).map((n,j)=> {
         var url = n.split(",")[0];
         var name = (n.split(",")[1] || url).split("/").pop();
-        return `<button value='${encodeURIComponent(url)}'>${name}</button>`
+        return `<button value='${encodeURIComponent(url)}'>${name}</button> ${(j+1) % 5 == 0 ? "<br>" :""}`
       }); 
 
     }else{
@@ -136,7 +125,7 @@ xhr.onreadystatechange = function() {
 
     container.appendChild(apply);
     container.appendChild(stop);
-    container.appendChild(nowPlayingLabel.wrap("p"));
+    container.appendChild(nowPlayingLabel.wrap("div"));
     stop.onclick = (e)=>{
       inputs[index].disconnect();
       inputs[index]=null;
