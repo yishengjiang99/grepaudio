@@ -63,6 +63,8 @@
           </div>            
           <div>
             <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
+            <audio controls="controls" id='audio2' src=''></audio>
+
             <br><input type='file' id='file'></div>
             <script>audio1
               // Check for BlobURL support
@@ -71,8 +73,8 @@
                 document.getElementById('file').addEventListener('change', function(event){
                         var file = this.files[0];
                         var fileURL = blob.createObjectURL(file);
-                        $("#audio1").src = fileURL;
-                        $("#audio1").autoplay=true;
+                        $("#audio2").src = fileURL;
+                        $("#audio2").autoplay=true;
                 });
             </script>
           </div>

@@ -1,41 +1,62 @@
 <html>
-    <head>
-      <style>
-        body{ color:gray; background-color:black}
-        #overlay{width:100vw; height:100vh};
-      </style>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.6.0/Tone.js"></script>
-    </head>
-    
-    <body onclick="void(0);">
-      <div id="overlay" title="Click to turn off the overlay effect" style="display: block;">click to start
-      </div>
-      <div id='stdout'>Hello</div>
-      <div id='stderr'></div>
-      <div><input type='text' size=80 id='stdin'></div></form></div>
-      <script type='module'>
-        import { split_band } from './splitband.js'
-        import { Q, HZ_LIST, DEFAULT_PRESET_GAINS } from '../contants.js';
-        const $=(selector)=>document.querySelector(selector);
-        const stdout = (msg)=> $("#stdout").innerText += msg+"<br>"
-         const stdin = (msg)=> $("#stdin").innerText += msg+"<br>"
-        $("#overlay").onclick = init;
-        
-        function init() {
-          $("#overlay").style.zIndex = -99;
-          this.style.display = 'none';
-          const audioCtx = new AudioContext();
-          const osc = audioCtx.createOscillator();
-          const bands = split_band(osc, HZ_LIST);
-          stdout(bands.map(b=>{ b.toString() }));
-         console.log(bands);
-        }
 
+<head>
+  <style>
+    body {
+      color: gray;
+      background-color: black
+    }
+
+    #overlay {
+      width: 100vw;
+      height: 100vh
+    }
     
-    
-    
-    
-      </script>
-    </body>
-    
-    </html>
+
+
+  </style>
+
+</head>
+
+<body onclick="void(0);">
+  <div id="overlay" title="Click to turn off the overlay effect" style="display: block;">click to start
+  </div>
+  <main>
+    <div class='row wrapper' class='wrapper' id='canvas_wrapper' style='margin-bottom:20px'></div>
+    <div id='controls_wrapper' class='row wrapper'></div>
+  </main>
+  <div id='stdout'>Hello</div>
+
+  <div><input type='text' size=80 id='stdin'></div>
+  </form>
+  </div>
+  <script type='module'>
+    import { split_band, UI_band, UI_parameter_EQ } from './splitband.js'
+    import { Q, HZ_LIST, DEFAULT_PRESET_GAINS } from '../contants.js';
+    import PlayableAudioSource from './audio_source.js';
+    const $ = (selector) => document.querySelector(selector);
+    const stdout = (msg) => $("#stdout").innerText += msg + "<br>"
+    const stdin = (msg) => $("#stdin").innerText += msg + "<br>"
+    $("#overlay").onclick = init;
+    const main = $("main");
+    function init() {
+      var ctx = new AudioContext();
+      $("#overlay").style.zIndex = -99;
+      this.style.display = 'none';
+      const noise = PlayableAudioSource(ctx).random_noise(ctx);
+      noise.start();
+      const bands = split_band(noise,ctx.destination, HZ_LIST);
+
+      $("#canvas_wrapper").append(UI_parameter_EQ(bands));
+      $("#controls_wrapper").append(UI_band(bands));
+      console.log(bands);
+    }
+
+
+
+
+
+  </script>
+</body>
+
+</html>
