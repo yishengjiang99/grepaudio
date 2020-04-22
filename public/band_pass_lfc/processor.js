@@ -1,4 +1,4 @@
-import {Q,HZ_LIST, DEFAULT_PRESET_GAINS} from '../contants.js';
+import {Q,HZ_LIST, DEFAULT_PRESET_GAINS} from '../constants.js';
 
 class BandPassLRCProcessor extends AudioWorkletProcessor {
 	constructor() {
