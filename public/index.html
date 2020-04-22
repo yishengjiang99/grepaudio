@@ -17,7 +17,7 @@
     <div class="text">click anywhere to start</div>
     <div class="text"><br>
       <br><span style="font-size:20px;" class="w3-black w3-padding w3-hide-medium w3-hide-small">
-       (chrome requires user-triggered event to access audio ctx)
+        (chrome requires user-triggered event to access audio ctx)
       </span></div>
   </div>
   <div>
@@ -25,103 +25,103 @@
   </div>
 
   <div class='container' style='margin:20px;position:relative'>
-
-    <div id="eq_update_form">
-
-    </div>
-  <table>
-    <tr>
-      <td>
-        <div class='canvas_wrapper'>
-          <div><input id='showfft' type=checkbox checked>fft</input>
-          <input id='showcummulative' type=checkbox>cumulative fft</input>
-          <input id='showtimeseries' type=checkbox checked>timeseries</input>
-          <button id='zoomin'>+</button> <button id='zoomout'>-</button></div>
-          <canvas id='output_freq'></canvas>
+    <table>
+      <tr>
+        <td>
+          <div> <button id='reset'>reset</button></div> <select id=preset_options></select>
+          <div id="eq_bandpass_update">
+          </div>
         </td>
-      <td align='right'>
-        <div id=ctrls>
-          <label for="search">Search</label>
-          <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='/api/sudo/::QUERY::.mp3' />
-        </div>    
-      </td>
-    </tr>
-  </table>
+        <td>
+          <div id="eq_update_form">
+          </div>
+        </td>
+        <td>
+          <form id='noisegate'>
+            Noise Gate:
+            <div class="range-wrap">
+              <output id=threshold_l>Gate: </output><output class="bubble"></output>
+        
+              <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range" name='threshold'>
+            </div>
+            <div class="range-wrap">
+              <output id=attack_l>Attack:</output>
+              <input aria-labelledby='attack_l' type="range" min='0' max='1' value='0.03' step='0.01' class="range"
+                name='attack'>
+              <output class="bubble"></output>
+            </div>
+            <div class="range-wrap">
+              <output id=release_l>Release: </output>
+              <input aria-labelledby='release_l' type="range" min='0' max='1' value='0.03' step='0.01' class="range"
+                name='release'>
+              <output class="bubble"></output>
+            </div>
+            <div class="range-wrap">
+              <output id=threshold_l>Sustain:</output>
+              <input aria-labelledby='threshold_l' type="range" min='0.001' max='1' value='0.0025' class="range"
+                name='timeConstant'>
+              <output class="bubble"></output>
+            </div>
+            <div id="rx1"></div>
+            <div id='rx0'></div>
+          </form>
+        </td>
+      </tr>
+      <tr>
+        <td colspan=2>
+          <div class='canvas_wrapper'>
+            <div><input id='showfft' type=checkbox checked>fft</input>
+              <input id='showcummulative' type=checkbox>cumulative fft</input>
+              <input id='showtimeseries' type=checkbox checked>timeseries</input>
+              <button id='zoomin'>+</button> <button id='zoomout'>-</button></div>
+            <canvas id='output_freq'></canvas>
+            </div>
+            <canvas id='output_timeline'></canvas>
+          </td>
+          <td>
+            <div id=ctrls>
+              <label for="search">Search</label>
+              <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='/api/sudo/::QUERY::.mp3' />
+            </div>
+ 
+          
+        </td>
+   
+      </tr>
+    </table>
 
-
-      <canvas id='output_freq'></canvas></div>
-    <canvas id='output_timeline'></canvas>
+  </div>
   </span>
   <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
 
-    <div id='recorder'>
-      <button id="btn-start-recording">Start Recording</button>
-      <button id="btn-stop-recording" disabled>Stop Recording</button>
-      <button id="btn-release-microphone" disabled>Release Microphone</button>
-      <button id="btn-download-recording" disabled>Download</button>
-    </div>
-    <div>
+  <div id='recorder'>
+    <button id="btn-start-recording">Start Recording</button>
+    <button id="btn-stop-recording" disabled>Stop Recording</button>
+    <button id="btn-release-microphone" disabled>Release Microphone</button>
+    <button id="btn-download-recording" disabled>Download</button>
+  </div>
+  <div>
 
-      <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
-      <audio id='audio2' src=''></audio>
-      <input type='file' id='file'>
-    </div>
-    <script>audio1
-      // Check for BlobURL support
-      var blob = window.URL || window.webkitURL;
+    <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
+    <audio id='audio2' src=''></audio>
+    <input type='file' id='file'>
+  </div>
+  <script>audio1
+    // Check for BlobURL support
+    var blob = window.URL || window.webkitURL;
 
-      document.getElementById('file').addEventListener('change', function (event) {
-        var file = this.files[0];
-        var fileURL = blob.createObjectURL(file);
-        $("#audio2").src = fileURL;
-        $("#audio2").autoplay = true;
-      });
-    </script>
+    document.getElementById('file').addEventListener('change', function (event) {
+      var file = this.files[0];
+      var fileURL = blob.createObjectURL(file);
+      $("#audio2").src = fileURL;
+      $("#audio2").autoplay = true;
+    });
+  </script>
 
-    <script src='./RecordRTC.js'></script>
-    <script src='polyfills.js'></script>
+  <script src='./RecordRTC.js'></script>
+  <script src='polyfills.js'></script>
 
-    <script tyle='module' src='./recording/index.js'></script>
-
-    <span> <button id='reset'>reset</button></span> <select id=preset_options></select>
-
-    <div id="eq_bandpass_update">
-
-    </div>
-    
-    <form id='noisegate'>
-      Noise Gate:
-      <div class="range-wrap">
-        <output id=threshold_l>Gate: </output><output class="bubble"></output>
-
-        <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range" name='threshold'>
-      </div>
-      <div class="range-wrap">
-        <output id=attack_l>Attack:</output>
-        <input aria-labelledby='attack_l' type="range" min='0' max='1' value='0.03' step='0.01' class="range"
-          name='attack'>
-        <output class="bubble"></output>
-      </div>
-      <div class="range-wrap">
-        <output id=release_l>Release: </output>
-        <input aria-labelledby='release_l' type="range" min='0' max='1' value='0.03' step='0.01' class="range"
-          name='release'>
-        <output class="bubble"></output>
-      </div>
-      <div class="range-wrap">
-        <output id=threshold_l>Sustain:</output>
-        <input aria-labelledby='threshold_l' type="range" min='0.001' max='1' value='0.0025' class="range"
-          name='timeConstant'>
-        <output class="bubble"></output>
-      </div>
-      <div id="rx1"></div>
-      <div id='rx0'></div>
-    </form>
-
-
-
-
-
+  <script tyle='module' src='./recording/index.js'></script>
 
   <div id=console></div>
 
@@ -135,6 +135,8 @@
     import NoiseGate from './NoiseGate/NoiseGate.js'
     import { split_band } from './splitband.js'
     import AnalyzerView from "./AnalyzerView.js"
+    import loadBandPassFilters from './band_pass_lfc/index.js'
+    import Presets from './presets.js'
 
     let audioCtx, audioTag, eq;
 
@@ -143,40 +145,49 @@
 
       this.style.display = 'none';
 
-      audioCtx = new AudioContext();
+      audioCtx = new AudioContext(); 
+      window.g_audioCtx = audioCtx;
 
       var audioTag = await Mixer(audioCtx, "ctrls");
 
       audioTag.add_audio_tag("audio1", 5);
 
-      window.g_audioTag = audioTag;
+      window.g_audioTag = audioTag; 
+
+
 
       var noiseGate = new NoiseGate(audioCtx);
+      
 
       noiseGate.port.postMessage("ping");
       noiseGate.port.onmessage = (evt) => {
         log(JSON.stringify(evt.data));
       }
 
-      $("#noisegate").oninput = function (e) {
-        noiseGate[e.target.name] !== null ? noiseGate[e.target.name] = e.target.value : alert("property not found on noise gate")
 
-      }
       audioTag.outputNode.connect(noiseGate.input);
+      var bandpassFilters = await loadBandPassFilters(audioCtx, 'eq_bandpass_update');
+      noiseGate.output.connect(bandpassFilters);
 
-      window.g_audioCtx = audioCtx;
-
+      $("#preset_options").innerHTML = Presets.menu();
+      $("#preset_options").oninput = function (e) {
+        var name = e.target.value;
+        var gains = Presets.presetGains(name);
+        bandpassFilters.port.postMessage({
+          gainUpdates: gains.map((gain, index) => {
+            return { index: index, value: gain }
+          })
+        });
+      }
 
       var group = split_band(audioCtx, [31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]);
-
-
       $("#eq_update_form").appendChild(group.UI_EQ());
-      noiseGate.output.connect(group.input);
+      bandpassFilters.connect(group.input);
       var ctv = AnalyzerView(group.output);
       ctv.analyzer.connect(audioCtx.destination);
       ctv.analyzer.connect(audioCtx.destination);
-      ctv.histogram("output_freq",680,220) 
-      ctv.timeseries("output_timeline",1024, 680, 220);
+      ctv.histogram("output_freq", 680, 220)
+      ctv.timeseries("output_timeline", 1024, 680, 220);
 
       //      eq = equilizer.initializeContext(audioCtx, noiseGate.output);
 

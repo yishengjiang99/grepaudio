@@ -44,11 +44,11 @@ class Band {
     this.mainFilter.gain.setValueAtTime(this.mainFilter.gain.defaultValue, gctx.currentTime);
     this.mainFilter.Q.setValueAtTime(this.mainFilter.gain.defaultValue, gctx.currentTime);   
     
-    this.volumeCap = gctx.createDynamicsCompressor();
-    this.volumeCap.threshold.setValueAtTime(0, 0);
-    this.volumeCap.attack.setValueAtTime(0,0);
-    this.volumeCap.release.setValueAtTime(0,0)
-    this.volumeCap.ratio.setValueAtTime(20,0)
+    // this.volumeCap = gctx.createDynamicsCompressor();
+    // this.volumeCap.threshold.setValueAtTime(0, 0);
+    // this.volumeCap.attack.setValueAtTime(0,0);
+    // this.volumeCap.release.setValueAtTime(0,0)
+    // this.volumeCap.ratio.setValueAtTime(20,0)
     this.mic_check = false;
 
     this.compressor = gctx.createDynamicsCompressor();
