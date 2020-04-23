@@ -1,5 +1,5 @@
 import { selector, slider,numeric} from "./functions.js";
-
+import {Q,HZ_LIST, DEFAULT_PRESET_GAINS} from './constants.js';
 class Band {
 
 
@@ -44,11 +44,7 @@ class Band {
     this.mainFilter.gain.setValueAtTime(this.mainFilter.gain.defaultValue, gctx.currentTime);
     this.mainFilter.Q.setValueAtTime(this.mainFilter.gain.defaultValue, gctx.currentTime);   
     
-    // this.volumeCap = gctx.createDynamicsCompressor();
-    // this.volumeCap.threshold.setValueAtTime(0, 0);
-    // this.volumeCap.attack.setValueAtTime(0,0);
-    // this.volumeCap.release.setValueAtTime(0,0)
-    // this.volumeCap.ratio.setValueAtTime(20,0)
+     this.volumeCap = gctx.createGain();
     this.mic_check = false;
 
     this.compressor = gctx.createDynamicsCompressor();
@@ -71,17 +67,24 @@ class Band {
     var cursor = this.input;
     this.lpf && cursor.connect(this.lpf) && (cursor = this.lpf);
     this.hpf && cursor.connect(this.hpf) && (cursor = this.hpf);
+    
     cursor.connect(this.mainFilter).connect(this.compressor);
     let AECInput = this.compressor;
     this.analyzerNode = gctx.createAnalyser();
+    this.analyzerNode.fftSize=64;
     if(this.mic_check == false){
-      AECInput.connect(this.output);
-      AECInput.connect(this.feedbackDelay).connect(this.feedbackLPF).connect(this.output);
+      AECInput.connect(this.volumeCap);
+      AECInput.connect(this.feedbackDelay).connect(this.feedbackLPF).connect(this.volumeCap);
     }else{
-      AECInput.connect(this.output)
+      AECInput.connect(this.volumeCap)
       AECInput.connect(this.feedbackDelay).connect(this.feedbackLPF).connect(this.AECInput);
     }
+    this.volumeCap.connect(this.analyzerNode)
+    this.analyzerNode.connect(this.output);
     return this;
+  }
+  probe = ()=>{
+    histogram2("band_freq_out",this.analyzerNode);
   }
 
   get components() {
@@ -93,13 +96,13 @@ class Band {
       feedbackLPF: this.feedbackLPF,
       phaseshift: this.phaseshift,
       volumeCap: this.volumeCap,
+      analyzer: this.analyzerNode
     }
   }
   get state() {
     return [this.currentVolume, this.isMuted, this.mic_check, this.ledColor, this.ledBars];
   }
 }
-
 export function split_band(ctx, hz_list) {
   var input = ctx.createGain();
   input.gain.setValueAtTime(1.2, ctx.currentTime);
@@ -130,6 +133,7 @@ export function split_band(ctx, hz_list) {
     const width_within_octave = [40, 28, 23, 18, 14, 14, 10, 19]  /* dogma */
   
     var canvas = document.createElement("canvas");
+    canvas.setAttribute('id', "c2_freq");
     canvas.setAttribute("width", width + 2*marginleftright);
     canvas.setAttribute("height", height);
   
@@ -176,6 +180,18 @@ export function split_band(ctx, hz_list) {
     return canvas;
   
   }
+  function probe(hz){
+    var analyzers;
+    for(let i in bands){
+      if( band.maxFrequency > hz ) {
+        analyzders = bands[i].probe(); break;;
+      }
+    }
+    analyzers = bands[bands.length-1].probe()
+    analyzers[1].histogram("band_freq_out");
+
+    return bands[bands.length-1].probe();
+  }
   function UI_EQ(){
 
     const table = document.createElement("table");
@@ -184,7 +200,7 @@ export function split_band(ctx, hz_list) {
     header.innerHTML=`<tr><td>hz</td>
     <td>threshold</td>
     <td>type</td><td>gain</td> <td>rolloff (Q)</td>
-    <td>delay</td><td>cutoff freq</td><td>resonance</td></tr>`;
+    <td>delay</td><td>cutoff freq</td><td>resonance</td><td>opts</td></tr>`;
     table.appendChild(header);
     
     var gvctrls =  document.createElement("div");
@@ -206,7 +222,11 @@ export function split_band(ctx, hz_list) {
       slider(row, {prop: band.feedbackLPF.frequency, min:20, max:1000, index:index}); 
 
       slider(row, {prop: band.feedbackDampener.gain, min: -1, max:1, value:0, step:0.01, index:index}); 
-  
+      var button = document.createElement("button");
+      button.innerHTML='probe';
+      button.onclick = band.probe;
+      row.appendChild(button.wrap("td"));  
+      
       table.appendChild(row);
     })
     var cp =  document.createElement("div");
@@ -220,6 +240,75 @@ export function split_band(ctx, hz_list) {
     bands, UI_Canvas, UI_EQ, input, output
   };
 }
+function histogram2(elemId, analyzer){
+      var bins = analyzer.fftSize;
+      var zoomScale = 1;
+      var width = 500;
+      var height = 300;
+      var canvas = document.getElementById(elemId);
+      const canvasCtx = canvas.getContext('2d');
+      canvas.setAttribute('width', width);
+      canvas.setAttribute('height', height);
+      canvasCtx.lineWidth = 2;
+      canvasCtx.strokeStyle = 'black';
+      canvasCtx.fillStyle = 'white';
+      canvasCtx.fillRect(0,0,width, height);
+      var dataArray = new Uint8Array(analyzer.fftSize);
 
+      
+      function drawBars(){
+          var t = requestAnimationFrame(drawBars);;
 
+          analyzer.getByteFrequencyData(dataArray);
 
+          var top, second, third;
+          var count=0;
+          var total =0;
+          dataArray.reduce(d=> total+=d);
+          
+          var bufferLength = dataArray.length;
+          canvasCtx.fillStyle = 'rgb(0, 0, 0)';
+          //
+          canvasCtx.clearRect(0, 0, width, height);
+          canvasCtx.fillRect(0, 0, width, height);
+
+          var barWidth = (width / (bins/zoomScale)) * 2.5;
+          var barHeight;
+          var barHeigthCC;
+          var x = 0;
+          for(var i = 0; i < bins/zoomScale; i++) {
+            barHeight = dataArray[i] * zoomScale
+
+            canvasCtx.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
+
+            canvasCtx.fillRect(x,height-barHeight/2-25,barWidth,(barHeight/2));
+
+            canvasCtx.fillStyle = 'rgb(22, 22,'+(barHeigthCC+44)+')';
+
+            x += barWidth + 1;
+          }
+
+          canvasCtx.fillStyle= 'rgb(233,233,233)'
+          canvasCtx.fillText(zoomScale, 0, height-5);
+
+          x=10;
+          var axisIndex=0;
+          for(var i = 0; i < bins/zoomScale; i++) {
+          
+            barHeight = dataArray[i];
+            canvasCtx.fillStyle= 'rgb(233,233,233)'
+            canvasCtx.textAlign ='left'
+            var f = i/bins  * 24000;
+            
+           if(f>HZ_LIST[axisIndex]){
+              canvasCtx.fillText(HZ_LIST[axisIndex].toFixed(0)+'', x, height-(axisIndex % 2 ? 15 : 0));
+              axisIndex++;
+            }
+
+            x += barWidth + 1;
+          }      
+            canvasCtx.fillText(total.toFixed(3)+'', width-100, 100);
+      }
+
+      drawBars();
+    }

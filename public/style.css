@@ -4,13 +4,20 @@
     background-color: black;
     color: white;
     overflow-y: scroll;
-	height:4px;
     margin-bottom:5px;;
     font-size:12px;
     min-height:1px;
 }
 td{
   min-width:25px;
+}
+body{
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 .center {
   display: block;
@@ -46,13 +53,19 @@ td{
   transform:translate(-50%,-50%);
   -ms-transform:translate(-50%,-50%)
 }
+button{
+  background-color:darkgray;
+  color:white;
+}
 body{
 
+  color: #C0C0C0;
+  background-color:black;
   position: fixed;
-  overflow:hidden;
+  overflow-x:hidden;
   height: 100%;
   position:fixed;
-  overflow:hidden;
+  overflow-y:scroll;
   width:100%;
 }
 table{
@@ -75,13 +88,29 @@ td{
     margin: 20px 0px;
     max-height: 25vh;
     overflow-y: scroll;
-    width: 0vw;
+    width: 30vw;
+
     background-color:black;
     color:white;
-    min-height:25vh;
+    height:2em;
 
 }
 
 .simple-console-output{
   min-height:20vh;
+}
+.draggable {
+  position: absolute;
+  z-index: 9;
+  background-color: #f1f1f1;
+  text-align: center;
+  border: 1px solid #d3d3d3;
+}
+
+.draggable {
+  padding: 10px;
+  cursor: move;
+  z-index: 10;
+  background-color: #2196F3;
+  color: #fff;
 }

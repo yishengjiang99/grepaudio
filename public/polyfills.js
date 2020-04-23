@@ -1,72 +1,132 @@
-window.requestAnimFrame = (function ()
-{
-    return window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        function (callback,element)
-        {
-            window.setTimeout(callback,1000 / 60);
-        };
+window.requestAnimFrame = (function () {
+  return window.requestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    function (callback, element) {
+      window.setTimeout(callback, 1000 / 60);
+    };
 })();
-window.AudioContext = (function ()
-{
-    return window.webkitAudioContext || window.AudioContext || window.mozAudioContext;
+window.AudioContext = (function () {
+  return window.webkitAudioContext || window.AudioContext || window.mozAudioContext;
 })();
 
 
 var con = new SimpleConsole({
-    placeholder: "",
-    id: "console",
-    handleCommand: function (command)
-    {
-        try {
-            var resp = index_stdin(command) || eq_stdin(command) || con.log("..");
-            con.log(resp)
-        } catch (error) {
-            con.log(error);
-        }
-    },
-    autofocus: true, // if the console is to be the primary interface of the page
-    storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
+  placeholder: "",
+  id: "console",
+  handleCommand: function (command) {
+    try {
+      var resp = index_stdin(command);
+      con.log(resp)
+    } catch (error) {
+      con.log(error);
+    }
+  },
+  autofocus: true, // if the console is to be the primary interface of the page
+  storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
 })
- document.getElementById("console") ? document.getElementById("console").append(con.element) : document.body.append(con.element);
+document.getElementById("console") ? document.getElementById("console").append(con.element) : document.body.append(con.element);
 
 window.con = con;
 // add the console to the page
 
 window.log = con.log;
 window.logErr = con.logError;
-con.element.addEventListener("click",function () { this.querySelector("input").focus() });
 
-window.onerror = function (msg,url,lineNo,columnNo,error)
-{
-    con.log([msg,url,lineNo,columnNo,error].join(', '))
+window.onerror = function (msg, url, lineNo, columnNo, error) {
+  con.log([msg, url, lineNo, columnNo, error].join(', '))
 
 }
 window.log = (txt) => con.log(txt);;
 
 
-window.logErr = function (text)
-{
-    if (typeof text === 'object') text = JSON.stringify(text,null,'\n');
-    window.log(text);
+window.logErr = function (text) {
+  if (typeof text === 'object') text = JSON.stringify(text, null, '\n');
+  window.log(text);
 
 }
 const $ = (selector) => document.querySelector(selector);
-document.onload = function ()
-{
-    $('.canvas_wrapper')
+document.onload = function () {
+  const allRanges = document.querySelectorAll(".range-wrap");
+  allRanges.forEach(wrap => {
+    const range = wrap.querySelector(".range");
+    const bubble = wrap.querySelector(".bubble");
+
+    range.addEventListener("input", () => {
+      setBubble(range, bubble);
+    });
+    setBubble(range, bubble);
+
+
+
+    document.querySelectorAll(".draggable").forEach( elem=>{
+      dragElement(elem);
+    });
+    function dragElement(elmnt) {
+      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      elmnt.onmousedown = function (e) {
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        log("drag mouse down")
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+      }
+    
+      function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        elmnt.style.top = (elmnt.top - pos2) + "px";
+        elmnt.style.left = (elmnt.left - pos1) + "px";
+      }
+    
+      function closeDragElement() {
+        /* stop moving when mouse button is released:*/
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+  });
+
+  function setBubble(range, bubble) {
+    const val = range.value;
+    const min = range.min ? range.min : 0;
+    const max = range.max ? range.max : 100;
+    const newVal = Number(((val - min) * 100) / (max - min));
+    bubble.innerHTML = val;
+
+    // Sorta magic numbers based on size of the native UI thumb
+    bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15}px))`;
+  }
 }
-function wrap(el,wrapper)
-{
-    el.parentNode.insertBefore(wrapper,el);
-    wrapper.appendChild(el);
+function wrap(el, wrapper) {
+  el.parentNode.insertBefore(wrapper, el);
+  wrapper.appendChild(el);
 }
-HTMLElement.prototype.wrap = function (parent_tag)
-{
-    let p = document.createElement(parent_tag);
-    p.appendChild(this)
-    return p;
+HTMLElement.prototype.wrap = function (parent_tag) {
+  let p = document.createElement(parent_tag);
+  p.appendChild(this)
+  return p;
+}
+
+function xinspect(o,i){
+  if(typeof i=='undefined')i='';
+  if(i.length>50)return '[MAX ITERATIONS]';
+  var r=[];
+  for(var p in o){
+      var t=typeof o[p];
+      r.push(i+'"'+p+'" ('+t+') => '+(t=='object' ? 'object:'+xinspect(o[p],i+'  ') : o[p]+''));
+  }
+  return r.join(i+'\n');
 }
 
 const bigchart_ctx = $("#big-chart") && $("#big-chart").getContext('2d');
@@ -127,36 +187,36 @@ OscillatorNode.setWaveTable() is aliased to setPeriodicWave().
     if (!param)	// if NYI, just return
       return;
     if (!param.setTargetValueAtTime)
-      param.setTargetValueAtTime = param.setTargetAtTime; 
+      param.setTargetValueAtTime = param.setTargetAtTime;
   }
 
   if (window.hasOwnProperty('AudioContext') /*&& !window.hasOwnProperty('webkitAudioContext') */) {
     window.webkitAudioContext = AudioContext;
 
-    if (!AudioContext.prototype.hasOwnProperty('internal_createGain')){
+    if (!AudioContext.prototype.hasOwnProperty('internal_createGain')) {
       AudioContext.prototype.internal_createGain = AudioContext.prototype.createGain;
-      AudioContext.prototype.createGain = function() { 
+      AudioContext.prototype.createGain = function () {
         var node = this.internal_createGain();
         fixSetTarget(node.gain);
         return node;
       };
     }
 
-    if (!AudioContext.prototype.hasOwnProperty('internal_createDelay')){
+    if (!AudioContext.prototype.hasOwnProperty('internal_createDelay')) {
       AudioContext.prototype.internal_createDelay = AudioContext.prototype.createDelay;
-      AudioContext.prototype.createDelay = function() { 
+      AudioContext.prototype.createDelay = function () {
         var node = this.internal_createDelay();
         fixSetTarget(node.delayTime);
         return node;
       };
     }
 
-    if (!AudioContext.prototype.hasOwnProperty('internal_createBufferSource')){
+    if (!AudioContext.prototype.hasOwnProperty('internal_createBufferSource')) {
       AudioContext.prototype.internal_createBufferSource = AudioContext.prototype.createBufferSource;
-      AudioContext.prototype.createBufferSource = function() { 
+      AudioContext.prototype.createBufferSource = function () {
         var node = this.internal_createBufferSource();
         if (!node.noteOn)
-          node.noteOn = node.start; 
+          node.noteOn = node.start;
         if (!node.noteGrainOn)
           node.noteGrainOn = node.start;
         if (!node.noteOff)
@@ -166,9 +226,9 @@ OscillatorNode.setWaveTable() is aliased to setPeriodicWave().
       };
     }
 
-    if (!AudioContext.prototype.hasOwnProperty('internal_createDynamicsCompressor')){
+    if (!AudioContext.prototype.hasOwnProperty('internal_createDynamicsCompressor')) {
       AudioContext.prototype.internal_createDynamicsCompressor = AudioContext.prototype.createDynamicsCompressor;
-      AudioContext.prototype.createDynamicsCompressor = function() { 
+      AudioContext.prototype.createDynamicsCompressor = function () {
         var node = this.internal_createDynamicsCompressor();
         fixSetTarget(node.threshold);
         fixSetTarget(node.knee);
@@ -180,9 +240,9 @@ OscillatorNode.setWaveTable() is aliased to setPeriodicWave().
       };
     }
 
-    if (!AudioContext.prototype.hasOwnProperty('internal_createBiquadFilter')){
+    if (!AudioContext.prototype.hasOwnProperty('internal_createBiquadFilter')) {
       AudioContext.prototype.internal_createBiquadFilter = AudioContext.prototype.createBiquadFilter;
-      AudioContext.prototype.createBiquadFilter = function() { 
+      AudioContext.prototype.createBiquadFilter = function () {
         var node = this.internal_createBiquadFilter();
         fixSetTarget(node.frequency);
         fixSetTarget(node.detune);
@@ -201,12 +261,12 @@ OscillatorNode.setWaveTable() is aliased to setPeriodicWave().
     }
 
     if (!AudioContext.prototype.hasOwnProperty('internal_createOscillator') &&
-         AudioContext.prototype.hasOwnProperty('createOscillator')) {
+      AudioContext.prototype.hasOwnProperty('createOscillator')) {
       AudioContext.prototype.internal_createOscillator = AudioContext.prototype.createOscillator;
-      AudioContext.prototype.createOscillator = function() { 
+      AudioContext.prototype.createOscillator = function () {
         var node = this.internal_createOscillator();
         if (!node.noteOn)
-          node.noteOn = node.start; 
+          node.noteOn = node.start;
         if (!node.noteOff)
           node.noteOff = node.stop;
         fixSetTarget(node.frequency);
@@ -228,7 +288,7 @@ OscillatorNode.setWaveTable() is aliased to setPeriodicWave().
 
     if (!AudioContext.prototype.hasOwnProperty('internal_createPanner')) {
       AudioContext.prototype.internal_createPanner = AudioContext.prototype.createPanner;
-      AudioContext.prototype.createPanner = function() {
+      AudioContext.prototype.createPanner = function () {
         var node = this.internal_createPanner();
         var enumValues = {
           'EQUALPOWER': 'equalpower',
@@ -264,7 +324,7 @@ OscillatorNode.setWaveTable() is aliased to setPeriodicWave().
 }(window));
 AudioContext = window.AudioContext || window.webkitAudioContext;
 
-(function(scope) {
+(function (scope) {
   "use strict";
 
   // namespace to avoid global scope pollution
@@ -275,16 +335,16 @@ AudioContext = window.AudioContext || window.webkitAudioContext;
   // --------------------------------------------------------------------------
   //
   //
-  AWPF.PolyfillAudioWorklet = function() {
+  AWPF.PolyfillAudioWorklet = function () {
     var imports = {};
     var importedScripts = [];
 
     function importOnWorker(src) {
       if (!AWPF.worker.onmessage) AWPF.worker.onmessage = onmessage;
-      return new Promise(function(resolve, reject) {
+      return new Promise(function (resolve, reject) {
         if (importedScripts.indexOf(src) < 0) {
-          imports[src] = { resolve:resolve, reject:reject };
-          AWPF.worker.postMessage({ type:"import", url:src });
+          imports[src] = { resolve: resolve, reject: reject };
+          AWPF.worker.postMessage({ type: "import", url: src });
           importedScripts.push(src);
         }
         else resolve();
@@ -323,7 +383,7 @@ AudioContext = window.AudioContext || window.webkitAudioContext;
       }
     }
 
-    return { addModule:importOnWorker }
+    return { addModule: importOnWorker }
   }
 
   // --------------------------------------------------------------------------
@@ -347,16 +407,16 @@ AudioContext = window.AudioContext || window.webkitAudioContext;
     options.buflenAWP = options.buflenAWP || 128;
     options.buflenSPN = options.buflenSPN || 256;
     options.numberOfInputs = options.numberOfInputs || 0;
-    if (options.numberOfOutputs === undefined)      options.numberOfOutputs = 1;
-    if (options.outputChannelCount === undefined)   options.outputChannelCount = [1];
-    if (options.inputChannelCount === undefined)    options.inputChannelCount  = [];
-  //if (options.inputChannelCount.length  != options.numberOfInputs)  throw new Error("InvalidArgumentException");
+    if (options.numberOfOutputs === undefined) options.numberOfOutputs = 1;
+    if (options.outputChannelCount === undefined) options.outputChannelCount = [1];
+    if (options.inputChannelCount === undefined) options.inputChannelCount = [];
+    //if (options.inputChannelCount.length  != options.numberOfInputs)  throw new Error("InvalidArgumentException");
     if (options.outputChannelCount.length != options.numberOfOutputs) throw new Error("InvalidArgumentException");
 
     var nslices = (options.buflenSPN / options.buflenAWP) | 0;
     var bytesPerBuffer = options.buflenAWP * nslices * 4;
 
-    function configurePort (type, options) {
+    function configurePort(type, options) {
       var nports = (type == "input") ? options.numberOfInputs : options.numberOfOutputs;
       if (nports > 0) {
         var nchannels = 0;
@@ -364,7 +424,7 @@ AudioContext = window.AudioContext || window.webkitAudioContext;
         if (channelCount.length > 0) nchannels = channelCount[0];
         if (nchannels <= 0) throw new Error("InvalidArgumentException");
         var port = new Array(nchannels);
-        for (var c=0; c<nchannels; c++)
+        for (var c = 0; c < nchannels; c++)
           if (AWPF.hasSAB)
             port[c] = new SharedArrayBuffer(bytesPerBuffer);
           else {
@@ -380,14 +440,14 @@ AudioContext = window.AudioContext || window.webkitAudioContext;
     }
 
     // -- io configuration is currently static
-    var audioIn  = configurePort("input",  options);
+    var audioIn = configurePort("input", options);
     var audioOut = configurePort("output", options);
 
     // -- create processor
     this.processorState = "pending";
-    var args = { node:this.id, name:nodeName, options:options, hasSAB:AWPF.hasSAB }
-    args.audio = { input:audioIn, output:audioOut }
-    AWPF.worker.postMessage({ type:"createProcessor", args:args }, [messageChannel.port2])
+    var args = { node: this.id, name: nodeName, options: options, hasSAB: AWPF.hasSAB }
+    args.audio = { input: audioIn, output: audioOut }
+    AWPF.worker.postMessage({ type: "createProcessor", args: args }, [messageChannel.port2])
 
     this.onprocessorstatechange = function (e) {
       this.processorState = e.detail;
@@ -404,8 +464,8 @@ AudioContext = window.AudioContext || window.webkitAudioContext;
       var self = this;
 
       var render = function () {
-        var msg = { type:"process", processor:self.processor, time:context.currentTime, buf:[] };
-        for (var c=0; c<audioOut.length; c++)
+        var msg = { type: "process", processor: self.processor, time: context.currentTime, buf: [] };
+        for (var c = 0; c < audioOut.length; c++)
           msg.buf.push(audioOut[c][curbuf].buffer);
         AWPF.worker.postMessage(msg, msg.buf);
         curbuf = ((curbuf + 1) % 2) | 0;
@@ -413,15 +473,15 @@ AudioContext = window.AudioContext || window.webkitAudioContext;
       }
 
       this.onRender = function (buf) {
-        audioOut[0][curbuf ? 0:1] = new Float32Array(buf[0]);
-        audioOut[1][curbuf ? 0:1] = new Float32Array(buf[1]);
+        audioOut[0][curbuf ? 0 : 1] = new Float32Array(buf[0]);
+        audioOut[1][curbuf ? 0 : 1] = new Float32Array(buf[1]);
         newBufferAvailable = true;
       }
     }
 
     // -- ScriptProcessorNode -------------------------------------------------
 
-    let ninChannels  = options.inputChannelCount[0] || 0;
+    let ninChannels = options.inputChannelCount[0] || 0;
     let noutChannels = options.outputChannelCount[0];
     var spn = context.createScriptProcessor(options.buflenSPN, ninChannels, noutChannels);
     this.input = spn;
@@ -436,22 +496,22 @@ AudioContext = window.AudioContext || window.webkitAudioContext;
       spn.disconnect();
     }
 
-    if (AWPF.hasSAB)  var outbuf = new Float32Array(audioOut[0]);  // spn limitation
+    if (AWPF.hasSAB) var outbuf = new Float32Array(audioOut[0]);  // spn limitation
 
     var onprocess = function (ape) {
       if (this.processor === undefined) return;
 
       var ibuff = ape.inputBuffer;
       var obuff = ape.outputBuffer;
-      var outL  = obuff.getChannelData(0);
+      var outL = obuff.getChannelData(0);
 
       if (AWPF.hasSAB) {
         outL.set(outbuf);
-        var msg = { type:"process", processor:this.processor, time:context.currentTime };
+        var msg = { type: "process", processor: this.processor, time: context.currentTime };
         AWPF.worker.postMessage(msg);
       }
       else {
-        for (var c=0; c<audioOut.length; c++)
+        for (var c = 0; c < audioOut.length; c++)
           obuff.getChannelData(c).set(audioOut[c][curbuf]);
         if (newBufferAvailable)
           render();
@@ -470,13 +530,13 @@ AudioContext = window.AudioContext || window.webkitAudioContext;
   }
 
   AWPF.polyfill = function (scope, forcePolyfill) {
-    return new Promise( function (resolve) {
+    return new Promise(function (resolve) {
 
       if (!forcePolyfill && AWPF.AudioWorkletAvailable(scope))
         resolve();
       else {
         AWPF.descriptorMap = {}; // node name to parameter descriptor map (should be in BAC)
-        AWPF.workletNodes  = [];
+        AWPF.workletNodes = [];
         AWPF.audioWorklet = AWPF.PolyfillAudioWorklet();
         AWPF.context = scope;
         if (!forcePolyfill || !AWPF.AudioWorkletAvailable(scope))
@@ -487,7 +547,7 @@ AudioContext = window.AudioContext || window.webkitAudioContext;
           resp.text().then(function (s) {
             var u = window.URL.createObjectURL(new Blob([s]));
             AWPF.worker = new Worker(u);
-            AWPF.worker.postMessage({ type:"init", sampleRate:scope.sampleRate });
+            AWPF.worker.postMessage({ type: "init", sampleRate: scope.sampleRate });
 
             console.warn('Using Worker polyfill of AudioWorklet');
             AWPF.isAudioWorkletPolyfilled = true;

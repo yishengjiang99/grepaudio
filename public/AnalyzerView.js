@@ -1,5 +1,7 @@
 import {Q,HZ_LIST, DEFAULT_PRESET_GAINS} from './constants.js';
 
+var g_av_timers = [];
+
 var AnalyzerView = function(audioNode, params){
   const _configs = {};
   const configs =  params || _configs
@@ -7,7 +9,7 @@ var AnalyzerView = function(audioNode, params){
   var fft = audioNode.context.createAnalyser();
   
   fft.fftSize = configs.fft || 2048;
-  fft.smoothingTimeConstant = configs.smtc || 0.5;
+  fft.smoothingTimeConstant = configs.smtc || 0.9;
   const bins = fft.fftSize;
 
   const ctx = fft.context;
@@ -41,11 +43,12 @@ var AnalyzerView = function(audioNode, params){
          hz_histram[hz_index] = dataArray[i];
       }
     }
-    window.postMessage("freq_resp_update", Object.values(hz_histram));
-    
+    return hz_histram;    
   }
 
   return {
+    cummulativeFFT: cummulativeFFT,
+    fft_in_hz_list: fft_in_hz_list, 
     analyzer:fft,
     zoomIn: zoomIn,
     zoomOut: zoomOut,
@@ -111,7 +114,7 @@ var AnalyzerView = function(audioNode, params){
             canvasCtx.stroke();
             // canvasCtx.fillRect(x,peakminus+50,3,(peakplus-peakminus)*50);
          }
-         requestAnimationFrame(draw);
+         g_av_timers.push(requestAnimationFrame(draw));;
       }
       draw();
     },
@@ -135,28 +138,29 @@ var AnalyzerView = function(audioNode, params){
       var dataArray = new Uint8Array(fft.fftSize);
       if(!repeating) return dataArray;
 
-
+      
       function drawBars(){
           var draw= !($("#showfft") && $("#showfft").checked == false)
           var draw_accum = !($("#showcummulative") && $("#showcummulative").checked == false)
-          requestAnimationFrame(drawBars);
+          var t = requestAnimationFrame(drawBars);;
 
           fft.getByteFrequencyData(dataArray);
-          // if(dataArray.reduce(d=>sum+d, sum=0) == 0 ){
-          //   return; 
-          // };
 
-
+          var top, second, third;
+          var count=0;
+          var total =0;
+          dataArray.reduce(d=> total+=d);
+          
+          
           for(let i=0; i<dataArray.length; i++){
               cummulativeFFT[i] = cummulativeFFT[i] + dataArray[i];
-
           }
 
           counter++;
           var bufferLength = dataArray.length;
           canvasCtx.fillStyle = 'rgb(0, 0, 0)';
           //
-            canvasCtx.clearRect(0, 0, width, height);
+          canvasCtx.clearRect(0, 0, width, height);
           canvasCtx.fillRect(0, 0, width, height);
 
           var barWidth = (width / (bins/zoomScale)) * 2.5;
@@ -197,7 +201,7 @@ var AnalyzerView = function(audioNode, params){
 
             x += barWidth + 1;
           }   
-
+canvasCtx.fillText(total.toFixed(3)+'', width-100, 100);
       }
 
       drawBars();
