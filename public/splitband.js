@@ -204,8 +204,8 @@ export function split_band(ctx, hz_list) {
     table.appendChild(header);
     
     var gvctrls =  document.createElement("div");
-    slider(gvctrls, {prop: input.gain, min:-3, max:4});
-    slider(gvctrls, {prop: output.gain, min:-3, max:4});
+    slider(gvctrls, {prop: input.gain, min:"0", max: "4", name: "preamp"});
+    slider(gvctrls, {prop: output.gain, min:"0", max: "4", name:"postamp"});
   
 
     bands.forEach( (band,index)=>{
@@ -240,19 +240,46 @@ export function split_band(ctx, hz_list) {
     bands, UI_Canvas, UI_EQ, input, output
   };
 }
+
+
+
+
 function histogram2(elemId, analyzer){
       var bins = analyzer.fftSize;
-      var zoomScale = 1;
-      var width = 500;
-      var height = 300;
+      var zoomScale=1;
       var canvas = document.getElementById(elemId);
-      const canvasCtx = canvas.getContext('2d');
-      canvas.setAttribute('width', width);
-      canvas.setAttribute('height', height);
-      canvasCtx.lineWidth = 2;
-      canvasCtx.strokeStyle = 'black';
-      canvasCtx.fillStyle = 'white';
-      canvasCtx.fillRect(0,0,width, height);
+      const width = 690;
+      const height = 320;
+    
+      const marginleftright = 10;
+      const hz_20_mark = 10;
+      const hz_20k_mark = 683;
+      const width_per_octave  = [hz_20k_mark - hz_20_mark] / 4;
+      const width_within_octave = [40, 28, 23, 18, 14, 14, 10, 19]  /* dogma */
+    
+      canvas.setAttribute("width", width + 2*marginleftright);
+      canvas.setAttribute("height", height);
+    
+      const bg_color = 'rgb(33,33,35)';
+      const cvt = canvas.getContext('2d');
+      cvt.fillStyle = bg_color;
+      cvt.fillRect(10, 0, width,height );
+      cvt.strokeStyle = 'rgb(255, 255,255)'
+      cvt.strokeWidth = '2px'
+      const noctaves = 11;
+      for (var octave = 0; octave <= noctaves; octave++) {
+        var x = octave * width / noctaves;
+  
+        cvt.strokeStyle = 'rgb(255, 255,255)';
+        cvt.moveTo(x, 30);
+        cvt.lineTo(x, height);
+        cvt.stroke();
+  
+        var f = 0.5 * gctx.sampleRate * Math.pow(2.0, octave - noctaves);
+        cvt.textAlign = "center";
+        cvt.strokeText(f.toFixed(0) + "Hz", x, 20);
+      }
+
       var dataArray = new Uint8Array(analyzer.fftSize);
 
       
@@ -266,48 +293,44 @@ function histogram2(elemId, analyzer){
           var total =0;
           dataArray.reduce(d=> total+=d);
           
-          var bufferLength = dataArray.length;
-          canvasCtx.fillStyle = 'rgb(0, 0, 0)';
-          //
-          canvasCtx.clearRect(0, 0, width, height);
-          canvasCtx.fillRect(0, 0, width, height);
+          cvt.fillStyle = 'rgb(0, 0, 0)';
+          cvt.clearRect(0, 0, width, height);
+          cvt.fillRect(0, 0, width, height);
 
-          var barWidth = (width / (bins/zoomScale)) * 2.5;
           var barHeight;
           var barHeigthCC;
           var x = 0;
           for(var i = 0; i < bins/zoomScale; i++) {
+            var barWidth = 1/i;
+
             barHeight = dataArray[i] * zoomScale
 
-            canvasCtx.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
+            cvt.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
 
-            canvasCtx.fillRect(x,height-barHeight/2-25,barWidth,(barHeight/2));
+            cvt.fillRect(x,height-barHeight/2-25,barWidth,(barHeight/2));
 
-            canvasCtx.fillStyle = 'rgb(22, 22,'+(barHeigthCC+44)+')';
+            cvt.fillStyle = 'rgb(22, 22,'+(barHeigthCC+44)+')';
 
             x += barWidth + 1;
           }
 
-          canvasCtx.fillStyle= 'rgb(233,233,233)'
-          canvasCtx.fillText(zoomScale, 0, height-5);
+          cvt.fillStyle= 'rgb(233,233,233)'
+          cvt.fillText(zoomScale, 0, height-5);
 
           x=10;
           var axisIndex=0;
           for(var i = 0; i < bins/zoomScale; i++) {
           
             barHeight = dataArray[i];
-            canvasCtx.fillStyle= 'rgb(233,233,233)'
-            canvasCtx.textAlign ='left'
-            var f = i/bins  * 24000;
-            
-           if(f>HZ_LIST[axisIndex]){
-              canvasCtx.fillText(HZ_LIST[axisIndex].toFixed(0)+'', x, height-(axisIndex % 2 ? 15 : 0));
-              axisIndex++;
-            }
+            cvt.fillStyle= 'rgb(233,233,233)'
+            cvt.textAlign ='left'
+            var f = (i+1)/bins * gctx.sampleRate;
+            var x = 2*Math.log10(f);
+      
 
             x += barWidth + 1;
           }      
-            canvasCtx.fillText(total.toFixed(3)+'', width-100, 100);
+          cvt.fillText(total.toFixed(3)+'', width-100, 100);
       }
 
       drawBars();

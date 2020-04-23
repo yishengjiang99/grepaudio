@@ -1,4 +1,4 @@
-const ytdl = require('ytdl-core')
+nano const ytdl = require('ytdl-core')
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const FFmpeg = require('fluent-ffmpeg');
 const { PassThrough } = require('stream')
@@ -13,8 +13,20 @@ const https = require('https');
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
+});
+
+
+app.get("/", function(req,req,next){
+
+  const fs = require('fs');
+  exec("ls ../samples/*.mp3", (err, stdout,stderr)=>{
+    if(err) res.end(err.message);
+    else res.end(stdout);
+  });
+
   next();
 });
+
 
 app.use("/samples", express.static("/samples"));
 
@@ -47,7 +59,7 @@ app.get("/api/twitch/(:uri)", function (req, res, next) {
 
 app.get("/api/yt", function (req, res, next) {
   const query = req.params.q;
-  const youtube_api_key = 'AIzaSyBCXMcymaqef8RmYskmdVOJcQA5e06Zvyg';
+  const youtube_api_key = process.env.google_key;
   const url = `https://www.googleapis.com/youtube/v3/search?type=video&part=snippet&maxResults=10&q=${req.params.query}&key=${youtube_api_key}`
   const request = require("request");
 

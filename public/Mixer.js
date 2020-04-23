@@ -77,7 +77,7 @@ xhr.onreadystatechange = function() {
   function connect(node) {this.masterGain.connect(node)};
   var container = document.getElementById(containerId);
 
-  ['YT_SEARCH', 'Microphone', 'notes.csv', 'drums.csv', 'songs.csv'].forEach( async (indexfile, index)=>{
+  ['YT_SEARCH', 'Microphone', 'notes.csv', 'waves.csv', 'songs.csv'].forEach( async (indexfile, index)=>{
 
     if(indexfile=='YT_SEARCH'){
 
@@ -94,16 +94,29 @@ xhr.onreadystatechange = function() {
            return `<option value='${device.deviceId}'>${device.kind}: ${device.label}</option>`
         }).join("");
       }).catch(function(err) { select.innerHTML= err.message});
+    }else if(indexfile==='waves.csv'){
+
+      const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split("\n"));
+      var select = document.createElement("div");
+      song_db.filter(t=>t.trim()!=="").map(t=>"samples/"+t.trim()).map((url,i)=> {
+        var button = document.createElement("button");
+        button.onclick=function(e){ chords (url)}
+        button.innerHTML = url;
+        select.append(button);    
+      });
+       select.setAttribute("data-chord",1);
     }else if(indexfile==='notes.csv'){
       const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split("\n"));
-      var select = document.createElement("span");
+      var select = document.createElement("div");
+
       
       select.innerHTML = song_db.filter(t=>t.trim()!=="").map(t=>"samples/"+t.trim()).map((n,j)=> {
         var url = n.split(",")[0];
         var name = (n.split(",")[1] || url).split("/").pop();
-        return `<button value='${encodeURIComponent(url)}'>${name}</button> ${(j+1) % 5 == 0 ? "<br>" :""}`
+        return `<button value='${url}'>${name}</button> ${(j+1) % 5 == 0 ? "<br>" :""}`
       }); 
 
+    
     }else{
       const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split("\n"));
       var select = document.createElement("select");
@@ -141,7 +154,9 @@ xhr.onreadystatechange = function() {
 
     async function loadURL(){
       var url = select.value;
-      if(select.getAttribute("data-host")){
+      if(select.getAttribute("data-chord")){
+        return;
+      } if(select.getAttribute("data-host")){
         url = select.getAttribute("data-host").replace("::QUERY::", select.value);
         audioPlayer.src=url;
         audioPlayer.oncanplay = function(evt){ audioPlayer.play()}
@@ -183,4 +198,49 @@ const bindAudioTag = function(tagId, output){
   if(!myAudio) return false;
   const source = output.context.createMediaElementSource(myAudio);
   return source;
+}
+
+
+
+function chords(url) {
+  fetch(url).then(resp => resp.json()).then(json => {
+    var osc = g_audioctx.createOscillator();
+    var wave = new PeriodWave(osc, json);
+    osc.setPerdicWave(wave);
+    const keys = 'asdfghj'.split("");
+    const notes = '261.63, 293.66 , 329.63, 349.23, 392.00, 440.00, 493.88';
+    var masterGain = g_audioctx.createGain();
+
+    keys.forEach((l, i) => {
+      var LFO = ctx.createOscillator();
+      LFO.frequency.value = nodes[i];
+      var gain = ctx.createGain();
+      gain.gain.value = 0;
+      var gainEnvelope = new Envelope(0, 5, ampAttack, ampDecay, ampSustain, ampRelease, gain.gain);
+      adsrs.push(gainEnvelope)
+      LFO.connect(gain);
+      
+      LFO.start(0);
+
+    })
+    
+
+    window.addEventListener("keydown", function (e) {
+      if (keys.indexOf(e.key) > -1) {
+        log('keydown')
+        var env = adsrs[keys.indexOf(e.key)];
+        env.trigger(ctx.currentTime);
+      }
+    })
+
+    window.addEventListener("keyup", function (e) {
+      if (keys.indexOf(e.key) > -1) {
+        log('keyup')
+        var env = adsrs[keys.indexOf(e.key)];
+        env.release(ctx.currentTime);
+      }
+    })
+
+  }).catch(console.log)
+
 }

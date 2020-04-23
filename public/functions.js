@@ -74,10 +74,18 @@ export function slider(container, options) {
 	}
 	var contain = document.createElement(params.wrapper || "td");
 	contain.style.position = 'relative';
+	if(params.name) {
+		contain.append(  el("span", params.name));
+	}
 	contain.append(input);
 	contain.append(label);
 	container.append(contain);
 
+}
+export function el(tag, innerHTML){
+	var t= document.createElement(tag)
+	t.innerHTML = innerHTML;
+	return t;
 }
 export function selector(container, params) {
 	var input = document.createElement("select");

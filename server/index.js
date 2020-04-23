@@ -16,11 +16,27 @@ app.use(function (req, res, next) {
   res.header("Transfer-Encoding","chunked");
   next();
 });
+app.get("/", function(req,res,next){
+  const fs = require('fs');
+  exec("ls samples/*mp3 && ls -l waves/*", {cwd:'../public'}, (err, stdout,stderr)=>{
+    if(err) res.end(err.message);
+    else{
+      res.send(stdout);
+    }
+  });
+  exec("ls", {cwd:'../waves/'}, (err, stdout,stderr)=>{
+    if(err) res.end(err.message);
+    else{
+      res.send(stdout);
+    }
+  });
+});
+
+
 
 app.use("/samples", express.static("/samples"));
 
 app.get("/api/twitch/(:uri)", function (req, res, next) {
-
 	exec('sh ../twitch.sh', (error, stdout, stderr) => {
    if (error) {
  	   console.error(`exec error: ${error}`);
@@ -29,6 +45,7 @@ app.get("/api/twitch/(:uri)", function (req, res, next) {
 	res.end(stdout);
 });
 });
+
 
 app.get("/api/yt", function (req, res, next) {
   const query = req.params.q;
