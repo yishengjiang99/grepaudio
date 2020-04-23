@@ -54,10 +54,10 @@ export function numeric(container, options) {
 export function slider(container, options) {
 	var params = options || {};
 	var input = document.createElement("input");
-	input.min = params.min || (params.prop && params.prop.minValue )|| "-12";
-	input.max = params.max || (params.prop && params.prop.maxValue )|| "12";
+	input.min = params.min !== null && params.min || (params.prop && params.prop.minValue )|| "-12";
+	input.max = params.max !== null && params.max || (params.prop && params.prop.maxValue )|| "12";
 	input.type = params.type || 'range';
-	input.value = params.value || (params.prop && params.prop.value.toFixed(3)) ||  (params.prop && params.prop.defaultValue.toFixed(3)) 
+	input.value = params.value !== null ? params.value : (params.prop && params.prop.value.toFixed(3)) ||  (params.prop && params.prop.defaultValue.toFixed(3)) 
 	input.step = params.step || "0.1"
 	var label = document.createElement("span");
 

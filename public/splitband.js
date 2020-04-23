@@ -57,7 +57,7 @@ class Band {
     this.feedbackDelay = gctx.createDelay();
     this.feedbackDelay.delayTime.setValueAtTime(0.01, 0)
     this.feedbackDampener = gctx.createGain();
-    this.feedbackDampener.gain.setValueAtTime (params.feedbackAttenuate || 0.5, 0);
+    this.feedbackDampener.gain.setValueAtTime (params.feedbackAttenuate || 0,  gctx.currentTime);
     this.feedbackLPF = gctx.createBiquadFilter();
     this.feedbackLPF.type='lowpass';
     this.feedbackLPF.frequency.setValueAtTime(params.feedbackLPF ||  this.feedbackLPF.frequency.defaultValue, 0);
@@ -221,10 +221,10 @@ export function split_band(ctx, hz_list) {
       slider(row, {prop: band.mainFilter.gain, min:-12, max: 12, step:1, index:index}); 
       slider(row, {prop: band.mainFilter.Q, min:0.01, max:22, step:0.1, index:index}); 
 
-      slider(row, {prop: band.feedbackDelay.delayTime, min:0, max:3, step:0.1, index:index}); 
-      slider(row, {prop: band.feedbackLPF.frequency, min:20, max:1000, index:index}); 
+      slider(row, {prop: band.feedbackDelay.delayTime, min:"0", max:3, step:0.1, index:index}); 
+      slider(row, {prop: band.feedbackLPF.frequency, value:"0", min:20, max:2000, index:index}); 
 
-      slider(row, {prop: band.feedbackDampener.gain, min: -1, max:1, value:0, step:0.01, index:index}); 
+      slider(row, {prop: band.feedbackDampener.gain, min: "0", max:"1", value:"0", step:0.01, index:index}); 
       var button = document.createElement("button");
       button.innerHTML='probe';
       button.onclick = band.probe;
@@ -300,7 +300,7 @@ function histogram2(elemId, analyzer, fc){
             var f =bin_number_to_freq(i);
             if( f >= HZ_LIST[hz_mark_index]){
               hz_mark_index++;
-              drawTick(x, f, '');
+              drawTick(x,  HZ_LIST[hz_mark_index], '');
               
             }
             var barWidth = hz_mark_index < 2 ? 10*linerBarWidth : (hz_mark_index <  7 ? 5 * linerBarWidth : linerBarWidth/2);

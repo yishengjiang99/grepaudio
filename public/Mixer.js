@@ -2,7 +2,7 @@ import PlayableAudioSource from './audio_source.js'
 export default async function(ctx,containerId) {
   var ctx = ctx;
 
-  var inputs =new Array(6);
+  var inputs =new Array(6).fill(null)
   var channelQueues = new Array(6).fill(new Array())
   var masterGain = ctx.createGain(1);
   var controls =new Array(6).fill( ctx.createGain(1));
