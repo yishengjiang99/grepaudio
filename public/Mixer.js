@@ -95,14 +95,13 @@ xhr.onreadystatechange = function() {
         }).join("");
       }).catch(function(err) { select.innerHTML= err.message});
     }else if(indexfile==='waves.csv'){
-
       const song_db=await fetch("./samples/"+indexfile).then(res=>res.text()).then(text=>text.split("\n"));
-      var select = document.createElement("div");
-      song_db.filter(t=>t.trim()!=="").map(t=>"samples/"+t.trim()).map((url,i)=> {
-        var button = document.createElement("button");
-        button.onclick=function(e){ chords (url)}
-        button.innerHTML = url;
-        select.append(button);    
+      var select = document.createElement("select");
+      select.setAttribute("tabindex", index);
+      select.innerHTML = song_db.filter(t=>t.trim()!=="").map(t=>"samples/"+t.trim()).map(n => {
+        var url = n.split(",")[0];
+        var name = (n.split(",")[1] || url).split("/").pop();
+        return `<option value='${encodeURIComponent(url)}'>${name}</option>`
       });
        select.setAttribute("data-chord",1);
     }else if(indexfile==='notes.csv'){

@@ -49,15 +49,15 @@ class Band {
 
     this.compressor = gctx.createDynamicsCompressor();
     const compressionDefaults = { 'threshold': -80, 'knee': 30, 'ratio': 12, 'attack': 0.03, 'release': 0.03 };
-    this.compressor.threshold.setValueAtTime(-80, 0);
-    this.compressor.attack.setValueAtTime(0.03, 0);
-    this.compressor.release.setValueAtTime(0.03,0)
-    this.compressor.ratio.setValueAtTime(12,0)
+    this.compressor.threshold.setValueAtTime(-80,  gctx.currentTime);
+    this.compressor.attack.setValueAtTime(0.03,  gctx.currentTime);
+    this.compressor.release.setValueAtTime(0.03, gctx.currentTime);
+    this.compressor.ratio.setValueAtTime(12, gctx.currentTime);
 
     this.feedbackDelay = gctx.createDelay();
-    this.feedbackDelay.delayTime.setValueAtTime(0.01, 0)
+    this.feedbackDelay.delayTime.setValueAtTime(0.005, gctx.currentTime)
     this.feedbackDampener = gctx.createGain();
-    this.feedbackDampener.gain.setValueAtTime (params.feedbackAttenuate || 0,  gctx.currentTime);
+    this.feedbackDampener.gain.setValueAtTime (params.feedbackAttenuate || 0.01,  gctx.currentTime);
     this.feedbackLPF = gctx.createBiquadFilter();
     this.feedbackLPF.type='lowpass';
     this.feedbackLPF.frequency.setValueAtTime(params.feedbackLPF ||  this.feedbackLPF.frequency.defaultValue, 0);
@@ -300,6 +300,7 @@ function histogram2(elemId, analyzer, fc){
             var f =bin_number_to_freq(i);
             if( f >= HZ_LIST[hz_mark_index]){
               hz_mark_index++;
+              if(hz_mark_index >= HZ_LIST.length) break;
               drawTick(x,  HZ_LIST[hz_mark_index], '');
               
             }

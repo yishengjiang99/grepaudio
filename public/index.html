@@ -49,12 +49,12 @@
 <tr>
   <td colspan=2>
     <div class='canvas_wrapper'>
-      <div><input id='showfft' type=checkbox checked>fft</input>
+      <span><input id='showfft' type=checkbox checked>fft</input>
         <input id='showcummulative' type=checkbox>cumulative fft</input>
         <input id='showtimeseries' type=checkbox checked>timeseries</input>
         <button id='zoomin'>+</button> <button id='zoomout'>-</button></div>
       <canvas id='output_freq'></canvas>
-    </div>
+      </span>
     <canvas id='output_timeline'></canvas>
   </td>
   <td>
@@ -72,16 +72,7 @@
   </td>
 </tr>
 </table>
-
-<div class=draggable style='margin:20px;background-color: azure;'>
-  <div id="EQ2">
-
- </div>
-
-
-</div>
   <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
-  <audio id='audio2' src=''></audio>
   <input type='file' id='file'>
 
   <script>
@@ -97,6 +88,7 @@
 
   <script src='./RecordRTC.js'></script>
   <script src='polyfills.js'></script>
+  <script src='recording/index.js'></script>
 
 
   <div id=console></div>
@@ -152,7 +144,7 @@
       noiseGate.output.connect(bandpassFilters);
       var group = split_band(audioCtx, [31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]);
       $("#eq_update_form").appendChild(group.UI_EQ());
-      $("#EQ2").appendChild(group.UI_Canvas());
+      // $("#EQ2").appendChild(group.UI_Canvas());
       bandpassFilters.connect(group.input);
       var ctv = AnalyzerView(group.output,{fft:256});
       ctv.analyzer.connect(audioCtx.destination);

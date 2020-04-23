@@ -38,7 +38,6 @@ function replaceAudio(src) {
     }
     
     var parentNode = audio.parentNode;
-    parentNode.innerHTML = '';
     parentNode.appendChild(newAudio);
 
     audio = newAudio;
@@ -162,7 +161,7 @@ btnReleaseMicrophone.onclick = function() {
     }
 
     if(recorder) {
-        // click(btnStopRecording);
+´\        // click(btnStopRecording);
     }
 };
 

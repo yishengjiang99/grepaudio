@@ -1,13 +1,4 @@
-.simple-console {
-    bottom: 10px;
-    position: relative;
-    background-color: black;
-    color: white;
-    overflow-y: scroll;
-    margin-bottom:5px;;
-    font-size:12px;
-    min-height:1px;
-}
+
 td{
   min-width:25px;
 }
@@ -18,6 +9,12 @@ body{
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+#audio1{
+  position: fixed;
+  bottom: 0;
+  width: 40vw;
+  left:10vw;
 }
 .center {
   display: block;
@@ -84,20 +81,20 @@ td{
     flex-direction: column;
     font-family: sans-serif;
     position: fixed;
-    bottom: 10px;
-    margin: 20px 0px;
-    max-height: 2vh;
+    bottom: 1px;
+    right:10px;
     overflow-y: scroll;
     width: 30vw;
-
     background-color:black;
     color:white;
-    height:2em;
 
 }
 
 .simple-console-output{
   min-height:20vh;
+  background-color: rgba(0,0,0,0.9);
+  color:white;
+  font-size:1.2em;
 }
 
 .draggable {
