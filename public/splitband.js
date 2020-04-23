@@ -71,7 +71,7 @@ class Band {
     cursor.connect(this.mainFilter).connect(this.compressor);
     let AECInput = this.compressor;
     this.analyzerNode = gctx.createAnalyser();
-    this.analyzerNode.fftSize=64;
+    this.analyzerNode.fftSize=1024;
     if(this.mic_check == false){
       AECInput.connect(this.volumeCap);
       AECInput.connect(this.feedbackDelay).connect(this.feedbackLPF).connect(this.volumeCap);
@@ -84,7 +84,8 @@ class Band {
     return this;
   }
   probe = ()=>{
-    histogram2("band_freq_out",this.analyzerNode);
+    if(window.g_request_timer) cancelAnimationFrame(g_request_timer);
+    histogram2("band_freq_out",this.analyzerNode, this.maxFrequency);
   }
 
   get components() {
@@ -131,7 +132,8 @@ export function split_band(ctx, hz_list) {
     const hz_20k_mark = 683;
     const width_per_octave  = [hz_20k_mark - hz_20_mark] / 4;
     const width_within_octave = [40, 28, 23, 18, 14, 14, 10, 19]  /* dogma */
-  
+
+    
     var canvas = document.createElement("canvas");
     canvas.setAttribute('id', "c2_freq");
     canvas.setAttribute("width", width + 2*marginleftright);
@@ -206,8 +208,9 @@ export function split_band(ctx, hz_list) {
     var gvctrls =  document.createElement("div");
     slider(gvctrls, {prop: input.gain, min:"0", max: "4", name: "preamp"});
     slider(gvctrls, {prop: output.gain, min:"0", max: "4", name:"postamp"});
-  
-
+  //          //24000
+        // freq = 
+        // HZ_LIST
     bands.forEach( (band,index)=>{
       const row = document.createElement("tr")
       row.innerHTML+=`<td>${band.maxFrequency || band.minFrequency}</td>`;
@@ -244,8 +247,8 @@ export function split_band(ctx, hz_list) {
 
 
 
-function histogram2(elemId, analyzer){
-      var bins = analyzer.fftSize;
+function histogram2(elemId, analyzer, fc){
+      var bins = analyzer.frequencyBinCount;
       var zoomScale=1;
       var canvas = document.getElementById(elemId);
       const width = 690;
@@ -254,8 +257,6 @@ function histogram2(elemId, analyzer){
       const marginleftright = 10;
       const hz_20_mark = 10;
       const hz_20k_mark = 683;
-      const width_per_octave  = [hz_20k_mark - hz_20_mark] / 4;
-      const width_within_octave = [40, 28, 23, 18, 14, 14, 10, 19]  /* dogma */
     
       canvas.setAttribute("width", width + 2*marginleftright);
       canvas.setAttribute("height", height);
@@ -267,70 +268,50 @@ function histogram2(elemId, analyzer){
       cvt.strokeStyle = 'rgb(255, 255,255)'
       cvt.strokeWidth = '2px'
       const noctaves = 11;
-      for (var octave = 0; octave <= noctaves; octave++) {
-        var x = octave * width / noctaves;
-  
-        cvt.strokeStyle = 'rgb(255, 255,255)';
-        cvt.moveTo(x, 30);
-        cvt.lineTo(x, height);
-        cvt.stroke();
-  
-        var f = 0.5 * gctx.sampleRate * Math.pow(2.0, octave - noctaves);
-        cvt.textAlign = "center";
-        cvt.strokeText(f.toFixed(0) + "Hz", x, 20);
-      }
+      var map = []
+
 
       var dataArray = new Uint8Array(analyzer.fftSize);
 
-      
+      const drawTick = function(x,f , meta){
+            cvt.strokeStyle = 'rgb(255, 255,255)';
+            cvt.moveTo(x, 30);
+            cvt.lineTo(x, height);
+            cvt.stroke();
+
+            cvt.textAlign = "center";
+            cvt.strokeText(f.toFixed(0) + "Hz", x, 20);
+            cvt.strokeText(meta, width-20, 20);
+      }      
+      const bin_number_to_freq = (i)=> 0.5 * gctx.sampleRate * i/analyzer.frequencyBinCount;
+      //HZ_LIST
       function drawBars(){
-          var t = requestAnimationFrame(drawBars);;
+          window.g_request_timer = requestAnimationFrame(drawBars);
 
           analyzer.getByteFrequencyData(dataArray);
 
-          var top, second, third;
-          var count=0;
-          var total =0;
-          dataArray.reduce(d=> total+=d);
-          
-          cvt.fillStyle = 'rgb(0, 0, 0)';
-          cvt.clearRect(0, 0, width, height);
-          cvt.fillRect(0, 0, width, height);
+          cvt.clearRect(0,0,width,height);
+          var x=0; 
+          var hz_mark_index=0;
+          var linerBarWidth = width/bins;
 
-          var barHeight;
-          var barHeigthCC;
-          var x = 0;
-          for(var i = 0; i < bins/zoomScale; i++) {
-            var barWidth = 1/i;
-
-            barHeight = dataArray[i] * zoomScale
+          for (var i = 0; i < bins; i++) {
+            
+            var f =bin_number_to_freq(i);
+            if( f >= HZ_LIST[hz_mark_index]){
+              hz_mark_index++;
+              drawTick(x, f, '');
+              
+            }
+            var barWidth = hz_mark_index < 2 ? 10*linerBarWidth : (hz_mark_index <  7 ? 5 * linerBarWidth : linerBarWidth/2);
+            var barHeight = dataArray[i] * zoomScale;
 
             cvt.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
 
-            cvt.fillRect(x,height-barHeight/2-25,barWidth,(barHeight/2));
-
-            cvt.fillStyle = 'rgb(22, 22,'+(barHeigthCC+44)+')';
-
-            x += barWidth + 1;
+            cvt.fillRect(x,height-barHeight/2-25, barWidth, (barHeight/2));
+            x += barWidth;  
+                      
           }
-
-          cvt.fillStyle= 'rgb(233,233,233)'
-          cvt.fillText(zoomScale, 0, height-5);
-
-          x=10;
-          var axisIndex=0;
-          for(var i = 0; i < bins/zoomScale; i++) {
-          
-            barHeight = dataArray[i];
-            cvt.fillStyle= 'rgb(233,233,233)'
-            cvt.textAlign ='left'
-            var f = (i+1)/bins * gctx.sampleRate;
-            var x = 2*Math.log10(f);
-      
-
-            x += barWidth + 1;
-          }      
-          cvt.fillText(total.toFixed(3)+'', width-100, 100);
       }
 
       drawBars();

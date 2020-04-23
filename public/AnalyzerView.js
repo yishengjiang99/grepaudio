@@ -167,6 +167,10 @@ var AnalyzerView = function(audioNode, params){
           var barHeight;
           var barHeigthCC;
           var x = 0;
+
+          //24000
+        // freq =
+
           for(var i = 0; i < bins/zoomScale; i++) {
             barHeight = dataArray[i] * zoomScale
 
