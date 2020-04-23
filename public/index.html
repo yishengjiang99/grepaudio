@@ -17,7 +17,7 @@
     <div class="text">click anywhere to start</div>
     <div class="text"><br>
       <br><span style="font-size:20px;" class="w3-black w3-padding w3-hide-medium w3-hide-small">
-        (chrome requires user-triggered event to access audio ctx)
+        (chrome requires user-triggered event to access audio ctx, tested only on desktop chrome)
       </span></div>
   </div>
   <div>
@@ -83,17 +83,6 @@
               <label for="search">Search</label>
               <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='/api/sudo/::QUERY::.mp3' />
             </div>
- 
-          
-        </td>
-   
-      </tr>
-    </table>
-
-  </div>
-  </span>
-  <div class='canvas_wrapper'><canvas id='input_freq'></canvas></div>
-
   <div id='recorder'>
     <button id="btn-start-recording">Start Recording</button>
     <button id="btn-stop-recording" disabled>Stop Recording</button>
@@ -101,13 +90,20 @@
     <button id="btn-download-recording" disabled>Download</button>
   </div>
   <div>
+    <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
+    <audio id='audio2' src=''></audio>
+    <input type='file' id='file'>
+        </td>
+      </tr>
+    </table>
 
+  </div>
+  </span>
     <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
     <audio id='audio2' src=''></audio>
     <input type='file' id='file'>
   </div>
-  <script>audio1
-    // Check for BlobURL support
+  <script>
     var blob = window.URL || window.webkitURL;
 
     document.getElementById('file').addEventListener('change', function (event) {
@@ -186,8 +182,8 @@
       var ctv = AnalyzerView(group.output);
       ctv.analyzer.connect(audioCtx.destination);
       ctv.analyzer.connect(audioCtx.destination);
-      ctv.histogram("output_freq", 680, 220)
-      ctv.timeseries("output_timeline", 1024, 680, 220);
+      ctv.histogram("output_freq", 480, 220)
+      ctv.timeseries("output_timeline", 480, 680, 220);
 
       //      eq = equilizer.initializeContext(audioCtx, noiseGate.output);
 

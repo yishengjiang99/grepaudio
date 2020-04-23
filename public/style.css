@@ -1,14 +1,13 @@
 .simple-console {
     bottom: 10px;
-    min-width: 70vw;
     position: relative;
     background-color: black;
     color: white;
     overflow-y: scroll;
-
+	height:4px;
     margin-bottom:5px;;
     font-size:12px;
-    min-height:40px;
+    min-height:1px;
 }
 td{
   min-width:25px;

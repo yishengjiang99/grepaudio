@@ -182,7 +182,7 @@ export function split_band(ctx, hz_list) {
 
     const header = document.createElement("tr");
     header.innerHTML=`<tr><td>hz</td>
-    <td>threshold</td><td>ratio</td><td>attack</td><td>release</td>
+    <td>threshold</td>
     <td>type</td><td>gain</td> <td>rolloff (Q)</td>
     <td>delay</td><td>cutoff freq</td><td>resonance</td></tr>`;
     table.appendChild(header);
@@ -197,9 +197,6 @@ export function split_band(ctx, hz_list) {
       row.innerHTML+=`<td>${band.maxFrequency || band.minFrequency}</td>`;
 
       slider(row,  {prop: band.compressor.threshold, min:-100, max: 0, step:1, index:index});  
-      numeric(row, {prop: band.compressor.ratio, min:2, max: 20, step:1, index:index});  
-      numeric(row, {prop: band.compressor.attack, min:0, max: 1, defaultValue: 0.03, step:0.01, index:index});
-      numeric(row, {prop: band.compressor.release, min:0, max: 1, defaultValue: 0.03, step:0.01, index:index});
       // row.innerHTML +="<td><label>"+ band.mainFilter.type+"</label></td>"
       selector(row, {prop: band.mainFilter.type, options: ["allpass" , "bandpass" , "highpass" , "highshelf" , "lowpass" , "lowshelf" , "notch" , "peaking"]})
       slider(row, {prop: band.mainFilter.gain, min:-12, max: 12, step:1, index:index}); 
