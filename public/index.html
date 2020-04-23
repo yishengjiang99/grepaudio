@@ -137,7 +137,7 @@
       }
       audioTag.outputNode.connect(noiseGate.input);
       var bandpassFilters = await loadBandPassFilters(audioCtx, 'eq_bandpass_update');
-      noiseGate.output.connect(bandpassFilters);
+
 
       $("#preset_options").innerHTML = Presets.menu();
       $("#preset_options").oninput = function (e) {
@@ -149,7 +149,7 @@
           })
         });
       }
-
+      noiseGate.output.connect(bandpassFilters);
       var group = split_band(audioCtx, [31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]);
       $("#eq_update_form").appendChild(group.UI_EQ());
       $("#EQ2").appendChild(group.UI_Canvas());

@@ -86,7 +86,7 @@ td{
     position: fixed;
     bottom: 10px;
     margin: 20px 0px;
-    max-height: 25vh;
+    max-height: 2vh;
     overflow-y: scroll;
     width: 30vw;
 
