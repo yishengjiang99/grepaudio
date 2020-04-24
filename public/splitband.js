@@ -226,7 +226,6 @@ export function split_band(ctx, hz_list) {
 
       slider(row, {prop: band.feedbackDelay.delayTime, defaultValue: band.feedbackDelay.delayTime.value,min:"0", max:"3", step:"0.1", index:index}); 
       slider(row, {prop: band.feedbackGain.gain, min:"-1", max:"0", step:0.01, index:index}); 
-      debugger;
       var button = document.createElement("button");
       button.innerHTML='probe';
       button.onclick = band.probe;

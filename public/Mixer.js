@@ -1,5 +1,6 @@
 import PlayableAudioSource from './audio_source.js'
 import Envelope from './envelope.js'
+import {chord} from './functions.js'
 export default async function(ctx,containerId) {
   var ctx = ctx;
 
@@ -204,51 +205,3 @@ const bindAudioTag = function(tagId, output){
 
 
 
-async function chord(url) {
-  var str= await fetch(url).then(resp => resp.text());
-    var json = await JSON.parse(str);
-    var osc = g_audioCtx.createOscillator();
-    osc.setPeriodicWave(g_audioCtx.createPeriodicWave(json.real,json.imag))
-    const keys = 'asdfghj'.split("");
-    const notes = '261.63, 293.66 , 329.63, 349.23, 392.00, 440.00, 493.88'.split(", ");
-    var masterGain = g_audioCtx.createGain();
-            var ampAttack = 0.02;
-            var ampDecay = 0.05;
-            var ampSustain = 0.5;
-            var ampRelease = 0.02;
-    var adsrs=[];
-    var ctx = g_audioCtx;
-    var waveform = g_audioCtx.createPeriodicWave(json.real,json.imag)
-     
-   keys.forEach((l, i) => {
-      var LFO = ctx.createOscillator();
-      LFO.frequency.value = notes[i];
-      var gain = ctx.createGain();
-      gain.gain.value = 0;
-      
-      LFO.setPeriodicWave(waveform);
-      var gainEnvelope = new Envelope(0, 1, ampAttack, ampDecay, ampSustain, ampRelease, gain.gain);
-      adsrs.push(gainEnvelope)
-      LFO.connect(gain);
-      gain.connect(masterGain)
-      LFO.start(0);
-    })
-    
-
-    window.addEventListener("keydown", function (e) {
-      if (keys.indexOf(e.key) > -1) {
-        var env = adsrs[keys.indexOf(e.key)];
-        env.trigger(ctx.currentTime);
-      }
-    })
-
-    window.addEventListener("keyup", function (e) {
-      if (keys.indexOf(e.key) > -1) {
-        var env = adsrs[keys.indexOf(e.key)];
-        env.release(ctx.currentTime);
-      }
-    })
-
-    return masterGain;
-  
-}

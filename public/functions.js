@@ -29,6 +29,8 @@ export const DEFAULT_PRESET_GAINS =
 }
 export async function chord(url) {
   var str= await fetch(url).then(resp => resp.text());
+debugger;
+//    str.replace(/\s/g,'').replace("'","\"").replace(",]","]");
     var json = await JSON.parse(str);
     var osc = g_audioCtx.createOscillator();
     osc.setPeriodicWave(g_audioCtx.createPeriodicWave(json.real,json.imag))

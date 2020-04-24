@@ -1,0 +1,3 @@
+[submodule "public/samples/wave-tables"]
+	path = public/samples/wave-tables
+	url = git@github.com:mohayonao/wave-tables.git
