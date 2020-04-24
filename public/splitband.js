@@ -21,12 +21,15 @@ class Band {
       this.hpf = gctx.createBiquadFilter();
       this.hpf.type = 'highpass';
       this.hpf.frequency.setValueAtTime(minFrequency, 0);
+      this.hpf.Q.setValueAtTime(9,0);
     }
     this.maxFrequency = maxFrequency;
     if (maxFrequency !== null) {
       this.lpf = gctx.createBiquadFilter();
       this.lpf.type = 'lowpass';
       this.lpf.frequency.setValueAtTime(maxFrequency, 0);
+      this.lpf.Q.setValueAtTime(9,0);
+
     }
 
 

@@ -1,8 +1,9 @@
+
+
+import Envelope from './envelope.js'
 function  toDecibel(powerLevel) {
-    return 10 * Math.log10(powerLevel);
-  }
-
-
+  return 10 * Math.log10(powerLevel);
+}
 export const HZ_LIST = new Float32Array([31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]);
 export const Q = 1.2247449;
 export const DEFAULT_PRESET_GAINS =
@@ -18,6 +19,56 @@ export const DEFAULT_PRESET_GAINS =
 	'31.25': 0.375,
 	'62.5': 0.375
 }
+export async function chord(url) {
+  var str= await fetch(url).then(resp => resp.text());
+    var json = await JSON.parse(str);
+    var osc = g_audioCtx.createOscillator();
+    osc.setPeriodicWave(g_audioCtx.createPeriodicWave(json.real,json.imag))
+    const keys = 'asdfghj'.split("");
+    const notes = '261.63, 293.66 , 329.63, 349.23, 392.00, 440.00, 493.88'.split(", ");
+    var masterGain = g_audioCtx.createGain();
+            var ampAttack = 0.02;
+            var ampDecay = 0.05;
+            var ampSustain = 0.5;
+            var ampRelease = 0.02;
+    var adsrs=[];
+    var ctx = g_audioCtx;
+    var waveform = g_audioCtx.createPeriodicWave(json.real,json.imag)
+
+   keys.forEach((l, i) => {
+      var LFO = ctx.createOscillator();
+      LFO.frequency.value = notes[i];
+      var gain = ctx.createGain();
+      gain.gain.value = 0;
+
+      LFO.setPeriodicWave(waveform);
+      var gainEnvelope = new Envelope(0, 1, ampAttack, ampDecay, ampSustain, ampRelease, gain.gain);
+      adsrs.push(gainEnvelope)
+      LFO.connect(gain);
+      gain.connect(masterGain)
+      LFO.start(0);
+    })
+
+
+    window.addEventListener("keydown", function (e) {
+      if (keys.indexOf(e.key) > -1) {
+        var env = adsrs[keys.indexOf(e.key)];
+        env.trigger(ctx.currentTime);
+      }
+    })
+
+    window.addEventListener("keyup", function (e) {
+      if (keys.indexOf(e.key) > -1) {
+        var env = adsrs[keys.indexOf(e.key)];
+        env.release(ctx.currentTime);
+      }
+    })
+
+    return masterGain;
+
+}
+
+
 
 const NYQUIST_DOGMA_f32 = new Float32Array(
 	[10.7861328125, 10.868687288802747, 10.951873617287943, 11.035696634000777, 11.120161212000435, 11.205272261643263,
@@ -108,3 +159,76 @@ export function selector(container, params) {
 	container.append(input.wrap("td"));
 
 }
+export function histogram2(elemId, analyzer){
+    var gctx = window.g_audioCtx;
+      var bins = analyzer.frequencyBinCount;
+      var zoomScale=1;
+      var canvas = document.getElementById(elemId);
+      const width = 690;
+      const height = 320;
+    
+      const marginleftright = 10;
+      const hz_20_mark = 10;
+      const hz_20k_mark = 683;
+    
+      canvas.setAttribute("width", width + 2*marginleftright);
+      canvas.setAttribute("height", height);
+    
+      const bg_color = 'rgb(33,33,35)';
+      const cvt = canvas.getContext('2d');
+      cvt.fillStyle = bg_color;
+      cvt.fillRect(10, 0, width,height );
+      cvt.strokeStyle = 'rgb(255, 255,255)'
+      cvt.strokeWidth = '2px'
+
+      const noctaves = 11;
+      var map = []
+
+
+      var dataArray = new Uint8Array(analyzer.fftSize);
+
+      const drawTick = function(x,f , meta){
+            cvt.strokeStyle = 'rgb(255, 255,255)';
+            cvt.moveTo(x, 30);
+            cvt.lineTo(x, height);
+            cvt.stroke();
+
+            cvt.textAlign = "center";
+            cvt.strokeText(f.toFixed(0) + "Hz", x, 20);
+            cvt.strokeText(meta, width-20, 20);
+      }      
+      const bin_number_to_freq = (i)=> 0.5 * gctx.sampleRate * i/analyzer.frequencyBinCount;
+      //HZ_LIST
+      function drawBars(){
+          window.g_request_timer = requestAnimationFrame(drawBars);
+
+          analyzer.getByteFrequencyData(dataArray);
+
+          cvt.clearRect(0,0,width,height);
+          var x=0; 
+          var hz_mark_index=0;
+          var linerBarWidth = width/bins;
+
+          for (var i = 0; i < bins; i++) {
+            
+            var f =bin_number_to_freq(i);
+            if( f >= HZ_LIST[hz_mark_index]){
+              hz_mark_index++;
+              if(hz_mark_index >= HZ_LIST.length) break;
+              drawTick(x,  HZ_LIST[hz_mark_index], '');
+              
+            }
+            var barWidth = hz_mark_index < 5 ? 10*linerBarWidth : (hz_mark_index <  7 ? 5 * linerBarWidth : linerBarWidth/2);
+            var barHeight = dataArray[i] * zoomScale;
+
+            cvt.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
+
+            cvt.fillRect(x,height-barHeight/2-25, barWidth, (barHeight/2));
+            x += barWidth;  
+                      
+          }
+      }
+
+      drawBars();
+    }
+
