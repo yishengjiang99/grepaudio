@@ -49,12 +49,12 @@
 <tr>
   <td colspan=2>
     <div class='canvas_wrapper'>
-      <span><input id='showfft' type=checkbox checked>fft</input>
+      <div><input id='showfft' type=checkbox checked>fft</input>
         <input id='showcummulative' type=checkbox>cumulative fft</input>
         <input id='showtimeseries' type=checkbox checked>timeseries</input>
         <button id='zoomin'>+</button> <button id='zoomout'>-</button></div>
       <canvas id='output_freq'></canvas>
-      </span>
+    </div>
     <canvas id='output_timeline'></canvas>
   </td>
   <td>
@@ -72,6 +72,7 @@
   </td>
 </tr>
 </table>
+
   <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
   <input type='file' id='file'>
 
@@ -88,7 +89,6 @@
 
   <script src='./RecordRTC.js'></script>
   <script src='polyfills.js'></script>
-  <script src='recording/index.js'></script>
 
 
   <div id=console></div>
@@ -129,7 +129,7 @@
       }
       audioTag.outputNode.connect(noiseGate.input);
       var bandpassFilters = await loadBandPassFilters(audioCtx, 'eq_bandpass_update');
-
+      noiseGate.output.connect(bandpassFilters);
 
       $("#preset_options").innerHTML = Presets.menu();
       $("#preset_options").oninput = function (e) {
@@ -141,18 +141,20 @@
           })
         });
       }
-      noiseGate.output.connect(bandpassFilters);
+
       var group = split_band(audioCtx, [31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]);
+
+setTimeout( function(){
       $("#eq_update_form").appendChild(group.UI_EQ());
-      // $("#EQ2").appendChild(group.UI_Canvas());
       bandpassFilters.connect(group.input);
       var ctv = AnalyzerView(group.output,{fft:256});
-      ctv.analyzer.connect(audioCtx.destination);
       ctv.analyzer.connect(audioCtx.destination);
       ctv.histogram("output_freq", 480, 220, {fft:256})
       ctv.timeseries("output_timeline", 480, 680, 220);
 
       window.vfs=[group, audioTag, noiseGate, bandpassFilters, audioCtx];
+}, 1000);
+
     }
 
     window.index_stdin = function (str) {

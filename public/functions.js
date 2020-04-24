@@ -57,12 +57,13 @@ export function slider(container, options) {
 	input.min = params.min !== null && params.min || (params.prop && params.prop.minValue )|| "-12";
 	input.max = params.max !== null && params.max || (params.prop && params.prop.maxValue )|| "12";
 	input.type = params.type || 'range';
-	input.value = params.value !== null ? params.value : (params.prop && params.prop.value.toFixed(3)) ||  (params.prop && params.prop.defaultValue.toFixed(3)) 
+
+	input.value = params.prop && params.prop.value.toString() || params.value !== null ? params.value : (params.prop && params.prop.value) ||  (params.prop && params.prop.defaultValue.toFixed(3)) 
 	input.step = params.step || "0.1"
 	var label = document.createElement("span");
 
 	if (input.type == 'range') {
-		label.innerHTML = params.label || (params.prop && params.prop.value) || "";
+		label.innerHTML = params.label || (params.prop && params.prop.value.toString())
 		
 	} else {
 		input.size = "10"
@@ -87,6 +88,7 @@ export function el(tag, innerHTML){
 	t.innerHTML = innerHTML;
 	return t;
 }
+
 export function selector(container, params) {
 	var input = document.createElement("select");
 

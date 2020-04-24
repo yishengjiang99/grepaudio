@@ -33,52 +33,66 @@ class Band {
     this.mainFilter = gctx.createBiquadFilter();
     if(this.minFrequency === null){
       this.mainFilter.type= 'highshelf';
-      this.mainFilter.frequency.setValueAtTime(this.maxFrequency, gctx.currentTime);
+      this.mainFilter.frequency.setValueAtTime(this.maxFrequency, gctx.currentTime+0.0001);
     }else if(this.maxFrequency === null){
       this.mainFilter.type= 'lowshelf';
-      this.mainFilter.frequency.setValueAtTime(this.minFrequency, gctx.currentTime);
+      this.mainFilter.frequency.setValueAtTime(this.minFrequency, gctx.currentTime+0.0001);
     }else{
       this.mainFilter.type = 'peaking';
-      this.mainFilter.frequency.setValueAtTime( (this.maxFrequency - this.minFrequency)/2, gctx.currentTime);
+      this.mainFilter.frequency.setValueAtTime( (this.maxFrequency - this.minFrequency)/2, gctx.currentTime+0.0001);
     }
-    this.mainFilter.gain.setValueAtTime(this.mainFilter.gain.defaultValue, gctx.currentTime);
-    this.mainFilter.Q.setValueAtTime(this.mainFilter.gain.defaultValue, gctx.currentTime);   
+
+    this.mainFilter.gain.setValueAtTime(this.mainFilter.gain.defaultValue, gctx.currentTime+0.0001);
+    this.mainFilter.Q.setValueAtTime(this.mainFilter.gain.defaultValue, gctx.currentTime+0.0001);   
     
      this.volumeCap = gctx.createGain();
     this.mic_check = false;
 
     this.compressor = gctx.createDynamicsCompressor();
     const compressionDefaults = { 'threshold': -80, 'knee': 30, 'ratio': 12, 'attack': 0.03, 'release': 0.03 };
-    this.compressor.threshold.setValueAtTime(-80,  gctx.currentTime);
-    this.compressor.attack.setValueAtTime(0.03,  gctx.currentTime);
-    this.compressor.release.setValueAtTime(0.03, gctx.currentTime);
-    this.compressor.ratio.setValueAtTime(12, gctx.currentTime);
+
+    this.compressor.threshold.setValueAtTime(-80,  gctx.currentTime+0.0001);
+    this.compressor.attack.setValueAtTime(0.03,  gctx.currentTime+0.0001);
+    this.compressor.release.setValueAtTime(0.03, gctx.currentTime+0.0001);
+    this.compressor.ratio.setValueAtTime(12, gctx.currentTime+0.0001);
 
     this.feedbackDelay = gctx.createDelay();
-    this.feedbackDelay.delayTime.setValueAtTime(0.005, gctx.currentTime)
+    this.feedbackDelay.delayTime.setValueAtTime(0.4, gctx.currentTime+0.);
+  
     this.feedbackDampener = gctx.createGain();
-    this.feedbackDampener.gain.setValueAtTime (params.feedbackAttenuate || 0.01,  gctx.currentTime);
-    this.feedbackLPF = gctx.createBiquadFilter();
+    this.feedbackDampener.gain.setValueAtTime (0.8,  gctx.currentTime+0.0001);
+
+    this.feedbackGain = gctx. createGain();
+    this.feedbackGain.gain.value = 0.2; //expenting 40 feedback?
+
+
+     this.feedbackLPF = gctx.createBiquadFilter();
     this.feedbackLPF.type='lowpass';
-    this.feedbackLPF.frequency.setValueAtTime(params.feedbackLPF ||  this.feedbackLPF.frequency.defaultValue, 0);
+    this.feedbackLPF.frequency.setValueAtTime(this.maxFrequency, 0);
+
     this.feedbackPhaseshift = gctx.createBiquadFilter();
     this.feedbackPhaseshift.type = 'allpass';
 
     var cursor = this.input;
     this.lpf && cursor.connect(this.lpf) && (cursor = this.lpf);
     this.hpf && cursor.connect(this.hpf) && (cursor = this.hpf);
-    
-    cursor.connect(this.mainFilter).connect(this.compressor);
-    let AECInput = this.compressor;
+
+    cursor.connect(this.compressor)
+    this.compressor.connect(this.mainFilter);
+
+    let AECInput = this.mainFilter;
     this.analyzerNode = gctx.createAnalyser();
     this.analyzerNode.fftSize=1024;
-    if(this.mic_check == false){
-      AECInput.connect(this.volumeCap);
-      AECInput.connect(this.feedbackDelay).connect(this.feedbackLPF).connect(this.volumeCap);
-    }else{
-      AECInput.connect(this.volumeCap)
-      AECInput.connect(this.feedbackDelay).connect(this.feedbackLPF).connect(this.AECInput);
-    }
+  
+    //main signal path
+    AECInput.connect(this.feedbackDelay);
+    this.feedbackDelay.connect(this.feedbackDampener);
+    this.feedbackDampener.connect(this.volumeCap);
+    
+    //feedback signal
+    this.feedbackDampener.connect(this.feedbackLPF);
+    this.feedbackLPF.connect(this.feedbackGain).connect(this.feedbackDelay);
+    
     this.volumeCap.connect(this.analyzerNode)
     this.analyzerNode.connect(this.output);
     return this;
@@ -106,10 +120,10 @@ class Band {
 }
 export function split_band(ctx, hz_list) {
   var input = ctx.createGain();
-  input.gain.setValueAtTime(1.2, ctx.currentTime);
+  input.gain.setValueAtTime(1.2, ctx.currentTime+0.1);
  
   var output = ctx.createGain();
-  output.gain.setValueAtTime(1.2, ctx.currentTime);
+  output.gain.setValueAtTime(1.2, ctx.currentTime+0.1);
   
   var bands = [];
   hz_list.forEach((hz,index)=>{
