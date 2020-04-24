@@ -70,6 +70,8 @@ class BandPassLRCProcessor extends AudioWorkletProcessor {
 
 		const {i0, i1} = this.last_two_frames();
 		var sum = 0; var ns =0; var sumin = 0;
+
+		var convert_val=(k=>31.5-k*31.5/12);
 		for (let channel = 0; channel < input.length; ++channel) {
 			const inputChannel = input[channel];
 			const outputChannel = output[channel];	
@@ -81,7 +83,7 @@ class BandPassLRCProcessor extends AudioWorkletProcessor {
 					var v1 = this.ring_buffer[i1][channel*k] || 0;
 					var coef = z_params[k];
 					var wq = coef.b0 * v + coef.a0 * v0 + v1 * coef.a1;
-					v += (wq + v1 * coef.b1) * ( Math.pow(10, this.gains[k]/20) -1 )
+					v += (wq + v1 * coef.b1) * ( Math.pow(10, convert_val(this.gains[k])/12) -1 )
 					this.ring_buffer[this.n % 2][channel*k] = wq;
 				}
 				sum += v * v; ns++;

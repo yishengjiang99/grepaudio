@@ -18,9 +18,6 @@ class SPLDBaProcessor extends AudioWorkletProcessor{
             
             this.port.postMessage('pong')
           }
-          
-
-        
 
     }
 

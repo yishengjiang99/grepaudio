@@ -10,6 +10,7 @@
   <script src="./simple-console.js"></script>
 
 </head>
+
 <body onclick="void(0);">
   <div id="overlay" title="Click to turn off the overlay effect" style="display: block;">
     <div class="text">click anywhere to start</div>
@@ -19,61 +20,63 @@
       </span></div>
   </div>
 
-<table id="app1">
-<tr>
-  <td>
-    <h3>Mix Sounds </h3>
-    <div> <button id='reset'>reset</button></div> <select id=preset_options></select>
-    <div id="eq_bandpass_update">
-    </div>
-    <form id='noisegate'>
-      Noise Gate:
-      <div class="range-wrap">
-        <output id=threshold_l>Gate: </output><output class="bubble"></output>
+  <table id="app1">
+    <tr>
+      <td>
+        <h3>Mix Sounds </h3>
+        <div> <button id='reset'>reset</button></div> <select id=preset_options></select>
+        <div id="eq_bandpass_update">
+        </div>
+        <form id='noisegate'>
+          Noise Gate:
+          <div class="range-wrap">
+            <output id=threshold_l>Gate: </output><output class="bubble"></output>
 
-        <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range"
-          name='threshold'>
-      </div>
-    </form>
-  </td>
-  <td>
-    <div id="eq_update_form">
-    </div>
-  </td>
-  <td>
-      <div id="rx1"></div>
-      <div id='rx0'></div>
-      <canvas id='band_freq_out'></canvas>
-  </td>
-</tr>
-<tr>
-  <td colspan=2>
-    <div class='canvas_wrapper'>
-      <div><input id='showfft' type=checkbox checked>fft</input>
-        <input id='showcummulative' type=checkbox>cumulative fft</input>
-        <input id='showtimeseries' type=checkbox checked>timeseries</input>
-        <button id='zoomin'>+</button> <button id='zoomout'>-</button></div>
-      <canvas id='output_freq'></canvas>
-    </div>
-    <canvas id='output_timeline'></canvas>
-  </td>
-  <td>
-    <div id=ctrls>
-      <label for="search">Search</label>
-      <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='/api/sudo/::QUERY::.mp3' />
-    </div>
-    <div id='recorder'>
-      <button id="btn-start-recording">Start Recording</button>
-      <button id="btn-stop-recording" disabled>Stop Recording</button>
-      <button id="btn-release-microphone" disabled>Release Microphone</button>
-      <button id="btn-download-recording" disabled>Download</button>
-    </div>
-    <div>
-  </td>
-</tr>
-</table>
+            <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range"
+              name='threshold'>
+          </div>
+        </form>
+      </td>
+      <td>
+        <div id="eq_update_form">
+        </div>
+      </td>
+      <td>
+        <div id="rx1"></div>
+        <div id='rx0'></div>
+        <canvas id='band_freq_out'></canvas>
+      </td>
+    </tr>
+    <tr>
+      <td colspan=2>
+        <div class='canvas_wrapper'>
+          <div><input id='showfft' type=checkbox checked>fft</input>
+            <input id='showcummulative' type=checkbox>cumulative fft</input>
+            <input id='showtimeseries' type=checkbox checked>timeseries</input>
+            <button id='zoomin'>+</button> <button id='zoomout'>-</button></div>
+          <canvas id='output_freq'></canvas>
+        </div>
+        <canvas id='output_timeline'></canvas>
+      </td>
+      <td>
+        <div id=ctrls>
+          <label for="search">Search</label>
+          <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='/api/sudo/::QUERY::.mp3' />
+        </div>
+        <div id='recorder'>
+          <button id="btn-start-recording">Start Recording</button>
+          <button id="btn-stop-recording" disabled>Stop Recording</button>
+          <button id="btn-release-microphone" disabled>Release Microphone</button>
+          <button id="btn-download-recording" disabled>Download</button>
+        </div>
+        <div>
+      </td>
+    </tr>
+  </table>
 
-  <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
+  <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>   
+  <audio controls="controls" id='audio2' ></audio>
+  
   <input type='file' id='file'>
 
   <script>
@@ -105,7 +108,7 @@
     import Presets from './presets.js'
 
     let audioCtx, audioTag, eq;
-    var state ={
+    var state = {
 
     }
 
@@ -142,50 +145,62 @@
         });
       }
 
+      var cursor = bandpassFilters;
+
       var group = split_band(audioCtx, [31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]);
 
-setTimeout( function(){
       $("#eq_update_form").appendChild(group.UI_EQ());
       bandpassFilters.connect(group.input);
-      var ctv = AnalyzerView(group.output,{fft:256});
+
+      cursor = group.output;      
+      var ctv = AnalyzerView(cursor, { fft: 256 });
       ctv.analyzer.connect(audioCtx.destination);
-      ctv.histogram("output_freq", 480, 220, {fft:256})
+      ctv.histogram("output_freq", 480, 220, { fft: 256 })
       ctv.timeseries("output_timeline", 480, 680, 220);
 
-      window.vfs=[group, audioTag, noiseGate, bandpassFilters, audioCtx];
-}, 1000);
 
-    }
+      window.vfs = [group, audioTag, noiseGate, bandpassFilters, audioCtx, group];
 
-    window.index_stdin = function (str) {
-      const cmd = str.split(" ")[0];
-      const arg1 = str.split(" ")[1] || "";
-      const arg2 = str.split(" ")[2] || "";
-      window.con.element.height="50vh";
-      switch (cmd) {
-        case "ls":
-          return JSON.stringify(window.g_audioTag)
-          break;
-        case 'fullscreen':
-        case 'terminal':
-        case 'term':
-          $("#app1").style.display='none';
-          con.element.style.height='100vh';
-          return true;
-        case "ls":
-          var str = window.vfs.map( obj => `${obj.__proto__.name}`).join("\n")
-          log(str);
-          return true;
-        default: return false;
+      window.index_stdin = function (str) {
+        const cmd = str.split(" ")[0];
+        const arg1 = str.split(" ")[1] || "";
+        const arg2 = str.split(" ")[2] || "";
+        window.con.element.height = "50vh";
+        switch (cmd) {
+          case 'debug':
+            switch (arg1) {
+              case 'group': group.aggregate_fr(); break;
+              default: break;
+            }
+          case "ls":
+            return JSON.stringify(window.g_audioTag)
+            break;
+          case 'fullscreen':
+          case 'terminal':
+          case 'term':
+            $("#app1").style.display = 'none';
+            con.element.style.height = '100vh';
+            return true;
+          case "ls":
+            var str = window.vfs.map(obj => objs.toString()).forEach(str => log(str));
+            log(str);
+            return true;
+          default: return false;
+        }
+      }
+
+      if (location.hash) {
+        window.index_stdin(location.hash)
+      }
+
+      con.element.style.zIndex = 99;
+      con.element.addEventListener("click", function () { this.querySelector("input").focus() });
+      window.onkeydown = function (evt) {
+        if (evt.code == "Enter") {
+          con.element.querySelector("input").focus();
+        }
       }
     }
-con.element.style.zIndex=99;
-con.element.addEventListener("click",function () { this.querySelector("input").focus() });
-window.onkeydown = function(evt){
-  if(evt.code == "Enter"){
-    con.element.querySelector("input").focus();
-  }
-}
 
   </script>
 

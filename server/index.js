@@ -8,32 +8,33 @@ const express = require('express')
 const app = express()
 const httpport = process.env.PORT || 3333
 const https = require('https');
-
-//
+const fetch = require('node-fetch');
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
   res.header("Transfer-Encoding","chunked");
   next();
 });
-app.get("/", function(req,res,next){
+app.get("/api", function(req,res,next){
   const fs = require('fs');
-  exec("ls samples/*mp3 && ls -l waves/*", {cwd:'../public'}, (err, stdout,stderr)=>{
+
+  exec("ls -l", {cwd:'../public/samples'}, (err, stdout,stderr)=>{
     if(err) res.end(err.message);
     else{
-      res.send(stdout);
-    }
-  });
-  exec("ls", {cwd:'../waves/'}, (err, stdout,stderr)=>{
-    if(err) res.end(err.message);
-    else{
-      res.send(stdout);
+      res.send("<pre>"+stdout+"</pre>");
     }
   });
 });
 
 
-
+app.get("/api/yt", function(req,res,next){
+  const query = req.params.q;
+  const youtube_api_key = process.env.google_key      
+  const url = `https://www.googleapis.com/youtube/v3/videoCategories&part=snippet&key=${youtube_api_key}`
+  fetch(url).then(resp=>resp.json()).then(json=>{
+      console.log(json);
+  }).catch(e=>res.end(e.message));
+});
 app.use("/samples", express.static("/samples"));
 
 app.get("/api/twitch/(:uri)", function (req, res, next) {
@@ -49,7 +50,7 @@ app.get("/api/twitch/(:uri)", function (req, res, next) {
 
 app.get("/api/yt", function (req, res, next) {
   const query = req.params.q;
-  const youtube_api_key = 'AIzaSyBCXMcymaqef8RmYskmdVOJcQA5e06Zvyg';
+  const youtube_api_key = process.env.google_key
   const url = `https://www.googleapis.com/youtube/v3/search?type=video&part=snippet&maxResults=10&q=${req.params.query}&key=${youtube_api_key}`
   const request = require("request");
 

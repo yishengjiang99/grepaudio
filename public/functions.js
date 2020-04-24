@@ -1,6 +1,14 @@
 
 
 import Envelope from './envelope.js'
+
+
+
+export async function getProcessor(ctx, processor){
+  
+}
+
+
 function  toDecibel(powerLevel) {
   return 10 * Math.log10(powerLevel);
 }
@@ -70,7 +78,7 @@ export async function chord(url) {
 
 
 
-const NYQUIST_DOGMA_f32 = new Float32Array(
+export const NYQUIST_DOGMA_f32 = new Float32Array(
 	[10.7861328125, 10.868687288802747, 10.951873617287943, 11.035696634000777, 11.120161212000435, 11.205272261643263,
 		11.291034730868356, 11.377453605485098, 11.464533909463114, 11.552280705224238, 11.640699093936908, 11.729794215812682,
 		11.819571250405023, 11.910035416910512, 12.00119197447216, 12.093046222485242, 12.18560350090529, 12.278869190558613,
@@ -105,11 +113,11 @@ export function numeric(container, options) {
 export function slider(container, options) {
 	var params = options || {};
 	var input = document.createElement("input");
-	input.min = params.min !== null && params.min || (params.prop && params.prop.minValue )|| "-12";
+	input.min = (params.min !== null && params.min) || (params.prop && params.prop.minValue )|| "-12";
 	input.max = params.max !== null && params.max || (params.prop && params.prop.maxValue )|| "12";
 	input.type = params.type || 'range';
 
-	input.value = params.prop && params.prop.value.toString() || params.value !== null ? params.value : (params.prop && params.prop.value) ||  (params.prop && params.prop.defaultValue.toFixed(3)) 
+	input.defaultValue = (params.prop && params.prop.value.toString()) || (params.value) 
 	input.step = params.step || "0.1"
 	var label = document.createElement("span");
 
@@ -120,7 +128,7 @@ export function slider(container, options) {
 		input.size = "10"
 	}
 
-	input.onchange = (e) => { 
+	input.oninput = (e) => { 
 		params.prop.setValueAtTime( e.target.value, 0);  
 		label.innerHTML = e.target.value 
 	}

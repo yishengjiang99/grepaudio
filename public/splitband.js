@@ -34,7 +34,9 @@ class Band {
 
 
     this.mainFilter = gctx.createBiquadFilter();
-    if(this.minFrequency === null){
+    if(this.minFrequency === null && this.maxFrequency === null){
+      this.mainFilter.type = 'allpass';
+    }else if(this.minFrequency === null){
       this.mainFilter.type= 'highshelf';
       this.mainFilter.frequency.setValueAtTime(this.maxFrequency, gctx.currentTime+0.0001);
     }else if(this.maxFrequency === null){
@@ -54,50 +56,33 @@ class Band {
     this.compressor = gctx.createDynamicsCompressor();
     const compressionDefaults = { 'threshold': -80, 'knee': 30, 'ratio': 12, 'attack': 0.03, 'release': 0.03 };
 
-    this.compressor.threshold.setValueAtTime(-80,  gctx.currentTime+0.0001);
+    this.compressor.threshold.setValueAtTime(-90,  gctx.currentTime+0.0001);
     this.compressor.attack.setValueAtTime(0.03,  gctx.currentTime+0.0001);
     this.compressor.release.setValueAtTime(0.03, gctx.currentTime+0.0001);
     this.compressor.ratio.setValueAtTime(12, gctx.currentTime+0.0001);
 
     this.feedbackDelay = gctx.createDelay();
-    this.feedbackDelay.delayTime.setValueAtTime(0.4, gctx.currentTime+0.);
+    this.feedbackDelay.delayTime.setValueAtTime(0.00, gctx.currentTime);
   
-    this.feedbackDampener = gctx.createGain();
-    this.feedbackDampener.gain.setValueAtTime (0.8,  gctx.currentTime+0.0001);
-
     this.feedbackGain = gctx. createGain();
-    this.feedbackGain.gain.value = 0.2; //expenting 40 feedback?
+    this.feedbackGain.gain.setValueAtTime(-0.2,  gctx.currentTime);
 
-
-     this.feedbackLPF = gctx.createBiquadFilter();
+    this.feedbackLPF = gctx.createBiquadFilter();
     this.feedbackLPF.type='lowpass';
-    this.feedbackLPF.frequency.setValueAtTime(this.maxFrequency, 0);
-
-    this.feedbackPhaseshift = gctx.createBiquadFilter();
-    this.feedbackPhaseshift.type = 'allpass';
+    this.feedbackLPF.frequency.setValueAtTime(11,  gctx.currentTime);
 
     var cursor = this.input;
     this.lpf && cursor.connect(this.lpf) && (cursor = this.lpf);
     this.hpf && cursor.connect(this.hpf) && (cursor = this.hpf);
-
-    cursor.connect(this.compressor)
-    this.compressor.connect(this.mainFilter);
-
-    let AECInput = this.mainFilter;
     this.analyzerNode = gctx.createAnalyser();
     this.analyzerNode.fftSize=1024;
   
-    //main signal path
-    AECInput.connect(this.feedbackDelay);
-    this.feedbackDelay.connect(this.feedbackDampener);
-    this.feedbackDampener.connect(this.volumeCap);
+    var tee = gctx.createGain();
+      
+    cursor.connect(this.compressor).connect(this.mainFilter).connect(tee).connect(this.analyzerNode).connect(this.output);
     
-    //feedback signal
-    this.feedbackDampener.connect(this.feedbackLPF);
-    this.feedbackLPF.connect(this.feedbackGain).connect(this.feedbackDelay);
-    
-    this.volumeCap.connect(this.analyzerNode)
-    this.analyzerNode.connect(this.output);
+    //tee.connect(this.feedbackGain).connect(this.feedbackDelay).connect(this.analyzerNode)
+
     return this;
   }
   probe = ()=>{
@@ -110,7 +95,6 @@ class Band {
       mainFilter: this.mainFilter,
       compressor: this.compressor,
       feedbackDelay: this.feedbackDelay,
-      feedbackDampener: this.feedbackDampener,
       feedbackLPF: this.feedbackLPF,
       phaseshift: this.phaseshift,
       volumeCap: this.volumeCap,
@@ -129,6 +113,8 @@ export function split_band(ctx, hz_list) {
   output.gain.setValueAtTime(1.2, ctx.currentTime+0.1);
   
   var bands = [];
+  // bands.push(new Band(input, output,null,null));
+
   hz_list.forEach((hz,index)=>{
     if(index==0){
       
@@ -219,7 +205,7 @@ export function split_band(ctx, hz_list) {
     header.innerHTML=`<tr><td>hz</td>
     <td>threshold</td>
     <td>type</td><td>gain</td> <td>rolloff (Q)</td>
-    <td>delay</td><td>cutoff freq</td><td>resonance</td><td>opts</td></tr>`;
+    <td>delay</td><td>delay gain</td><td>opts</td></tr>`;
     table.appendChild(header);
     
     var gvctrls =  document.createElement("div");
@@ -238,10 +224,9 @@ export function split_band(ctx, hz_list) {
       slider(row, {prop: band.mainFilter.gain, min:-12, max: 12, step:1, index:index}); 
       slider(row, {prop: band.mainFilter.Q, min:0.01, max:22, step:0.1, index:index}); 
 
-      slider(row, {prop: band.feedbackDelay.delayTime, min:"0", max:3, step:0.1, index:index}); 
-      slider(row, {prop: band.feedbackLPF.frequency, value:"0", min:20, max:2000, index:index}); 
-
-      slider(row, {prop: band.feedbackDampener.gain, min: "0", max:"1", value:"0", step:0.01, index:index}); 
+      slider(row, {prop: band.feedbackDelay.delayTime, defaultValue: band.feedbackDelay.delayTime.value,min:"0", max:"3", step:"0.1", index:index}); 
+      slider(row, {prop: band.feedbackGain.gain, min:"-1", max:"0", step:0.01, index:index}); 
+      debugger;
       var button = document.createElement("button");
       button.innerHTML='probe';
       button.onclick = band.probe;

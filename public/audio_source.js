@@ -23,13 +23,14 @@ function PlayableAudioSource(ctx) {
     try {
       var stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId, echoCancellation: true } });
 
-      var audio = document.createElement("audio")
+      var audio = document.createElementById("audio2")
       audio.srcObject = stream;
       audio.onloadedmetadata = function (e) {
-        audio.muted = true;
+        audio.muted = false;
         audio.control = true;
         audio.play();
       };
+      document.body.appendChild(audio);
       var source = ctx.createMediaStreamSource(stream);
       return source;
     } catch (e) {
@@ -65,8 +66,7 @@ function PlayableAudioSource(ctx) {
 
   return {
     random_noise,
-    getAudioDevice,
-    chords
+    getAudioDevice    
   }
 
 }
