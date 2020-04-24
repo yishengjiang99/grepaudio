@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../simple-console.css">
+  <script src="../simple-console.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="mobile-web-app-capable" content="yes">
+</head>
+
+<body>
+  <canvas id='c1'></canvas>
+  <canvas id='c2'></canvas>
+  <canvas id='c3'></canvas>
+
+
+  <div id='ctrls'></div>
+  <button>start</button>
+
+  <script src='../polyfills.js'></script>
+  <script type="module">
+    import SharedBufferWorkletNode from './shared-buffer-worklet-node.js';
+    import Mixer from '../Mixer.js';
+    import { histogram2, chord,slider } from '../functions.js';
+
+
+    $("button").onclick = async function (evt) {
+      
+      const ctx =await new AudioContext();
+      window.g_audioCtx = ctx;
+      await ctx.audioWorklet.addModule('./shared-buffer-worklet-processor.js');
+
+
+      const sbwNode = new SharedBufferWorkletNode(ctx);
+
+      sbwNode.onInitialized = async function (){
+        let a = ctx.createAnalyser(), b = ctx.createAnalyser(), c = ctx.createAnalyser();
+        var source = await chord("https://dsp.grepawk.com/samples/Piano");
+
+//        source.connect(sbwNode);
+        //sbwNode.connect(a);
+        //sbwNode.connect(b);
+   
+       var bb = ctx.createBiquadFilter();
+        bb.type='lowpass';
+        bb.frequency.value=300;
+    //    bb.Q.value=10;
+  
+        var cc = ctx.createBiquadFilter();
+        cc.type='highpass';
+        cc.frequency.value=500;
+      //  cc.Q.value=10; 
+
+        var d1 = ctx.createDelay();
+var d2  = ctx.createDelay();
+        d1.delayTime.setValueAtTime(0.4, ctx.currentTime+0.);
+        d2.delayTime.setValueAtTime(0.4, ctx.currentTime+0.);
+        source.connect(bb).connect(d1).connect(a);
+        source.connect(cc).connect(d2).connect(c);
+        source.connect(bb).connect(cc).connect(b);
+
+//        a.connect(ctx.destination);
+        b.connect(ctx.destination);
+  //      c.connect(ctx.destination);
+        histogram2('c1',a);
+        histogram2('c2',b);
+        histogram2('c3',c);
+
+      }
+    }
+
+
+  </script>
+</body>
+
+</html>
