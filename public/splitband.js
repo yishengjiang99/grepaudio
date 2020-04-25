@@ -97,7 +97,7 @@ class Band {
 	evt.target.innerHTML = 'disconnect';
 	this.muted=false;
     }else{
-
+	this.muted=true;
 	this.analyzerNode.disconnect();
         if(window.g_request_timer) cancelAnimationFrame(g_request_timer);
         evt.target.innerHTML = 'connect';	
