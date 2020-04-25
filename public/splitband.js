@@ -10,7 +10,7 @@ class Band {
     window.gctx = gctx;
     const params =options || {};
     this.currentVolume = 0;
-    this.isMuted = false;
+    this.muted = true;
     this.mic_check = false;
     this.ledIndicator = { color: "gray", bars: 0 };
 
@@ -79,15 +79,29 @@ class Band {
   
     var tee = gctx.createGain();
       
-    cursor.connect(this.compressor).connect(this.mainFilter).connect(tee).connect(this.analyzerNode).connect(this.output);
+    cursor.connect(this.compressor).connect(this.mainFilter).connect(tee).connect(this.analyzerNode);
+
+  //.connect(this.output);
     
     //tee.connect(this.feedbackGain).connect(this.feedbackDelay).connect(this.analyzerNode)
 
     return this;
+
   }
-  probe = ()=>{
-    if(window.g_request_timer) cancelAnimationFrame(g_request_timer);
-    histogram2("band_freq_out",this.analyzerNode, this.maxFrequency);
+	
+  probe = (evt)=>{
+    if(this.muted === true){
+	this.analyzerNode.connect(this.output);
+    	if(window.g_request_timer) cancelAnimationFrame(g_request_timer);
+    	histogram2("band_freq_out",this.analyzerNode, this.maxFrequency);
+	evt.target.innerHTML = 'disconnect';
+	this.muted=false;
+    }else{
+
+	this.analyzerNode.disconnect();
+        if(window.g_request_timer) cancelAnimationFrame(g_request_timer);
+        evt.target.innerHTML = 'connect';	
+     }
   }
 
   get components() {
@@ -114,7 +128,8 @@ export function split_band(ctx, hz_list) {
   
   var bands = [];
   // bands.push(new Band(input, output,null,null));
-
+	
+  input.connect(output);
   hz_list.forEach((hz,index)=>{
     if(index==0){
       
@@ -227,7 +242,7 @@ export function split_band(ctx, hz_list) {
       slider(row, {prop: band.feedbackDelay.delayTime, defaultValue: band.feedbackDelay.delayTime.value,min:"0", max:"3", step:"0.1", index:index}); 
       slider(row, {prop: band.feedbackGain.gain, min:"-1", max:"0", step:0.01, index:index}); 
       var button = document.createElement("button");
-      button.innerHTML='probe';
+      button.innerHTML='connect';
       button.onclick = band.probe;
       row.appendChild(button.wrap("td"));  
       
