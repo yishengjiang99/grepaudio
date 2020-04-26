@@ -51,8 +51,11 @@ body{
   -ms-transform:translate(-50%,-50%)
 }
 button{
-  background-color:darkgray;
-  color:white;
+  background-color: white;;
+  color:black;
+  margin-left:4px;
+  border: 2px, black;
+  
 }
 body{
 
@@ -60,7 +63,6 @@ body{
   background-color:black;
   position: fixed;
   overflow-x:hidden;
-  height: 100%;
   position:fixed;
   overflow-y:scroll;
   width:100%;

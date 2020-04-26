@@ -23,7 +23,7 @@ function PlayableAudioSource(ctx) {
     try {
       var stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId, echoCancellation: true } });
 
-      var audio = document.createElementById("audio2")
+      var audio = document.createElement("audio")
       audio.srcObject = stream;
       audio.onloadedmetadata = function (e) {
         audio.muted = false;
