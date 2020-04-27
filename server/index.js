@@ -15,9 +15,23 @@ app.use(function (req, res, next) {
   res.header("Transfer-Encoding","chunked");
   next();
 });
+
+app.get("/api/list", function(req,res){
+  var list = [
+    {
+      name:"spotlight",
+      list:[
+        {type:"youtube", url:"https://www.youtube.com/watch?v=QpgOyWllqmc", display:"Forgot about Dre Instrumental"},
+        {type:"chord", display:"I–V–vi–IV progression", notes:"C–G–Am–F"}
+      ]
+    }
+  ]
+
+  res.json(list)
+
+})
 app.get("/api", function(req,res,next){
   const fs = require('fs');
-
   exec("ls -l", {cwd:'../public/samples'}, (err, stdout,stderr)=>{
     if(err) res.end(err.message);
     else{

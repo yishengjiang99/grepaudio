@@ -68,56 +68,65 @@ var AnalyzerView = function(audioNode, params){
 
       return fftU8().reduce(d=>sum+=d, 0);
     },
-    timeseries: function(elemId, sampleSize=1024, width=320, height=200){
-
+    timeseries: function(elemId, sampleSize=1024, width=320, height=255){
+      fft.fftSize = sampleSize;
+      this.timeseries2({elemId, sampleSize, width, height, analyzer:fft});
+    },
+    timeseries2: function(params){
+      var params = Object.assign({sampleSize:1024, width:320, height:255},params);
+      const {elemId, sampleSize, width, height, analyzer} = params;
+      const HEIGHT = height;
+      const WIDTH = width;
       var canvas = document.getElementById(elemId);
       const canvasCtx = canvas.getContext('2d');
       canvas.setAttribute('width', width);
       canvas.setAttribute('height', height);
+
       canvasCtx.lineWidth = 1;
       canvasCtx.strokeStyle = 'rgb(122, 122, 122)';
-      var dataArray = new Float32Array(sampleSize);
-      
-      canvasCtx.beginPath();
-      canvasCtx.moveTo(0, 0);
-      var x = 0; 
-      function draw(){
-         fft.getFloatTimeDomainData(dataArray);
-         var sum = 0;
-         var peakplus =0;
-         var peakminus =0;
-         
-         for(let i =0; i < sampleSize; i++){
-           if(dataArray[i]>peakplus) peakplus=dataArray[i];
-           if(dataArray[i]<peakminus) peakminus=dataArray[i];
+      var dataArray = new Uint8Array(analyzer.fftSize);
+      var convertY = y => y;
 
-            sum += (dataArray[i] * dataArray[i]);
-         }
-         var rms = Math.sqrt(sum/sampleSize)*200;
- 
-         if(x >= width){
+      canvasCtx.fillStyle='gray';
+      canvasCtx.fillRect(0,0,WIDTH,HEIGHT);
+
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(0, convertY(0));
+      var t = 0; 
+      canvasCtx.lineWidth = 2;
+      canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+      var x  = 0;
+      function draw(){
+              
+         analyzer.getByteTimeDomainData(dataArray);
+         var bufferLength = dataArray.length;
+
+         canvasCtx.beginPath();
+        
+        
+         for (var i = 0; i < bufferLength; i++) {
            
-           canvasCtx.fillStyle = 'rgb(255, 255, 255)';
-            x=0;
-            canvasCtx.closePath();
-            canvasCtx.clearRect(0, 0, width, height);
-            canvasCtx.fillRect(0, 0, width, height);
-            canvasCtx.beginPath();//ADD THIS LINE!<<<<<<<<<<<<<
-            canvasCtx.moveTo(0,0);
+            var y = dataArray[i];
+              x = t / bufferLength  % width;
+              t++;
+              
+              if (t > 100 && x ==0) {
+                  canvasCtx.clearRect(0,0,width,height);
+                  canvasCtx.fillRe4ct(0.0,width,height);
+                  canvasCtx.stroke();
+                  canvasCtx.beginPath();                  
+                  canvasCtx.moveTo(x,convertY(y));
+              } else {
+                  canvasCtx.lineTo(x,convertY(y));
+              }
+        
          }
-         
-         if(rms > 3){
-            canvasCtx.lineTo(x, rms);
-            x += 1;
-  
-            canvasCtx.fillStyle = 'rgb(111,111,255)';
-            canvasCtx.stroke();
-            // canvasCtx.fillRect(x,peakminus+50,3,(peakplus-peakminus)*50);
-         }
-         g_av_timers.push(requestAnimationFrame(draw));;
+         canvasCtx.stroke();
+         requestAnimationFrame(draw);
       }
       draw();
     },
+
     histogram_once:  function(elemId, width = 320, height= 200){
       return histogram(elemId, width, height, false);
     },
@@ -205,7 +214,7 @@ var AnalyzerView = function(audioNode, params){
 
             x += barWidth + 1;
           }   
-canvasCtx.fillText(total.toFixed(3)+'', width-100, 100);
+          canvasCtx.fillText(total.toFixed(3)+'', width-100, 100);
       }
 
       drawBars();

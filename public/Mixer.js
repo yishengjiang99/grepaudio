@@ -20,6 +20,8 @@ export default async function (ctx, containerId) {
       inputs[index] = source;
       source.connect(controls[index]);
       return;
+    }else if(deviceId=='chord'){
+      
     } else {
       var source = ctx.createBufferSource();
       inputs[index] = source;
@@ -78,10 +80,10 @@ export default async function (ctx, containerId) {
   var outputNode = masterGain;
 
   function connect(node) { this.masterGain.connect(node) };
-  var container = document.getElementById(containerId);
+  var cp = document.getElementById(containerId);
 
   ['YT_SEARCH', 'Microphone', 'notes.csv', 'waves.csv', 'songs.csv'].forEach(async (indexfile, index) => {
-
+    var container = document.createElement("div");
     if (indexfile == 'YT_SEARCH') {
 
       var select = document.getElementById("ytsearch");
@@ -99,7 +101,8 @@ export default async function (ctx, containerId) {
       }).catch(function (err) { select.innerHTML = err.message });
     } else if (indexfile === 'waves.csv') {
       const song_db = await fetch("./samples/" + indexfile).then(res => res.text()).then(text => text.split("\n"));
-      var select = document.createElement("select");
+      var select = document.createElement("form");
+      var select = document.createElement("select")
       select.setAttribute("tabindex", index);
       select.innerHTML = song_db.filter(t => t.trim() !== "").map(t => "samples/" + t.trim()).map(n => {
         var url = n.split(",")[0];
@@ -107,17 +110,26 @@ export default async function (ctx, containerId) {
         return `<option value='${encodeURIComponent(url)}'>${name}</option>`
       });
       select.setAttribute("data-chord", 1);
+      var buttons = "<button value='/samples/piano'>piano</input>";
+      container.appendstr(buttons);
+      container.querySelectorAll("button").forEach(button=>button.addEventListener("click", (e) => {
+        loadURL(e);
+      }));
     } else if (indexfile === 'notes.csv') {
       const song_db = await fetch("./samples/" + indexfile).then(res => res.text()).then(text => text.split("\n"));
       var select = document.createElement("div");
 
 
-      select.innerHTML = song_db.filter(t => t.trim() !== "").map(t => "samples/" + t.trim()).map((n, j) => {
-        var url = n.split(",")[0];
-        var name = (n.split(",")[1] || url).split("/").pop();
-        return `<button value='${url}'>${name}</button> ${(j + 1) % 5 == 0 ? "<br>" : ""}`
-      });
+      select.innerHTML = song_db.filter(t => t.trim() !== "").map((n, j) => {
+        var url = "samples/"+n;
+        var name = n.replace(".mp3","");
+        return `<button value='${url}'>${name}</button> ${(j + 1) % 3 == 0 ? "<br>" : ""}`
+      }).join("");
 
+      // select.querySelectorAll("button").forEach(button=>button.addEventListener("click", (e) => {
+      //   var url = e.target.value;
+      //   loadURLTo(url, index);
+      // }));
 
     } else {
       const song_db = await fetch("./samples/" + indexfile).then(res => res.text()).then(text => text.split("\n"));
@@ -136,18 +148,18 @@ export default async function (ctx, containerId) {
 
     var stop = document.createElement("button")
     stop.innerHTML = "stop";
-    if (indexfile != 'YT_SEARCH') container.appendChild(select);
+    if (indexfile != 'YT_SEARCH') container.appendChild(select.wrap("div"));
 
     container.appendChild(apply);
     container.appendChild(stop);
     container.appendChild(nowPlayingLabel.wrap("div"));
-
-    slider(container, {prop: controls[index].gain, step:"0.01",  max:"2", min:"1"});
-
+    slider(container, {prop: controls[index].gain, step:"0.01",  max:"2", min:"0"});
+    cp.appendChild(container)
     stop.onclick = (e) => {
       inputs[index].disconnect();
       inputs[index] = null;
-      // instanceof MediaElementAudioSourceNode ?  inputs[index].mediaElement.pause() : inputs[index].stop();
+      inputs[index] instanceof MediaStreamAudioSourceNode  ?  inputs[index].disconnect() : inputs[index].stop();
+      debugger;
     }
     select.querySelectorAll("button").forEach(button => button.addEventListener("click", (e) => {
       var url = e.target.value;
@@ -155,10 +167,11 @@ export default async function (ctx, containerId) {
     }))
 
     apply.onclick = loadURL;
-    select.addEventListener("input|submit|change|click|touchup", loadURL);
+    select.addEventListener("input", loadURL);
 
     async function loadURL(e) {
       var url = select.value;
+      log("loading "+url);
       if (select.getAttribute("data-chord")) {
         inputs[index] = await chord(url);
         inputs[index].connect(controls[index]);

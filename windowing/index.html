@@ -11,11 +11,17 @@
 </head>
 
 <body>
-  <canvas id='c1'></canvas>
-  <canvas id='c2'></canvas>
-  <canvas id='c3'></canvas>
+<div>
+  <canvas id='a'></canvas>
+  <canvas id='b'></canvas>
+  <canvas id='c'></canvas>
+</div>
+<div>
+  <canvas id='a1'></canvas>
+  <canvas id='a2'></canvas>
+  <canvas id='a3'></canvas>
 
-
+</div>
   <div id='ctrls'></div>
   <button>start</button>
 
@@ -37,36 +43,40 @@
 
       sbwNode.onInitialized = async function (){
         let a = ctx.createAnalyser(), b = ctx.createAnalyser(), c = ctx.createAnalyser();
-        var source = await chord("https://dsp.grepawk.com/samples/Piano");
+        let a1 = ctx.createAnalyser(), b2 = ctx.createAnalyser(), c3 = ctx.createAnalyser();
 
-//        source.connect(sbwNode);
-        //sbwNode.connect(a);
-        //sbwNode.connect(b);
-   
-       var bb = ctx.createBiquadFilter();
-        bb.type='lowpass';
-        bb.frequency.value=300;
-    //    bb.Q.value=10;
+        var source = await chord("https://dsp.grepawk.com/samples/Piano");
+       var lpf = ctx.createBiquadFilter();
+        lpf.type='lowpass';
+        lpf.frequency.setValueAtTime(300, ctx.currentTime)
+        lpf.Q.value=1;
   
-        var cc = ctx.createBiquadFilter();
-        cc.type='highpass';
-        cc.frequency.value=500;
-      //  cc.Q.value=10; 
+        var lhpf = ctx.createBiquadFilter();
+        lhpf.type='highpass';
+        lhpf.frequency.setValueAtTime(300, ctx.currentTime)
+        lhpf.Q.value=1;
+  
+        // var hpf = ctx.createBiquadFilter();
+        // hpf.type='highpass';
+        // hpf.frequency.value=500;
+        
 
         var d1 = ctx.createDelay();
-var d2  = ctx.createDelay();
-        d1.delayTime.setValueAtTime(0.4, ctx.currentTime+0.);
-        d2.delayTime.setValueAtTime(0.4, ctx.currentTime+0.);
-        source.connect(bb).connect(d1).connect(a);
-        source.connect(cc).connect(d2).connect(c);
-        source.connect(bb).connect(cc).connect(b);
+        var d2  = ctx.createDelay();
+        d1.delayTime.setValueAtTime(0.1, ctx.currentTime+0.0);
+        d2.delayTime.setValueAtTime(0.1, ctx.currentTime+0.0);
 
-//        a.connect(ctx.destination);
-        b.connect(ctx.destination);
-  //      c.connect(ctx.destination);
-        histogram2('c1',a);
-        histogram2('c2',b);
-        histogram2('c3',c);
+
+
+        // sbwNode.connect(lpf).connect(d1).connect(a);
+        source.connect(lpf).connect(d2).connect(a).connect(ctx.destination)
+        source.connect(lhpf).connect(d1).connect(b).connect(ctx.destination);
+
+ 
+  
+        histogram2('a',a);
+        histogram2('b',b);
+        // histogram2('b',c);
 
       }
     }

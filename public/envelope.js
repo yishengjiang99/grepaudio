@@ -10,37 +10,23 @@ export default function Envelope(min, max, attack, decay, sustain, release, para
     this.param = param;
 }
 
-Envelope.prototype.fromWaveTable=function (url){
-    fetch(url).then(resp=>resp.json()).then(json=>{
-      var osc = g_audioctx.createOscillator();
-      var wave = new PeriodWave(osc,json);
-      const keys = 'asdfghj'.split("");
-      const notes = '65.41, 73.42, 82.41,87.31,98.00,110.00,123.47'.split(",");
-      var masterGain = ctx.createGain();
-      
-    }).catch(console.log)
-}
-
 Envelope.prototype.trigger = function (time) {
 
-    if(time < this.attackTime){
+    if(this.attackTime == null ){
         this.param.linearRampToValueAtTime(this.max, time+this.attack);
         this.attackTime = time+this.attack;
-    }
-    if(this.param.value < this.max){
-        this.param.setValueAtTime(this.min, time);
-        this.param.linearRampToValueAtTime(this.max, time + this.attack);        
-    }
+        this.param.exponentialRampToValueAtTime(this.sustain, time + this.attack + this.decay);
+    }else{
+        this.param.exponentialRampToValueAtTime(this.sustain, time + this.decay);
 
-    this.param.exponentialRampToValueAtTime(this.sustain, time + this.attack + this.decay);
-    this.attackTime = time+this.attack;
-    this.sustainTime = time + this.attack + this.decay;
-
+    }
 }
 
 Envelope.prototype.release = function (time) {
-
-    this.param.setTargetAtTime(this.min,time+this.sustain, this.releaseTimeConstant);
+    this.param.exponentialRampToValueAtTime(this.sustain, time + this.attack + this.decay);
+    this.sustainTime = time + this.decay;
+    this.param.setTargetAtTime(this.min, this.sustainTime+this.decay, this.releaseTimeConstant);
+    this.attackTime = null;
 }
 
 

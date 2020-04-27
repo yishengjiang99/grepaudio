@@ -1,5 +1,7 @@
 import { selector, slider,numeric} from "./functions.js";
 import {Q,HZ_LIST, DEFAULT_PRESET_GAINS} from './constants.js';
+import Presets from './presets.js'
+
 class Band {
 
 
@@ -72,14 +74,14 @@ class Band {
     this.feedbackLPF.frequency.setValueAtTime(11,  gctx.currentTime);
 
     var cursor = this.input;
-    this.lpf && cursor.connect(this.lpf) && (cursor = this.lpf);
-    this.hpf && cursor.connect(this.hpf) && (cursor = this.hpf);
+    // this.lpf && cursor.connect(this.lpf) && (cursor = this.lpf);
+    // this.hpf && cursor.connect(this.hpf) && (cursor = this.hpf);
     this.analyzerNode = gctx.createAnalyser();
     this.analyzerNode.fftSize=1024;
   
     var tee = gctx.createGain();
       
-    cursor.connect(this.compressor).connect(this.mainFilter).connect(tee).connect(this.analyzerNode);
+    cursor.connect(this.compressor).connect(this.mainFilter).connect(this.analyzerNode); //.connect(output)
 
   //.connect(this.output);
     
@@ -91,14 +93,14 @@ class Band {
 	
   probe = (evt)=>{
     if(this.muted === true){
-	this.analyzerNode.connect(this.output);
+	    this.analyzerNode.connect(this.output);
     	if(window.g_request_timer) cancelAnimationFrame(g_request_timer);
     	histogram2("band_freq_out",this.analyzerNode, this.maxFrequency);
-	evt.target.innerHTML = 'disconnect';
-	this.muted=false;
+	    evt.target.innerHTML = 'disconnect';
+	    this.muted=false;
     }else{
-	this.muted=true;
-	this.analyzerNode.disconnect();
+	    this.muted=true;
+	    this.analyzerNode.disconnect();
         if(window.g_request_timer) cancelAnimationFrame(g_request_timer);
         evt.target.innerHTML = 'connect';	
      }
@@ -212,26 +214,46 @@ export function split_band(ctx, hz_list) {
 
     return bands[bands.length-1].probe();
   }
-  function UI_EQ(){
+  function UI_EQ(bandpassFilterNode){
+    // <div> <button id='reset'>reset</button></div> <select id=preset_options></select>
+    var cp =  document.createElement("div");
+
+    var presetOptions= document.createElement("select");
+    presetOptions.innerHTML = Presets.menu();
+    presetOptions.oninput = function (e) {
+      var name = e.target.value;
+      var gains = Presets.presetGains(name);
+      bandpassFilterNode.port.postMessage({
+        gainUpdates: gains.map((gain, index) => {
+          return { index: index, value: gain }
+        })
+      });
+    }
+
+    cp.appendChild(presetOptions);
 
     const table = document.createElement("table");
 
     const header = document.createElement("tr");
-    header.innerHTML=`<tr><td>hz</td>
-    <td>threshold</td>
-    <td>type</td><td>gain</td> <td>rolloff (Q)</td>
-    <td>delay</td><td>delay gain</td><td>opts</td></tr>`;
+    header.innerHTML=`<tr><td>hz</td><td>gain</td>
+    <td>threshold</td> 
+    <td>type</td><td>gain</td> <td>rolloff (Q)</td><td>detune</td>
+    <td>opts</td></tr>`;
     table.appendChild(header);
     
     var gvctrls =  document.createElement("div");
     slider(gvctrls, {prop: input.gain, min:"0", max: "4", name: "preamp"});
     slider(gvctrls, {prop: output.gain, min:"0", max: "4", name:"postamp"});
-  //          //24000
-        // freq = 
-        // HZ_LIST
+    
     bands.forEach( (band,index)=>{
       const row = document.createElement("tr")
       row.innerHTML+=`<td>${band.maxFrequency || band.minFrequency}</td>`;
+
+      slider(row, {value: Object.values(DEFAULT_PRESET_GAINS)[index], min:"-12",max:"12",oninput:function(e){
+        bandpassFilterNode.port.postMessage({
+          gainUpdate:{ index: index, value: e.target.value }
+        });
+      }})
 
       slider(row,  {prop: band.compressor.threshold, min:-100, max: 0, step:1, index:index});  
       // row.innerHTML +="<td><label>"+ band.mainFilter.type+"</label></td>"
@@ -248,7 +270,6 @@ export function split_band(ctx, hz_list) {
       
       table.appendChild(row);
     })
-    var cp =  document.createElement("div");
 
     cp.appendChild(gvctrls);
     cp.append(table);

@@ -27,16 +27,24 @@ export const DEFAULT_PRESET_GAINS =
 	'31.25': 0.375,
 	'62.5': 0.375
 }
+window.$ = function(str){
+	document.getElementById(str) || document.querySelector(str);
+}
+HTMLElement.prototype.appendstr = function(string){
+
+	let node = document.createRange().createContextualFragment(string);
+
+	this.appendChild(node);
+}
 export async function chord(url) {
   var str= await fetch(url).then(resp => resp.text());
-debugger;
-//    str.replace(/\s/g,'').replace("'","\"").replace(",]","]");
     var json = await JSON.parse(str);
     var osc = g_audioCtx.createOscillator();
     osc.setPeriodicWave(g_audioCtx.createPeriodicWave(json.real,json.imag))
     const keys = 'asdfghj'.split("");
     const notes = '261.63, 293.66 , 329.63, 349.23, 392.00, 440.00, 493.88'.split(", ");
-    var masterGain = g_audioCtx.createGain();
+	var masterGain = g_audioCtx.createGain();
+	masterGain.gain.setValueAtTime(1,g_audioCtx.currentTime)
             var ampAttack = 0.02;
             var ampDecay = 0.05;
             var ampSustain = 0.5;
@@ -52,25 +60,36 @@ debugger;
       gain.gain.value = 0;
 
       LFO.setPeriodicWave(waveform);
-      var gainEnvelope = new Envelope(0, 1, ampAttack, ampDecay, ampSustain, ampRelease, gain.gain);
+      var gainEnvelope = new Envelope(0, 1, 0.02, 0.04, ampSustain, ampRelease, gain.gain);
       adsrs.push(gainEnvelope)
       LFO.connect(gain);
       gain.connect(masterGain)
       LFO.start(0);
     })
 
+	var lastkeydown={};
 
     window.addEventListener("keydown", function (e) {
       if (keys.indexOf(e.key) > -1) {
-        var env = adsrs[keys.indexOf(e.key)];
-        env.trigger(ctx.currentTime);
+	
+		var env = adsrs[keys.indexOf(e.key)];	
+
+		log("keydown ");
+		if(e.repeat){
+			var timelapsed = ctx.currentTime - lastkeydown[e.key];
+			log(" repeat afterr " + timelapsed)
+		}else{
+			env.trigger(ctx.currentTime);
+		}
+		lastkeydown[e.key] = ctx.currentTime;
       }
     })
 
     window.addEventListener("keyup", function (e) {
       if (keys.indexOf(e.key) > -1) {
         var env = adsrs[keys.indexOf(e.key)];
-        env.release(ctx.currentTime);
+		env.release(ctx.currentTime);
+		log("keyup")
       }
     })
 
@@ -124,15 +143,18 @@ export function slider(container, options) {
 	var label = document.createElement("span");
 
 	if (input.type == 'range') {
-		label.innerHTML = params.label || (params.prop && params.prop.value.toString())
+		label.innerHTML = params.label || (params.prop && params.prop.value.toString()) || params.value;
 		
 	} else {
 		input.size = "10"
 	}
-
-	input.oninput = (e) => { 
-		params.prop.setValueAtTime( e.target.value, 0);  
-		label.innerHTML = e.target.value 
+	if(options.oninput){
+		input.oninput = options.oninput;
+	}else{
+		input.oninput = (e) => { 
+			params.prop.setValueAtTime( e.target.value, 0);  
+			label.innerHTML = e.target.value 
+		}
 	}
 	var contain = document.createElement(params.wrapper || "td");
 	contain.style.position = 'relative';

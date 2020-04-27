@@ -13,8 +13,6 @@ body{
 #audio1{
   position: fixed;
   bottom: 0;
-  width: 40vw;
-  left:10vw;
 }
 .center {
   display: block;
@@ -91,7 +89,17 @@ td{
     color:white;
 
 }
-
+.badge{
+  display: inline-block;
+  padding: .25em .4em;
+  font-size: 75%;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: .25rem;
+}
 .simple-console-output{
   min-height:20vh;
   background-color: rgba(0,0,0,0.9);
