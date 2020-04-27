@@ -59,7 +59,7 @@ export async function chord(url) {
       var gain = ctx.createGain();
       gain.gain.value = 0;
 
-      LFO.setPeriodicWave(waveform);
+      LFO.setPeriodicWave(waveform)
       var gainEnvelope = new Envelope(0, 1, 0.02, 0.04, ampSustain, ampRelease, gain.gain);
       adsrs.push(gainEnvelope)
       LFO.connect(gain);
