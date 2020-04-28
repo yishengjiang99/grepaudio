@@ -162,6 +162,7 @@ export function slider(container, options) {
 	}
 	var contain = document.createElement(params.wrapper || "td");
 	contain.style.position = 'relative';
+	label.style.minWidth='4em';
 	if(params.name) {
 		contain.append(  el("span", params.name));
 	}

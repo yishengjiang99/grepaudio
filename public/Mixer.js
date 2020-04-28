@@ -87,7 +87,7 @@ export default async function (ctx, containerId) {
     if (indexfile == 'YT_SEARCH') {
 
       var select = document.getElementById("ytsearch");
-
+      // var select=document.createElement("span");
     } else if (indexfile == 'Microphone') {
 
 
@@ -159,7 +159,6 @@ export default async function (ctx, containerId) {
       inputs[index].disconnect();
       inputs[index] = null;
       inputs[index] instanceof MediaStreamAudioSourceNode  ?  inputs[index].disconnect() : inputs[index].stop();
-      debugger;
     }
     select.querySelectorAll("button").forEach(button => button.addEventListener("click", (e) => {
       var url = e.target.value;
@@ -167,7 +166,11 @@ export default async function (ctx, containerId) {
     }))
 
     apply.onclick = loadURL;
-    select.addEventListener("input", loadURL);
+    select.addEventListener("input", e=>{
+      if(e.target.type !=='text'){
+        loadUrl(e);
+      }
+    });
 
     async function loadURL(e) {
       var url = select.value;
@@ -192,11 +195,11 @@ export default async function (ctx, containerId) {
       }
 
       if (inputs[index] !== null) {
-        await inputs[index].stop();
+        // await inputs[index].stop();
         inputs[index] = null;
       }
-      loadURLTo(url, index);
       nowPlayingLabel.innerHTML = "Loading.." + url + " channel " + index;
+      loadURLTo(url, index);
 
     }
     return false;

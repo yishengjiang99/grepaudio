@@ -35,11 +35,11 @@
       <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='/api/sudo/::QUERY::.mp3' />
       <div id=ctrls>
       </div>
-             <div>
-                 <button id="recorder">Start Recording</button>
-                 <audio id='audio2' ></audio>
+      <div>
+        <button id="recorder">Start Recording</button>
+        <audio id='audio2'></audio>
 
-                </div>
+      </div>
     </span>
     <span style='width:40%;position:absolute; top:0;left:350px'>
       <div class='canvas_wrapper'>
@@ -47,26 +47,30 @@
           <input id='showcummulative' type=checkbox>cumulative fft</input>
           <input id='showtimeseries' type=checkbox checked>timeseries</input>
           <button id='zoomin'>+</button> <button id='zoomout'>-</button></div>
-          <canvas id='output_freq'></canvas>
+        <canvas id='output_freq'></canvas>
 
         <canvas id='output_timeline'></canvas>
       </div>
-    </span>
 
+    </span>
+    <span style='width:10%;position:absolute; top:0;right:150px'>
+
+      <form id='noisegate'>
+        Noise Gate:
+        <div class="range-wrap">
+          <output id=threshold_l>Gate: </output><output class="bubble"></output>
+
+          <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range"
+            name='threshold'>
+        </div>
+      </form>
+      <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
+
+    </span>
   </div>
 
-<div id='serverlist'></div>
+  <div id='serverlist'></div>
 
-
-  <form id='noisegate'>
-    Noise Gate:
-    <div class="range-wrap">
-      <output id=threshold_l>Gate: </output><output class="bubble"></output>
-
-      <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range" name='threshold'>
-    </div>
-  </form>
-  <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
 
   <input type='file' id='file'>
 
@@ -138,16 +142,18 @@
 
       var cursor = bandpassFilterNode;
 
+      var compressor = new DynamicsCompressorNode(audioCtx, {threshold:-10, ratio:20,knee:10});
+
       var group = split_band(audioCtx, [31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]);
-      bandpassFilterNode.connect(group.input);
+      bandpassFilterNode.connect(compressor).connect(group.input);
 
 
-      $("#eq_update_form").appendChild(group.UI_EQ(bandpassFilterNode));
+      $("#eq_update_form").appendChild(group.UI_EQ(bandpassFilterNode,compressor));
 
 
       cursor = group.output;
       var ctv = AnalyzerView(cursor, { fft: 256 });
-      ctv.histogram("output_freq",  700, 300); //, { fft: 256 })
+      ctv.histogram("output_freq", 700, 300); //, { fft: 256 })
       ctv.timeseries("output_timeline", 128, 700, 300); //, { fft: 256 })
 
 

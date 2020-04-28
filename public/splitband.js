@@ -230,7 +230,7 @@ export function split_band(ctx, hz_list) {
    // histogram2(elemId, analyzer, fc)
     histogram2("band_freq_out",analyzer);
   }
-  function UI_EQ(bandpassFilterNode){
+  function UI_EQ(bandpassFilterNode,compressor){
     // <div> <button id='reset'>reset</button></div> <select id=preset_options></select>
     var cp =  document.createElement("div");
 
@@ -250,7 +250,7 @@ export function split_band(ctx, hz_list) {
 
     cp.appendstr("<input type=checkbox id=mode_parallel>paralell mode</input>");
     const table = document.createElement("table");
-
+    table.setAttribute("border","1")
     const header = document.createElement("tr");
     header.innerHTML=`<tr><td>hz</td><td>gain</td>
     <td>type</td><td>gain</td> <td>rolloff (Q)</td><td>detune</td>
@@ -260,7 +260,7 @@ export function split_band(ctx, hz_list) {
     var gvctrls =  document.createElement("div");
     slider(gvctrls, {prop: input.gain, min:"0", max: "4", name: "preamp"});
     slider(gvctrls, {prop: output.gain, min:"0", max: "4", name:"postamp"});
-    
+    slider(gvctrls, {prop: compressor.threshold, min:"-70", max:"0", name:"compressor threshold"});
     bands.forEach( (band,index)=>{
       const row = document.createElement("tr")
       row.innerHTML+=`<td>${band.frequency.value}</td>`;
