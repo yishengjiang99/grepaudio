@@ -100,7 +100,7 @@ export default async function (ctx, containerId) {
         }).join("");
       }).catch(function (err) { select.innerHTML = err.message });
     } else if (indexfile === 'waves.csv') {
-      const song_db = await fetch("./samples/" + indexfile).then(res => res.text()).then(text => text.split("\n"));
+      const song_db = await fetch("./samples/" + indexfile+"?t="+ctx.currentTime).then(res => res.text()).then(text => text.split("\n"));
       var select = document.createElement("form");
       var select = document.createElement("select")
       select.setAttribute("tabindex", index);
@@ -168,7 +168,7 @@ export default async function (ctx, containerId) {
     apply.onclick = loadURL;
     select.addEventListener("input", e=>{
       if(e.target.type !=='text'){
-        loadUrl(e);
+        loadURL(e);
       }
     });
 
