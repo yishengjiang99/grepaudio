@@ -147,7 +147,8 @@
 
       cursor = group.output;
       var ctv = AnalyzerView(cursor, { fft: 256 });
-      ctv.histogram("output_freq", 700, 300); //, { fft: 256 })
+      ctv.histogram("output_freq",  700, 300); //, { fft: 256 })
+      ctv.timeseries("output_timeline", 128, 700, 300); //, { fft: 256 })
 
 
       var rworker = new Worker('recorder-worker.js');
