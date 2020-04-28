@@ -37,6 +37,8 @@
       </div>
              <div>
                  <button id="recorder">Start Recording</button>
+                 <audio id='audio2' ></audio>
+
                 </div>
     </span>
     <span style='width:40%;position:absolute; top:0;left:350px'>
@@ -45,6 +47,8 @@
           <input id='showcummulative' type=checkbox>cumulative fft</input>
           <input id='showtimeseries' type=checkbox checked>timeseries</input>
           <button id='zoomin'>+</button> <button id='zoomout'>-</button></div>
+          <canvas id='output_freq'></canvas>
+
         <canvas id='output_timeline'></canvas>
       </div>
     </span>
@@ -144,7 +148,6 @@
       cursor = group.output;
       var ctv = AnalyzerView(cursor, { fft: 256 });
       ctv.histogram("output_freq", 700, 300); //, { fft: 256 })
-      ctv.timeseries("output_timeline", 64, 1200, 300);// 220);
 
 
       var rworker = new Worker('recorder-worker.js');

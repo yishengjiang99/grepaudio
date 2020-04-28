@@ -8,8 +8,7 @@ class Band {
   constructor(input, output, minFrequency, maxFrequency, options) {
     this.input = input;
     this.output = output;
-    const gctx = input.context;
-    window.gctx = gctx;
+    const gctx = window.g_audioCtx;
     const params =options || {};
     this.currentVolume = 0;
     this.muted = true;
@@ -73,38 +72,39 @@ class Band {
     this.feedbackLPF.type='lowpass';
     this.feedbackLPF.frequency.setValueAtTime(11,  gctx.currentTime);
 
-    var cursor = this.input;
     // this.lpf && cursor.connect(this.lpf) && (cursor = this.lpf);
     // this.hpf && cursor.connect(this.hpf) && (cursor = this.hpf);
     this.analyzerNode = gctx.createAnalyser();
     this.analyzerNode.fftSize=1024;
-  
-    var tee = gctx.createGain();
-      
-    cursor.connect(this.compressor).connect(this.mainFilter).connect(this.analyzerNode); //.connect(output)
-
-  //.connect(this.output);
     
-    //tee.connect(this.feedbackGain).connect(this.feedbackDelay).connect(this.analyzerNode)
+
+
+    
+    this.compressor.connect(this.mainFilter).connect(this.analyzerNode);
+    // if(input) input.connect(this.compressor)
+    // if(output!==null) this.analyzerNode.connect(output)
+
 
     return this;
 
   }
-	
-  probe = (evt)=>{
-    if(this.muted === true){
-	    this.analyzerNode.connect(this.output);
-    	if(window.g_request_timer) cancelAnimationFrame(g_request_timer);
-    	histogram2("band_freq_out",this.analyzerNode, this.maxFrequency);
-	    evt.target.innerHTML = 'disconnect';
-	    this.muted=false;
-    }else{
-	    this.muted=true;
-	    this.analyzerNode.disconnect();
-        if(window.g_request_timer) cancelAnimationFrame(g_request_timer);
-        evt.target.innerHTML = 'connect';	
-     }
+	connect = (audioNode) =>{
+    this.analyzerNode.connect(audioNode);
   }
+  // probe = (evt)=>{
+  //   if(this.muted === true){
+	//     this.analyzerNode.connect(this.output);
+  //   	if(window.g_request_timer) cancelAnimationFrame(g_request_timer);
+  //   	histogram2("band_freq_out",this.analyzerNode, this.maxFrequency);
+	//     evt.target.innerHTML = 'disconnect';
+	//     this.muted=false;
+  //   }else{
+	//     this.muted=true;
+	//     this.analyzerNode.disconnect();
+  //       if(window.g_request_timer) cancelAnimationFrame(g_request_timer);
+  //       evt.target.innerHTML = 'connect';	
+  //    }
+  // }
 
   get components() {
     return {
@@ -121,26 +121,42 @@ class Band {
     return [this.currentVolume, this.isMuted, this.mic_check, this.ledColor, this.ledBars];
   }
 }
+
 export function split_band(ctx, hz_list) {
   var input = ctx.createGain();
   input.gain.setValueAtTime(1.2, ctx.currentTime+0.1);
  
   var output = ctx.createGain();
   output.gain.setValueAtTime(1.2, ctx.currentTime+0.1);
-  
+  window.gctx = window.g_audioCtx;
   var bands = [];
   // bands.push(new Band(input, output,null,null));
-	
-  input.connect(output);
-  hz_list.forEach((hz,index)=>{
-    if(index==0){
-      
-      bands.push(new Band(input, output, null, hz));
-    }else{
-      bands.push(new Band(input, output, hz_list[index-1], hz));
-    }
-  })
-  bands.push(new Band(input,output, hz_list[hz_list.length-1], null));
+  var mode = $("#mode_parallel") && $("#mode_parallel").checked===true || "series";
+	if(mode=='series'){
+    var c = input;
+    hz_list.forEach((hz,index)=>{
+      if(index==0){
+        bands.push(new BiquadFilterNode(ctx,{type:"highshelf", frequency:hz, gain:1, Q:1}));
+      }else{
+        bands.push(new BiquadFilterNode(ctx,{type:"peaking", frequency:hz, gain:1, Q:1}));
+      } 
+      c.connect(bands[index]);
+      c = bands[index];
+    });
+    c.connect(output);
+  }else{
+    input.connect(output);
+    hz_list.forEach((hz,index)=>{
+      if(index==0){
+        bands.push(new Band(input, output, null, hz));
+      }else{
+        bands.push(new Band(input, output, hz_list[index-1], hz));
+      }
+    })
+    bands.push(new Band(input,output, hz_list[hz_list.length-1], null));
+  }
+
+
 
   function UI_Canvas(){
 
@@ -202,17 +218,17 @@ export function split_band(ctx, hz_list) {
     return canvas;
   
   }
-  function probe(hz){
-    var analyzers;
-    for(let i in bands){
-      if( band.maxFrequency > hz ) {
-        analyzders = bands[i].probe(); break;;
-      }
+  function probe(index){
+    var analyzer=window.g_audioCtx.createAnalyser();
+    bands[index].disconnect();
+    bands[index].connect(analyzer);
+    if(index < bands.length-1){
+       analyzer.connect(bands[index+1]);
+    }else{
+      analyzer.connect(output);
     }
-    analyzers = bands[bands.length-1].probe()
-    analyzers[1].histogram("band_freq_out");
-
-    return bands[bands.length-1].probe();
+   // histogram2(elemId, analyzer, fc)
+    histogram2("band_freq_out",analyzer);
   }
   function UI_EQ(bandpassFilterNode){
     // <div> <button id='reset'>reset</button></div> <select id=preset_options></select>
@@ -232,11 +248,11 @@ export function split_band(ctx, hz_list) {
 
     cp.appendChild(presetOptions);
 
+    cp.appendstr("<input type=checkbox id=mode_parallel>paralell mode</input>");
     const table = document.createElement("table");
 
     const header = document.createElement("tr");
     header.innerHTML=`<tr><td>hz</td><td>gain</td>
-    <td>threshold</td> 
     <td>type</td><td>gain</td> <td>rolloff (Q)</td><td>detune</td>
     <td>opts</td></tr>`;
     table.appendChild(header);
@@ -247,25 +263,22 @@ export function split_band(ctx, hz_list) {
     
     bands.forEach( (band,index)=>{
       const row = document.createElement("tr")
-      row.innerHTML+=`<td>${band.maxFrequency || band.minFrequency}</td>`;
+      row.innerHTML+=`<td>${band.frequency.value}</td>`;
 
-      slider(row, {value: Object.values(DEFAULT_PRESET_GAINS)[index], min:"-12",max:"12",oninput:function(e){
+slider(row, {className:'bandpass', value: Object.values(DEFAULT_PRESET_GAINS)[index], min:"-12",max:"12",oninput:function(e){
         bandpassFilterNode.port.postMessage({
           gainUpdate:{ index: index, value: e.target.value }
         });
       }})
-
-      slider(row,  {prop: band.compressor.threshold, min:-100, max: 0, step:1, index:index});  
+      // slider(row,  {prop: band.compressor.threshold, min:-100, max: 0, step:1, index:index});  
       // row.innerHTML +="<td><label>"+ band.mainFilter.type+"</label></td>"
-      selector(row, {prop: band.mainFilter.type, options: ["allpass" , "bandpass" , "highpass" , "highshelf" , "lowpass" , "lowshelf" , "notch" , "peaking"]})
-      slider(row, {prop: band.mainFilter.gain, min:-12, max: 12, step:1, index:index}); 
-      slider(row, {prop: band.mainFilter.Q, min:0.01, max:22, step:0.1, index:index}); 
-
-      slider(row, {prop: band.feedbackDelay.delayTime, defaultValue: band.feedbackDelay.delayTime.value,min:"0", max:"3", step:"0.1", index:index}); 
-      slider(row, {prop: band.feedbackGain.gain, min:"-1", max:"0", step:0.01, index:index}); 
+      selector(row, {prop: band.type, options: ["allpass" , "bandpass" , "highpass" , "highshelf" , "lowpass" , "lowshelf" , "notch" , "peaking"]})
+      slider(row, {prop: band.gain, min:-12, max: 12, step:0.1, index:index}); 
+      slider(row, {prop: band.Q, min:0.01, max:22, step:0.1, index:index}); 
+      slider(row, {prop: band.detune, min:0.0, max:0.5, step:"0.01", index:index}); 
       var button = document.createElement("button");
       button.innerHTML='connect';
-      button.onclick = band.probe;
+      button.onclick = (e)=>{probe(index)};
       row.appendChild(button.wrap("td"));  
       
       table.appendChild(row);
@@ -282,75 +295,73 @@ export function split_band(ctx, hz_list) {
 }
 
 
-
-
 function histogram2(elemId, analyzer, fc){
-      var bins = analyzer.frequencyBinCount;
-      var zoomScale=1;
-      var canvas = document.getElementById(elemId);
-      const width = 690;
-      const height = 320;
-    
-      const marginleftright = 10;
-      const hz_20_mark = 10;
-      const hz_20k_mark = 683;
-    
-      canvas.setAttribute("width", width + 2*marginleftright);
-      canvas.setAttribute("height", height);
-    
-      const bg_color = 'rgb(33,33,35)';
-      const cvt = canvas.getContext('2d');
-      cvt.fillStyle = bg_color;
-      cvt.fillRect(10, 0, width,height );
-      cvt.strokeStyle = 'rgb(255, 255,255)'
-      cvt.strokeWidth = '2px'
-      const noctaves = 11;
-      var map = []
+  var bins = analyzer.frequencyBinCount;
+  var zoomScale=1;
+  var canvas = document.getElementById(elemId);
+  const width = 690;
+  const height = 320;
+
+  const marginleftright = 10;
+  const hz_20_mark = 10;
+  const hz_20k_mark = 683;
+
+  canvas.setAttribute("width", width + 2*marginleftright);
+  canvas.setAttribute("height", height);
+
+  const bg_color = 'rgb(33,33,35)';
+  const cvt = canvas.getContext('2d');
+  cvt.fillStyle = bg_color;
+  cvt.fillRect(10, 0, width,height );
+  cvt.strokeStyle = 'rgb(255, 255,255)'
+  cvt.strokeWidth = '2px'
+  const noctaves = 11;
+  var map = []
 
 
-      var dataArray = new Uint8Array(analyzer.fftSize);
+  var dataArray = new Uint8Array(analyzer.fftSize);
 
-      const drawTick = function(x,f , meta){
-            cvt.strokeStyle = 'rgb(255, 255,255)';
-            cvt.moveTo(x, 30);
-            cvt.lineTo(x, height);
-            cvt.stroke();
+  const drawTick = function(x,f , meta){
+        cvt.strokeStyle = 'rgb(255, 255,255)';
+        cvt.moveTo(x, 30);
+        cvt.lineTo(x, height);
+        cvt.stroke();
 
-            cvt.textAlign = "center";
-            cvt.strokeText(f.toFixed(0) + "Hz", x, 20);
-            cvt.strokeText(meta, width-20, 20);
-      }      
-      const bin_number_to_freq = (i)=> 0.5 * gctx.sampleRate * i/analyzer.frequencyBinCount;
-      //HZ_LIST
-      function drawBars(){
-          window.g_request_timer = requestAnimationFrame(drawBars);
+        cvt.textAlign = "center";
+        cvt.strokeText(f.toFixed(0) + "Hz", x, 20);
+        cvt.strokeText(meta, width-20, 20);
+  }      
+  const bin_number_to_freq = (i)=> 0.5 * gctx.sampleRate * i/analyzer.frequencyBinCount;
+  //HZ_LIST
+  function drawBars(){
+      window.g_request_timer = requestAnimationFrame(drawBars);
 
-          analyzer.getByteFrequencyData(dataArray);
+      analyzer.getByteFrequencyData(dataArray);
 
-          cvt.clearRect(0,0,width,height);
-          var x=0; 
-          var hz_mark_index=0;
-          var linerBarWidth = width/bins;
+      cvt.clearRect(0,0,width,height);
+      var x=0; 
+      var hz_mark_index=0;
+      var linerBarWidth = width/bins;
 
-          for (var i = 0; i < bins; i++) {
-            
-            var f =bin_number_to_freq(i);
-            if( f >= HZ_LIST[hz_mark_index]){
-              hz_mark_index++;
-              if(hz_mark_index >= HZ_LIST.length) break;
-              drawTick(x,  HZ_LIST[hz_mark_index], '');
-              
-            }
-            var barWidth = hz_mark_index < 2 ? 10*linerBarWidth : (hz_mark_index <  7 ? 5 * linerBarWidth : linerBarWidth/2);
-            var barHeight = dataArray[i] * zoomScale;
+      for (var i = 0; i < bins; i++) {
+        
+        var f =bin_number_to_freq(i);
+        if( f >= HZ_LIST[hz_mark_index]){
+          hz_mark_index++;
+          if(hz_mark_index >= HZ_LIST.length) break;
+          drawTick(x,  HZ_LIST[hz_mark_index], '');
+          
+        }
+        var barWidth = hz_mark_index < 2 ? 10*linerBarWidth : (hz_mark_index <  7 ? 5 * linerBarWidth : linerBarWidth/2);
+        var barHeight = dataArray[i] * zoomScale;
 
-            cvt.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
+        cvt.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
 
-            cvt.fillRect(x,height-barHeight/2-25, barWidth, (barHeight/2));
-            x += barWidth;  
-                      
-          }
+        cvt.fillRect(x,height-barHeight/2-25, barWidth, (barHeight/2));
+        x += barWidth;  
+                  
       }
+  }
 
-      drawBars();
-    }
+  drawBars();
+}

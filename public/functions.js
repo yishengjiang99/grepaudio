@@ -9,7 +9,7 @@ export async function getProcessor(ctx, processor){
 }
 
 
-function  toDecibel(powerLevel) {
+window.toDecibel=function(powerLevel) {
   return 10 * Math.log10(powerLevel);
 }
 export const HZ_LIST = new Float32Array([31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]);
@@ -36,7 +36,10 @@ HTMLElement.prototype.appendstr = function(string){
 
 	this.appendChild(node);
 }
-export async function chord(url) {
+export async function chord(url, params) {
+	const {min,max,attack,decay,sustain,release} = Object.assign({
+		min:0, max:0.5, attack:0.15, decay:0.21, sustain:0.21, release:0.01
+	})
   var str= await fetch(url).then(resp => resp.text());
     var json = await JSON.parse(str);
     var osc = g_audioCtx.createOscillator();
@@ -45,29 +48,29 @@ export async function chord(url) {
     const notes = '261.63, 293.66 , 329.63, 349.23, 392.00, 440.00, 493.88'.split(", ");
 	var masterGain = g_audioCtx.createGain();
 	masterGain.gain.setValueAtTime(1,g_audioCtx.currentTime)
-            var ampAttack = 0.02;
-            var ampDecay = 0.05;
-            var ampSustain = 0.5;
-            var ampRelease = 0.02;
+
     var adsrs=[];
     var ctx = g_audioCtx;
     var waveform = g_audioCtx.createPeriodicWave(json.real,json.imag)
 
    keys.forEach((l, i) => {
       var LFO = ctx.createOscillator();
-      LFO.frequency.value = notes[i];
+	  LFO.frequency.value = notes[i];
+	  LFO.type='square'
       var gain = ctx.createGain();
       gain.gain.value = 0;
 
       LFO.setPeriodicWave(waveform)
-      var gainEnvelope = new Envelope(0, 1, 0.02, 0.04, ampSustain, ampRelease, gain.gain);
+	  var gainEnvelope = new Envelope(min,max,attack,decay,sustain,release, gain.gain);
       adsrs.push(gainEnvelope)
       LFO.connect(gain);
       gain.connect(masterGain)
       LFO.start(0);
     })
 
-	var lastkeydown={};
+	var lastkeydown={
+
+	};
 
     window.addEventListener("keydown", function (e) {
       if (keys.indexOf(e.key) > -1) {
@@ -78,6 +81,7 @@ export async function chord(url) {
 		if(e.repeat){
 			var timelapsed = ctx.currentTime - lastkeydown[e.key];
 			log(" repeat afterr " + timelapsed)
+			env.hold(ctx.currentTime);
 		}else{
 			env.trigger(ctx.currentTime);
 		}
@@ -161,10 +165,13 @@ export function slider(container, options) {
 	if(params.name) {
 		contain.append(  el("span", params.name));
 	}
+	if(params.className){
+		input.className= params.className;
+	}
 	contain.append(input);
 	contain.append(label);
 	container.append(contain);
-
+	return input;
 }
 export function el(tag, innerHTML){
 	var t= document.createElement(tag)
@@ -300,4 +307,61 @@ export function writeWave(interleaved){
 					// our final blob
           var blob = new Blob([view], { type: 'audio/wav' });
           return URL.createObjectURL(blob);
+}
+
+
+window.timeseries_static = function (params){
+	var params = Object.assign({sampleSize:1024, width:1222, height:255}, params);
+	const {elemId, sampleSize, width, height, analyzer} = params;
+	const HEIGHT = height;
+	const WIDTH = width;
+	var canvas = document.getElementById(elemId);
+	const canvasCtx = canvas.getContext('2d');
+	canvas.setAttribute('width', width);
+	canvas.setAttribute('height', height);
+
+	canvasCtx.lineWidth = 1;
+	canvasCtx.strokeStyle = 'rgb(122, 122, 122)';
+	var dataArray = new Uint8Array(analyzer.fftSize);
+	var convertY = y => height/2-(y-127)/2 ;
+
+	canvasCtx.fillStyle='gray';
+	canvasCtx.fillRect(0,0,WIDTH,HEIGHT);
+
+	canvasCtx.beginPath();
+	canvasCtx.moveTo(0, convertY(0));
+	var t = 0; 
+	canvasCtx.lineWidth = 2;
+	canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+	var x  = 0;
+	function draw(){
+			
+	   analyzer.getByteTimeDomainData(dataArray);
+	   var bufferLength = dataArray.length;
+
+	   canvasCtx.beginPath();
+	  
+	  // console.log(dataArray);
+	  
+	   for (var i = 0; i < bufferLength; i++) {
+		 
+		  var y = dataArray[i];
+			x = t / bufferLength  % width;
+			t++;
+			if (t > 11 && x ==0) {
+
+				canvasCtx.clearRect(0,0,width,height);
+				canvasCtx.fillRect(0,0,width,height);
+				canvasCtx.stroke();
+				canvasCtx.beginPath();                  
+				canvasCtx.moveTo(x,convertY(y));
+			} else {
+				canvasCtx.lineTo(x,convertY(y));
+			}
+	  
+	   }
+	   canvasCtx.stroke();
+	   requestAnimationFrame(draw);
+	}
+	draw();
 }

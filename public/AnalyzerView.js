@@ -73,7 +73,7 @@ var AnalyzerView = function(audioNode, params){
       this.timeseries2({elemId, sampleSize, width, height, analyzer:fft});
     },
     timeseries2: function(params){
-      var params = Object.assign({sampleSize:1024, width:320, height:255},params);
+      var params = Object.assign({sampleSize:1024, width:320, height:255}, params);
       const {elemId, sampleSize, width, height, analyzer} = params;
       const HEIGHT = height;
       const WIDTH = width;
@@ -112,7 +112,7 @@ var AnalyzerView = function(audioNode, params){
               
               if (t > 100 && x ==0) {
                   canvasCtx.clearRect(0,0,width,height);
-                  canvasCtx.fillRe4ct(0.0,width,height);
+                  canvasCtx.fillRect(0,0,width,height);
                   canvasCtx.stroke();
                   canvasCtx.beginPath();                  
                   canvasCtx.moveTo(x,convertY(y));

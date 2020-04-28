@@ -11,21 +11,30 @@ export default function Envelope(min, max, attack, decay, sustain, release, para
 }
 
 Envelope.prototype.trigger = function (time) {
-
-    if(this.attackTime == null ){
-        this.param.linearRampToValueAtTime(this.max, time+this.attack);
-        this.attackTime = time+this.attack;
-        this.param.exponentialRampToValueAtTime(this.sustain, time + this.attack + this.decay);
-    }else{
-        this.param.exponentialRampToValueAtTime(this.sustain, time + this.decay);
-
-    }
+    this.attackTime = null
+    this.attackTime = time+this.attack;
+    this.sustainTime =time+this.attack+this.sustain;
+    this.param.linearRampToValueAtTime(this.max, this.attackTime);
+    this.param.exponentialRampToValueAtTime(this.sustain, this.sustainTime);
 }
 
+
+Envelope.prototype.hold = function (time) {
+   if(this.attackTime > time){
+       return;
+   }else{
+    this.attackTime = time+this.attack;
+    this.sustainTime =time+this.attack+this.sustain;
+    this.param.linearRampToValueAtTime(this.max, this.attackTime);
+    this.param.exponentialRampToValueAtTime(this.sustain, this.sustainTime);
+   }
+}
 Envelope.prototype.release = function (time) {
-    this.param.exponentialRampToValueAtTime(this.sustain, time + this.attack + this.decay);
-    this.sustainTime = time + this.decay;
+
+    this.sustainTime = Math.max(time, this.sustainTime);
+
     this.param.setTargetAtTime(this.min, this.sustainTime+this.decay, this.releaseTimeConstant);
+    
     this.attackTime = null;
 }
 
