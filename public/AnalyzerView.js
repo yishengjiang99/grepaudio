@@ -83,18 +83,16 @@ var AnalyzerView = function(audioNode, params){
       canvas.setAttribute('height', height);
 
       canvasCtx.lineWidth = 1;
-      canvasCtx.strokeStyle = 'rgb(122, 122, 122)';
+      canvasCtx.strokeStyle = 'white';
       var dataArray = new Uint8Array(analyzer.fftSize);
       var convertY = y => y;
 
-      canvasCtx.fillStyle='gray';
       canvasCtx.fillRect(0,0,WIDTH,HEIGHT);
 
       canvasCtx.beginPath();
       canvasCtx.moveTo(0, convertY(0));
       var t = 0; 
       canvasCtx.lineWidth = 2;
-      canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
       var x  = 0;
       function draw(){
               
@@ -196,7 +194,6 @@ var AnalyzerView = function(audioNode, params){
             x += barWidth + 1;
           }
 
-          canvasCtx.fillStyle= 'rgb(233,233,233)'
           canvasCtx.fillText(zoomScale, 0, height-5);
 
           x=10;

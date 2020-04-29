@@ -133,17 +133,22 @@ export function split_band(ctx, hz_list) {
   // bands.push(new Band(input, output,null,null));
   var mode = $("#mode_parallel") && $("#mode_parallel").checked===true || "series";
 	if(mode=='series'){
-    var c = input;
-    hz_list.forEach((hz,index)=>{
-      if(index==0){
-        bands.push(new BiquadFilterNode(ctx,{type:"highshelf", frequency:hz, gain:1, Q:1}));
+    var c = output
+    for (let index = 5; index>=0; index--){
+      const hz = hz_list[index];
+      if(index==hz_list.length-1){
+         bands.push(new BiquadFilterNode(ctx,{type:"lowshelf", frequency:hz, gain:1, Q:1, detune:100}));
+      }
+      else if(index==0){
+        bands.push(new BiquadFilterNode(ctx,{type:"highshelf", frequency:hz, gain:1, Q:1, detune:100}));
       }else{
-        bands.push(new BiquadFilterNode(ctx,{type:"peaking", frequency:hz, gain:1, Q:1}));
+        bands.push(new BiquadFilterNode(ctx,{type:"peaking", frequency:hz, gain:1, Q:1, detune:100}));
       } 
-      c.connect(bands[index]);
-      c = bands[index];
-    });
-    c.connect(output);
+      
+      bands[bands.length-1].connect(c);
+      c = bands[bands.length-1];
+    };
+    input.connect(c);
   }else{
     input.connect(output);
     hz_list.forEach((hz,index)=>{

@@ -53,8 +53,8 @@
       </div>
 
     </span>
-    <span style='width:10%;position:absolute; top:0;right:150px'>
-
+    <span style='position:absolute; bottom:100px;right:320px'>
+     <object src="https://www.youtube.com/embed/PgGC3r24fBg?controls=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></object>
       <form id='noisegate'>
         Noise Gate:
         <div class="range-wrap">
@@ -171,8 +171,8 @@
         if (e.data.audioUrl) {
           log(" got url " + e.data.audioUrl)
           $("#audio2").src = e.data.audioUrl;
-          $("#audio2").controls = controls;
-          $("#recorderdiv").appendstr(`<a href='${e.data.audioUrl}'>${a.data.audioUrl}</a>`)
+          $("#audio2").controls = true;
+          $("#audio2").parentElement.appendstr(`<a href='${e.data.audioUrl}'>${e.data.audioUrl}</a>`)
         }
         console.log(e);
       };
@@ -247,6 +247,11 @@
             var str = window.vfs.map(obj => objs.toString()).forEach(str => log(str));
             log(str);
             return true;
+          case 'v':
+          case 'video':
+              
+            g_audioTag.loadURLTo("/api"+arg1+".mp3",1);
+            break;
           default: return false;
         }
       }

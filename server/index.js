@@ -135,7 +135,7 @@ app.use("/api/(:vid).mp3", async (req, res, next) => {
     vid = req.params.vid;
     FFmpeg.setFfmpegPath(ffmpegPath);
     const video = ytdl(vid, { audioFormat: 'mp3' });
-
+    console.log(video);
     const ffmpeg = new FFmpeg(video);
     process.nextTick(() => ffmpeg.format('mp3').pipe(new PassThrough()).pipe(res))
   } catch (e) {

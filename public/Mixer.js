@@ -96,7 +96,7 @@ export default async function (ctx, containerId) {
       select.setAttribute("data-userMedia", "audio");
       navigator.mediaDevices && navigator.mediaDevices.enumerateDevices().then(function (devices) {
         select.innerHTML = devices.filter(device => device.kind == 'audioinput').map(function (device) {
-          return `<option value='${device.deviceId}'>${device.kind}: ${device.label}</option>`
+          return `<option value='${device.deviceId}'>${device.label}</option>`
         }).join("");
       }).catch(function (err) { select.innerHTML = err.message });
     } else if (indexfile === 'waves.csv') {
@@ -148,8 +148,9 @@ export default async function (ctx, containerId) {
 
     var stop = document.createElement("button")
     stop.innerHTML = "stop";
+    stop.style.display='none';
     if (indexfile != 'YT_SEARCH') container.appendChild(select.wrap("div"));
-
+    container.class='well'
     container.appendChild(apply);
     container.appendChild(stop);
     container.appendChild(nowPlayingLabel.wrap("div"));
@@ -195,12 +196,12 @@ export default async function (ctx, containerId) {
       }
 
       if (inputs[index] !== null) {
-        // await inputs[index].stop();
+        await inputs[index].stop();
         inputs[index] = null;
       }
       nowPlayingLabel.innerHTML = "Loading.." + url + " channel " + index;
       loadURLTo(url, index);
-
+      stop.style.display='inline';
     }
     return false;
 
@@ -211,7 +212,7 @@ export default async function (ctx, containerId) {
 
   return {
     inputs, outputNode, controls,
-    connect,
+    connect, loadURLTo,
     add_audio_tag
   }
 }

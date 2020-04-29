@@ -345,8 +345,9 @@ window.timeseries_static = function (params){
 	  // console.log(dataArray);
 	  
 	   for (var i = 0; i < bufferLength; i++) {
-		 
 		  var y = dataArray[i];
+debugger;
+      if(y - 127 <4) continue;
 			x = t / bufferLength  % width;
 			t++;
 			if (t > 11 && x ==0) {
