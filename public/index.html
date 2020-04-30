@@ -162,7 +162,6 @@
       var ctv = AnalyzerView(cursor, { fft: 256 });
       ctv.histogram("output_freq", 700, 300); //, { fft: 256 })
       ctv.timeseries("output_timeline", 128, 700, 300); //, { fft: 256 })
-        histogram2('band_freq_out', av);
 
       var rworker = new Worker('recorder-worker.js');
       var rconfig = { sample: 2 << 16, channels: 1 };
