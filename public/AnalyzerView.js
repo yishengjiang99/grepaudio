@@ -81,11 +81,11 @@ var AnalyzerView = function(audioNode, params){
       const canvasCtx = canvas.getContext('2d');
       canvas.setAttribute('width', width);
       canvas.setAttribute('height', height);
-
+      canvas.fillStyle='rbg(0,2,2)'
       canvasCtx.lineWidth = 1;
       canvasCtx.strokeStyle = 'white';
       var dataArray = new Uint8Array(analyzer.fftSize);
-      var convertY = y => y;
+      var convertY = y => y/2 + height/4;
 
       canvasCtx.fillRect(0,0,WIDTH,HEIGHT);
 

@@ -19,6 +19,27 @@ body{
   bottom: 0;
 left:1em;
 }
+
+.button {
+  background-color: black;
+  border: solid, 2px, black; 
+  color: #fefbef;
+  font-family: 'Open Sans', sans-serif;
+  
+  font-weight: 600;
+  line-height: 1;
+  margin-top: 1.5rem;
+  width: 100%; /* Large, mobile-friendly touch target */
+
+  /* Media Queries */
+  @media (min-width: 37.5em) {
+    width: auto; /* Smaller buttons on larger screens */
+    padding-left: 2rem;
+    padding-right: 2rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+}
 .center {
   display: block;
   margin-left: auto;
@@ -86,7 +107,7 @@ td{
     flex-direction: column;
     font-family: sans-serif;
     position: fixed;
-  max-height:20px;
+
 opacity:0.5;  
   bottom: 1px;
     right:10px;
