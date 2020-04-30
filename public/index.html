@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="./simple-console.css">
   <script src="./simple-console.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-auth.js"></script>
 
 </head>
 
@@ -56,6 +59,7 @@
 
     </span>
     <span style='position:absolute; bottom:100px;right:320px'>
+      <button id=obs>Broadcast</button>
      <object src="https://www.youtube.com/embed/PgGC3r24fBg?controls=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></object>
       <form id='noisegate'>
         Noise Gate:
@@ -102,18 +106,18 @@
     import { split_band } from './splitband.js'
     import AnalyzerView from "./AnalyzerView.js"
     import BandPassFilterNode from './band_pass_lfc/BandPassFilterNode.js'
-
+    import {broadcast} from './twitch_audio.js'
 
     let audioCtx, audioTag, eq;
-    const list = $("#serverlist")
-    fetch("/api/list").then(resp => resp.json()).then(json => {
-      json.forEach(section => {
-        list.appendstr(`<h4>${section.name}</h4>`);
-        section.list.forEach(li => {
-          list.appendstr(`<li>List1</li>`)
-        })
-      })
-    })
+    // const list = $("#serverlist")
+    // fetch("/api/list").then(resp => resp.json()).then(json => {
+    //   json.forEach(section => {
+    //     list.appendstr(`<h4>${section.name}</h4>`);
+    //     section.list.forEach(li => {
+    //       list.appendstr(`<li>List1</li>`)
+    //     })
+    //   })
+    // })
 
 
     $("#overlay").onclick = async function (e) {
@@ -151,13 +155,14 @@
 
 
       $("#eq_update_form").appendChild(group.UI_EQ(bandpassFilterNode,compressor));
-
-
+      $("#obs").onclick=function(e){
+        broadcast(audioCtx, 'yisheng');
+      }
       cursor = group.output;
       var ctv = AnalyzerView(cursor, { fft: 256 });
       ctv.histogram("output_freq", 700, 300); //, { fft: 256 })
       ctv.timeseries("output_timeline", 128, 700, 300); //, { fft: 256 })
-
+        histogram2('band_freq_out', av);
 
       var rworker = new Worker('recorder-worker.js');
       var rconfig = { sample: 2 << 16, channels: 1 };
