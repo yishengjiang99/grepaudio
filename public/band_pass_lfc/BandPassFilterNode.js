@@ -8,7 +8,7 @@ export default class BandPassFilterNode extends AudioWorkletNode{
             if(e.data.gainupdates_processed){
                 var inputs =document.querySelectorAll(".bandpass");
                 e.data.gainupdates_processed.forEach((gain,index)=>{
-                    inputs[index].value = gain;
+                    inputs[index] && inputs[index].value = gain;
                 })
             }
             if(e.data.spl_in){

@@ -269,8 +269,7 @@ export function split_band(ctx, hz_list) {
     bands.forEach( (band,index)=>{
       const row = document.createElement("tr")
       row.innerHTML+=`<td>${band.frequency.value}</td>`;
-
-slider(row, {className:'bandpass', value: Object.values(DEFAULT_PRESET_GAINS)[index], min:"-12",max:"12",oninput:function(e){
+        slider(row, {className:'bandpass', value: Object.values(DEFAULT_PRESET_GAINS)[index], min:"-12",max:"12",oninput:function(e){
         bandpassFilterNode.port.postMessage({
           gainUpdate:{ index: index, value: e.target.value }
         });
