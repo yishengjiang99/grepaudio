@@ -17,7 +17,6 @@ var database = firebase.database().ref();
 
 export function broadcast(ctx,senderId) {
     var yourId = "user-" + Math.floor(Math.random() * 10);
-debugger;
     var servers = { 'iceServers': [{ 'urls': 'stun:stun.services.mozilla.com' }, { 'urls': 'stun:stun.l.google.com:19302' }, { 'urls': 'turn:numb.viagenie.ca', 'credential': 'webrtc', 'username': 'websitebeaver@mail.com' }] };
     var pc = new RTCPeerConnection(servers);
     pc.onicecandidate = (event => event.candidate ? sendMessage(senderId, JSON.stringify({ 'ice': event.candidate })) : console.log("Sent All Ice"));
@@ -30,6 +29,7 @@ debugger;
 
     });
     var stream = ctx.createMediaStreamDestination().stream;
+    
     pc.addStream(stream);
 
     function sendMessage(senderId, data) {

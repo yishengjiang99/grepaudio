@@ -1,3 +1,4 @@
+
 const peerRTCConfig = {
     'RTCIceServers': [{url:'stun:stun01.sipphone.com'},
     {url:'stun:stun.ekiga.net'},
@@ -36,7 +37,7 @@ const peerRTCConfig = {
 }
 
 
-const signalServerURL = window.location.hostname == 'localhost' ? "ws://localhost:9091" : "wss://grepawk.com/signal";
+const signalServerURL = window.location.hostname == 'localhost' ? "ws://localhost:9091" : "wss://api.grepawk.com/signal";
 
 function BroadcasterClient(config) {
     config = config || {};
@@ -72,7 +73,12 @@ function BroadcasterClient(config) {
         if (to_uuid) json[to_uuid] = to_uuid;
         signalConnection.send(JSON.stringify(json));
     }
-
+    function broadcastAudio(channelName, ctx){
+        startBroadcast(channelName);
+        requestUserStream("audio").then(stream=>{
+            addStream(stream);
+        })
+    }
     function startBroadcast(channelName) {
         signalConnection = new WebSocket(hostname);
         signalConnection.onmessage = (event) => {
@@ -93,6 +99,8 @@ function BroadcasterClient(config) {
                     break;
                 case 'user_left':
                     break;
+                case 'connected':
+                    onEvent("connnected to signal");
                 default:
                     break;
             }
@@ -105,6 +113,9 @@ function BroadcasterClient(config) {
             onEvent("Stream registered "+channelName);
         }
         signalConnection.onerror = (e) => onEvent("ERROR: signalconnection not connecting", e);
+        window.onunload = function(e){
+            signalConnection.close();
+        }
     }
 
     function user_sent_peer_ice_candidate(data) {
@@ -131,6 +142,7 @@ function BroadcasterClient(config) {
     }
 
     function addStream(stream,dimensions){
+        debugger;
         stream.getTracks().forEach(track=>{
             addTrack(track, dimensions);
         })       
@@ -172,7 +184,8 @@ function BroadcasterClient(config) {
         addStream: addStream,
         removeStream:removeStream,
         peerConnections: peerConnections,
-        startBroadcast: startBroadcast
+        startBroadcast: startBroadcast,
+        broadcastAudio: broadcastAudio
     }
 }
 function BroadcasterRTCConnection(signalConnection, client_uuid,host_uuid,onEvent) {

@@ -4,13 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>rt</title>
+  <title>rtt</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="./simple-console.css">
   <script src="./simple-console.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-auth.js"></script>
+
 
 </head>
 
@@ -28,6 +26,15 @@
 
   <div style='height:30%' id="eq_update_form">
     <canvas id='band_freq_out' style='position:absolute;right:10px;top:1px'></canvas>
+    <form id='noisegate'>
+      Noise Gate:
+      <div class="range-wrap">
+        <output id=threshold_l>Gate: </output><output class="bubble"></output>
+
+        <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range"
+          name='threshold'>
+      </div>
+    </form>
   </div>
 
 
@@ -40,7 +47,7 @@
       </div>
       <div>
         <button id="recorder">Start Recording</button>
-        <audio id='audio2'></audio>
+        <audio id='audio2' controls autoplay></audio>
 
       </div>
     </span>
@@ -58,25 +65,19 @@
       </div>
 
     </span>
-    <span style='position:absolute; bottom:100px;right:320px'>
+    <span style='position:absolute; top:100px;right:320px'>
       <button id=obs>Broadcast</button>
-     <object src="https://www.youtube.com/embed/PgGC3r24fBg?controls=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></object>
-      <form id='noisegate'>
-        Noise Gate:
-        <div class="range-wrap">
-          <output id=threshold_l>Gate: </output><output class="bubble"></output>
+      <button id=listen>Listen</button>
+      <ul id=channels></ul>
+      <video controls playsinline id=rtc></video>
 
-          <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range"
-            name='threshold'>
-        </div>
-      </form>
+
       <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
 
     </span>
   </div>
 
   <div id='serverlist'></div>
-
 
   <input type='file' id='file'>
 
@@ -98,7 +99,6 @@
 
   <div id='rx2log'></div>
 
-
   <script type='module'>
     import equilizer from "./equalizer.js";
     import Mixer from './Mixer.js';
@@ -106,7 +106,8 @@
     import { split_band } from './splitband.js'
     import AnalyzerView from "./AnalyzerView.js"
     import BandPassFilterNode from './band_pass_lfc/BandPassFilterNode.js'
-    import {broadcast} from './twitch_audio.js'
+    import BroadcasterClient from './twitch/BroadcastClient.js'
+    import BoardcastViewerClient from './twitch/BroadcastViewerClient.js'
 
     let audioCtx, audioTag, eq;
     // const list = $("#serverlist")
@@ -133,7 +134,7 @@
       var audioTag = await Mixer(audioCtx, "ctrls");
 
       audioTag.add_audio_tag("audio1", 5);
-
+      const audio1 = $("#audio1");
       window.g_audioTag = audioTag;
       var noiseGate = new NoiseGate(audioCtx);
       noiseGate.port.postMessage("ping");
@@ -155,13 +156,62 @@
 
 
       $("#eq_update_form").appendChild(group.UI_EQ(bandpassFilterNode,compressor));
-      $("#obs").onclick=function(e){
-        broadcast(audioCtx, 'yisheng');
-      }
+
+
+
+
       cursor = group.output;
       var ctv = AnalyzerView(cursor, { fft: 256 });
       ctv.histogram("output_freq", 700, 300); //, { fft: 256 })
       ctv.timeseries("output_timeline", 128, 700, 300); //, { fft: 256 })
+
+
+      $("#obs").onclick=function(e){
+        var userId = window.location.search.replace("?","") || localStorage.getItem("uid") ||  ("user_" + Math.floor(Math.random() * 10));
+
+        BroadcasterClient({
+          onEvent: log 
+        }).broadcastAudio(userId,audioCtx);
+        
+      }
+      const audio22=$("video#rtc")
+      $("#listen").onclick=function(e){
+        var bv= BoardcastViewerClient({onEvent:log,mediaObjectReady:function(stream){
+   
+          audio22.srcObject = stream;
+          audio22.play();
+              //sream = new MediaStream([e.track]);
+     var source = audioCtx.createMediaStreamSource(stream);
+          audioTag.add_remote_stream(source,1);
+
+     //   // //new MediaStream([e.track]));
+
+        //   // // var ctv = AnalyzerView(s, { fft: 256 });
+        //   // // ctv.histogram("output_freq", 700, 300); //, { fft: 256 })
+        //   // //  ctv.timeseries("output_timeline", 128, 700, 300); //, { fft: 256 })
+        //   // //  ctv.analyzer.connect(audioCtx.destination);
+        //   audio2.srcObject =stream;
+     
+        //  setTimeout(function(){
+
+        }});
+
+
+        bv.listChannels().then(channels=>{
+          for(const channel of Object.values(channels)){
+            var a = document.createElement("a");
+            a.onclick=function(){
+              bv.watchChannel(channel.name);
+            }
+            a.href="javascript://"
+            a.innerText = "watch"
+            var li = document.createElement("li");
+            li.append(a);
+            li.appendstr(" "+channel.name);
+            $("#channels").append(li);
+          }
+        });
+      }
 
       var rworker = new Worker('recorder-worker.js');
       var rconfig = { sample: 2 << 16, channels: 1 };

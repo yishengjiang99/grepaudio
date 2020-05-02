@@ -10,8 +10,8 @@ export default async function (ctx, containerId) {
 
   var controls = new Array(6).fill(ctx.createGain());
   var rx1 = new Array(6).fill("");
-
-  [0, 1, 2, 3, 4].forEach(i => controls[i].connect(masterGain));
+  var nowPlayingLabels = [];
+  [0, 1, 2, 3, 4,5].forEach(i => controls[i].connect(masterGain));
 
   const loadURLTo = async function (url, index, deviceId) {
     if (url == 'user-audio') {
@@ -63,6 +63,12 @@ export default async function (ctx, containerId) {
   }
   var audioPlayer
 
+  const add_remote_stream = function (stream,i){
+    inputs[i] = stream;
+
+    inputs[i].connect(controls[i]).connect(masterGain);
+    nowPlayingLabels[i].innerHTML = 'rtc stream';
+  }
   const add_audio_tag = function (tagId, i) {
     audioPlayer = document.querySelector('audio#' + tagId);
     if (!audioPlayer) return false;
@@ -203,6 +209,7 @@ export default async function (ctx, containerId) {
       loadURLTo(url, index);
       stop.style.display='inline';
     }
+    nowPlayingLabels[index] = nowPlayingLabel;
     return false;
 
   })
@@ -213,7 +220,7 @@ export default async function (ctx, containerId) {
   return {
     inputs, outputNode, controls,
     connect, loadURLTo,
-    add_audio_tag
+    add_audio_tag,add_remote_stream
   }
 }
 

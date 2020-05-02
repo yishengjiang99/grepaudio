@@ -13,6 +13,7 @@ body{
 #audio1{
   position: fixed;
   bottom: 0;
+  left: 300px;
 }
 #audio2{
     position: fixed;
@@ -107,7 +108,7 @@ td{
     flex-direction: column;
     font-family: sans-serif;
     position: fixed;
-
+  
 opacity:0.5;  
   bottom: 1px;
     right:10px;
