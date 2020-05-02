@@ -103,8 +103,8 @@ var AnalyzerView = function(audioNode, params){
         
         
          for (var i = 0; i < bufferLength; i++) {
-           
             var y = dataArray[i];
+            if( Math.abs(y-127) < 2 ) continue;
               x = t / bufferLength  % width;
               t++;
               
@@ -211,7 +211,7 @@ var AnalyzerView = function(audioNode, params){
 
             x += barWidth + 1;
           }   
-          canvasCtx.fillText(total.toFixed(3)+'', width-100, 100);
+          canvasCtx.fillText(total.toFixed(3)+'', 10, 10);
       }
 
       drawBars();

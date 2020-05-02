@@ -37,8 +37,8 @@
             var ampEnvelopeGain = ctx.createGain();
 
             var ampAttack = 0.1;
-            var ampDecay = 0.2;
-            var ampSustain = 3;
+            var ampDecay = 0.1;
+            var ampSustain = 0.2;
             var ampRelease = 0.02;
             var adsrs = [];
             const keys = 'asdfghj'.split("");
@@ -50,7 +50,7 @@
                 LFO.frequency.value = nodes[i];
                 var gain = ctx.createGain();
                 gain.gain.value = 0;
-                var gainEnvelope = new Envelope(0, 5, ampAttack, ampDecay, ampSustain, ampRelease, gain.gain);
+                var gainEnvelope = new Envelope(0, 2, ampAttack, ampDecay, ampSustain, ampRelease, gain.gain);
                 adsrs.push(gainEnvelope)
                 LFO.connect(gain);
                 LFO.start(0);

@@ -88,9 +88,11 @@ class Band {
     return this;
 
   }
+
 	connect = (audioNode) =>{
     this.analyzerNode.connect(audioNode);
   }
+
   // probe = (evt)=>{
   //   if(this.muted === true){
 	//     this.analyzerNode.connect(this.output);
@@ -132,6 +134,8 @@ export function split_band(ctx, hz_list) {
   var bands = [];
   // bands.push(new Band(input, output,null,null));
   var mode = $("#mode_parallel") && $("#mode_parallel").checked===true || "series";
+  var analyzer = ctx.createAnalyser();
+  var connectorMap ={};
 	if(mode=='series'){
     var c = output
     for (let index = 5; index>=0; index--){
@@ -223,17 +227,15 @@ export function split_band(ctx, hz_list) {
     return canvas;
   
   }
+  var lastProbe;
   function probe(index){
-    var analyzer=window.g_audioCtx.createAnalyser();
-    bands[index].disconnect();
-    bands[index].connect(analyzer);
-    if(index < bands.length-1){
-       analyzer.connect(bands[index+1]);
-    }else{
-      analyzer.connect(output);
-    }
-   // histogram2(elemId, analyzer, fc)
-    histogram2("band_freq_out",analyzer);
+   analyzer.disconnect();
+   if(lastProbe) lastProbe.disconnect(analyzer);
+
+   lastProbe = bands[index];
+   bands[index].connect(analyzer);
+
+    histogram2("band_freq_out",analyzer, bands[index].frequency.value);
   }
   function UI_EQ(bandpassFilterNode,compressor){
     // <div> <button id='reset'>reset</button></div> <select id=preset_options></select>
@@ -315,13 +317,15 @@ function histogram2(elemId, analyzer, fc){
 
   const bg_color = 'rgb(33,33,35)';
   const cvt = canvas.getContext('2d');
+ 
+  cvt.clearRect(0, 0,width,height);
+
   cvt.fillStyle = bg_color;
-  cvt.fillRect(10, 0, width,height );
+  cvt.fillRect(0, 0, width,height );
   cvt.strokeStyle = 'rgb(255, 255,255)'
   cvt.strokeWidth = '2px'
   const noctaves = 11;
   var map = []
-
 
   var dataArray = new Uint8Array(analyzer.fftSize);
 
@@ -332,11 +336,10 @@ function histogram2(elemId, analyzer, fc){
         cvt.stroke();
 
         cvt.textAlign = "center";
-        cvt.strokeText(f.toFixed(0) + "Hz", x, 20);
         cvt.strokeText(meta, width-20, 20);
   }      
   const bin_number_to_freq = (i)=> 0.5 * gctx.sampleRate * i/analyzer.frequencyBinCount;
-  //HZ_LIST
+  if(window.g_request_timer) cancelAnimationFrame(window.g_request_timer);
   function drawBars(){
       window.g_request_timer = requestAnimationFrame(drawBars);
 
@@ -353,10 +356,12 @@ function histogram2(elemId, analyzer, fc){
         if( f >= HZ_LIST[hz_mark_index]){
           hz_mark_index++;
           if(hz_mark_index >= HZ_LIST.length) break;
-          drawTick(x,  HZ_LIST[hz_mark_index], '');
-          
+          if(hz_mark_index>3) drawTick(x,  HZ_LIST[hz_mark_index], '');
         }
-        var barWidth = hz_mark_index < 2 ? 10*linerBarWidth : (hz_mark_index <  7 ? 5 * linerBarWidth : linerBarWidth/2);
+
+
+        var barWidth = hz_mark_index < 2 ? 20*linerBarWidth : (hz_mark_index <  7 ? 5 * linerBarWidth : linerBarWidth/2);
+        if( fc && Math.abs(f - fc) < 500) barWidth = 20*linerBarWidth;
         var barHeight = dataArray[i] * zoomScale;
 
         cvt.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';

@@ -1,43 +1,21 @@
-import {
-  LitElement,html, property
-} from 'lit-element';
+<template id="x-foo-from-template">
+  <style>
+    p { color: green; }
+  </style>
+  <p>I'm in Shadow DOM. My markup was stamped from a &lt;template&gt;.</p>
+</template>
 
+<script>
+  let tmpl = document.querySelector('#x-foo-from-template');
+  // If your code is inside of an HTML Import you'll need to change the above line to:
+  // let tmpl = document.currentScript.ownerDocument.querySelector('#x-foo-from-template');
 
-export class AutoSuggestInput extends LitElement
-{
-
-  static get stlyes(){
-    return css `
-    ul: { position:absolute; top:100%; left:0; right:0}
-    ul::slotted(li): {  padding: 10px;cursor: pointer;  background-color: #fff;border-bottom: 1px solid #d4d4d4;}
-    div: { position: relative; display:inline-block}
-    `}
-    static get properties() { return {
-      items: { type: Array }
-    };}
-
-  constructor(){
-    super();
-    this.items = [{ vid:"vid1", title:"title1" }];
-  }
-
-  makeQuery(){
-
-  }
-  // Implement `render` to define a template for your element.
-  render()
-  { 
-    var items = this.items;
-    return html(`
-  <form class=autocomplete @keydown="${this.keydown}" @submit="${this.makeQuery()}">
-      <div>
-        <input size=50 type='text' placeholder='search for audio' />
-        <ul class='auto-complete-list'>
-        </ul>
-        <input type="submit" />       
-     </div>
-    </form>
-    `);
-  }
-}
-customElements.define("autosuggest-input-box", AutoSuggestInput);
+  customElements.define('x-foo-from-template', class extends HTMLElement {
+    constructor() {
+      super(); // always call super() first in the constructor.
+      let shadowRoot = this.attachShadow({mode: 'open'});
+      shadowRoot.appendChild(tmpl.content.cloneNode(true));
+    }
+    ...
+  });
+</script>
