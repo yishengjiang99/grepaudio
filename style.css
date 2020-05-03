@@ -16,30 +16,8 @@ body{
   left: 300px;
 }
 #audio2{
-    position: fixed;
-  bottom: 0;
-left:1em;
-}
-
-.button {
-  background-color: black;
-  border: solid, 2px, black; 
-  color: #fefbef;
-  font-family: 'Open Sans', sans-serif;
-  
-  font-weight: 600;
-  line-height: 1;
-  margin-top: 1.5rem;
-  width: 100%; /* Large, mobile-friendly touch target */
-
-  /* Media Queries */
-  @media (min-width: 37.5em) {
-    width: auto; /* Smaller buttons on larger screens */
-    padding-left: 2rem;
-    padding-right: 2rem;
-    margin-left: 1rem;
-    margin-right: 1rem;
-  }
+width:100px;
+height:30px;
 }
 .center {
   display: block;
@@ -75,17 +53,22 @@ left:1em;
   transform:translate(-50%,-50%);
   -ms-transform:translate(-50%,-50%)
 }
-button{
-  background-color: white;;
-  color:black;
-  margin-left:4px;
-  border: 2px, black;
-  
+.panel {
+  -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.panel-default > .panel-heading {
+  background-image: -webkit-linear-gradient(top, #f5f5f5 0%, #e8e8e8 100%);
+  background-image: -o-linear-gradient(top, #f5f5f5 0%, #e8e8e8 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#e8e8e8));
+  background-image: linear-gradient(to bottom, #f5f5f5 0%, #e8e8e8 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff5f5f5', endColorstr='#ffe8e8e8', GradientType=0);
+  background-repeat: repeat-x;
 }
 body{
 
   color: #C0C0C0;
-  background-color:black;
+  background-color:#35363a;
   position: fixed;
   overflow-x:hidden;
   position:fixed;
@@ -131,6 +114,8 @@ opacity:0.5;
 }
 .simple-console-output{
   min-height:20vh;
+  max-height:30vh;
+  overflow-y:scroll;
   background-color: rgba(0,0,0,0.9);
   color:white;
   font-size:1.2em;

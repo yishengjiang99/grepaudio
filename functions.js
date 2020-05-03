@@ -166,7 +166,6 @@ export function slider(container, options) {
 	input.min = (params.min !== null && params.min) || (params.prop && params.prop.minValue) || "-12";
 	input.max = params.max !== null && params.max || (params.prop && params.prop.maxValue) || "12";
 	input.type = params.type || 'range';
-
 	input.defaultValue = (params.prop && params.prop.value.toString()) || (params.value)
 	input.step = params.step || "0.1"
 	var label = document.createElement("span");
