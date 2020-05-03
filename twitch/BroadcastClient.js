@@ -73,11 +73,9 @@ function BroadcasterClient(config) {
         if (to_uuid) json[to_uuid] = to_uuid;
         signalConnection.send(JSON.stringify(json));
     }
-    function broadcastAudio(channelName, ctx){
+    function broadcastAudio(channelName, source){
         startBroadcast(channelName);
-        requestUserStream("audio").then(stream=>{
-            addStream(stream);
-        })
+       addStream(source)
     }
     function startBroadcast(channelName) {
         signalConnection = new WebSocket(hostname);

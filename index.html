@@ -4,81 +4,121 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>rtt</title>
+  <title>rttt</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="./simple-console.css">
+
   <script src="./simple-console.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="./simple-console.css">
 
 
 </head>
+<div id="overlay" title="Click to turn off the overlay effect" style="display: block;">
+  <div class="text page-header">
+    GrepAwk Audio is a shared DSP-over-webrtc tool.
+
+    <br>
+    <p style="font-size:20px;" class="w3-black w3-padding w3-hide-medium w3-hide-small">
+      <i>"Wake up in the AM and compose a beat" -- Dr. Dre</i>
+    </p>
+    <button type="button" class="btn btn-primary btn-block">start Audio Context. </button>
+
+  </div>
+</div>
 
 <body onclick="void(0);">
-  <div id="overlay" title="Click to turn off the overlay effect" style="display: block;">
-    <div class="text"><br>
-      <br><span style="font-size:20px;" class="w3-black w3-padding w3-hide-medium w3-hide-small">
-       GrepAwk Audio
-       
-      </span>
-      <button class='button' style='font-size:20px'> Start Audio Context. </button>
+  <nav class="navbar navbar-dark bg-dark text-light flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">GrepAwk DSP</a>
+    <input class="form-control form-control-dark w-100" type="text" placeholder="Search Music" aria-label="Search">
+    <ul class="navbar-nav px-3">
+      <li class="nav-item text-nowrap">
+        <button class="btn btn-primary" href="#">Broadcast</button>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="container-fluid bg-dark text-light">
+    <div class="row">
+      <nav class="navbar col-md-2 sidebar">
+        <div id=ctrls class="nav flex-column">
+          <h5 for="search">Search</h5>
+          <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='/api/sudo/::QUERY::.mp3' />
+        </div>
+        <form id='noisegate'>
+          Noise Gate:
+          <div class="range-wrap">
+            <output id=threshold_l>Gate: </output><output class="bubble"></output>
+
+            <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range"
+              name='threshold'>
+          </div>
+        </form>
+
+
+        <input type='file' id='file'>
+      </nav>
+
+      <main role="main" class="col-md-6 ml-sm-auto col-lg-6 px-4">
+        <h4>Mix Sounds</h4>
+        <div id='serverlist'></div>
+
+        <div class='d-block p-2' id="eq_update_form">
+        </div>
+        <div class='canvas_wrapper'>
+          <div class="btn-group mr-2">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" id='showfft' type=checkbox checked>fft</input>
+              <label class="form-check-label" for="inlineCheckbox1">fft</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" id='showcummulative' type=checkbox>
+              <label class="form-check-label" for="inlineCheckbox2">timeseries</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" id='showcummulative' type=checkbox>
+              <label class="form-check-label" for="inlineCheckbox3">cumulative fft</label>
+            </div>
+
+            <button id='zoomin' type="button" class="btn btn-sm btn-outline-secondary">+</button>
+            <button id='zoomout' type="button" class="btn btn-sm btn-outline-secondary">-</button>
+          </div>
+
+          <figure class='well'>
+            <canvas id='output_freq'></canvas>
+            <figcaption class="figure-caption">FFT Bins</figcaption>
+
+          </figure>
+          <figure class='well'>
+            <span id='rx0'></span>
+            <span id='rx1'></span>
+            <canvas id='output_timeline'></canvas>
+            <figcaption class="figure-caption">PCM 32bit sample</figcaption>
+
+          </figure>
+        </div>
+
+      </main>
+      <div class='col-md-3'>
+        <span id=output_cp style='position:absolute; top:100px;right:320px'>
+          <button id=obs>Broadcast</button>
+          <button id=listen>Listen</button>
+          <ul id=channels></ul>
+          <video controls playsinline id=rtc></video>
+
+          <div>
+            <button id="recorder">Start Recording</button>
+            <audio id='audio2' controls autoplay></audio>
+
+          </div>
+
+        </span>
+      </div>
+
     </div>
   </div>
-  <h3>Mix Sounds </h3>
-
-  <div style='height:30%' id="eq_update_form">
-    <form id='noisegate'>
-      <span class="range-wrap">
-             Noise Gate:
-
-	 <output id=threshold_l>Gate: </output><output class="bubble"></output>
-
-        <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range"
-          name='threshold'>
-      </span>
-    </form>
-    <canvas id='band_freq_out' style='position:absolute;right:10px;top:1px'></canvas>
-  </div>
-  <br>
-  <div style='position:relative'>
-    <span style='width:350px;'>
-      <label for="search">Search</label>
-      <input type=text id='ytsearch' placeholder='search youtube' size=30 data-host='/api/sudo/::QUERY::.mp3' />
-      <div id=ctrls>
-      </div>
-      <div>
-        <button id="recorder">Start Recording</button>
-        <audio id='audio2' controls autoplay></audio>
-
-      </div>
-    </span>
-    <span style='width:700px;position:absolute; top:0;left:270px'>
-      <div class='canvas_wrapper'>
-        <div> <input id='showfft' type=checkbox checked>fft</input>
-          <input id='showcummulative' type=checkbox>cumulative fft</input>
-          <input id='showtimeseries' type=checkbox checked>timeseries</input>
-          <button id='zoomin'>+</button> <button id='zoomout'>-</button></div>
-        <canvas id='output_freq'></canvas>
-
-        <canvas id='output_timeline'></canvas>
-    <span id="rx1"></span>
-    <span id='rx0'></span>
-      </div>
-
-    </span>
-    <span style='position:absolute; top:100px;right:320px'>
-      <button id=obs>Broadcast</button>
-      <button id=listen>Listen</button>
-      <ul id=channels></ul>
-      <video controls playsinline id=rtc></video>
 
 
-      <audio controls="controls" id='audio1' src='./samples/song.mp3'></audio>
-
-    </span>
-  </div>
-
-  <div id='serverlist'></div>
-
-  <input type='file' id='file'>
 
   <script>
     var blob = window.URL || window.webkitURL;
@@ -107,6 +147,7 @@
     import BandPassFilterNode from './band_pass_lfc/BandPassFilterNode.js'
     import BroadcasterClient from './twitch/BroadcastClient.js'
     import BoardcastViewerClient from './twitch/BroadcastViewerClient.js'
+    import { selector, slider, numeric } from "./functions.js";
 
     let audioCtx, audioTag, eq;
     // const list = $("#serverlist")
@@ -148,13 +189,13 @@
 
       var cursor = bandpassFilterNode;
 
-      var compressor = new DynamicsCompressorNode(audioCtx, {threshold:-10, ratio:20,knee:10});
+      var compressor = new DynamicsCompressorNode(audioCtx, { threshold: -10, ratio: 20, knee: 10 });
 
       var group = split_band(audioCtx, [31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]);
       bandpassFilterNode.connect(compressor).connect(group.input);
 
 
-      $("#eq_update_form").appendChild(group.UI_EQ(bandpassFilterNode,compressor));
+      $("#eq_update_form").appendChild(group.UI_EQ(bandpassFilterNode, compressor));
 
 
 
@@ -163,75 +204,6 @@
       var ctv = AnalyzerView(cursor, { fft: 256 });
       ctv.histogram("output_freq", 700, 300); //, { fft: 256 })
       ctv.timeseries("output_timeline", 128, 700, 300); //, { fft: 256 })
-
-
-      $("#obs").onclick=function(e){
-        var userId = window.location.search.replace("?","") || localStorage.getItem("uid") ||  ("user_" + Math.floor(Math.random() * 10));
-
-        BroadcasterClient({
-          onEvent: log 
-        }).broadcastAudio(userId,audioCtx);
-        
-      }
-      const audio22=$("video#rtc")
-      $("#listen").onclick=function(e){
-        var bv= BoardcastViewerClient({onEvent:log,mediaObjectReady:function(stream){
-   
-          audio22.srcObject = stream;
-          audio22.play();
-              //sream = new MediaStream([e.track]);
-     var source = audioCtx.createMediaStreamSource(stream);
-          audioTag.add_remote_stream(source,1);
-
-     //   // //new MediaStream([e.track]));
-
-        //   // // var ctv = AnalyzerView(s, { fft: 256 });
-        //   // // ctv.histogram("output_freq", 700, 300); //, { fft: 256 })
-        //   // //  ctv.timeseries("output_timeline", 128, 700, 300); //, { fft: 256 })
-        //   // //  ctv.analyzer.connect(audioCtx.destination);
-        //   audio2.srcObject =stream;
-     
-        //  setTimeout(function(){
-
-        }});
-
-
-        bv.listChannels().then(channels=>{
-          for(const channel of Object.values(channels)){
-            var a = document.createElement("a");
-            a.onclick=function(){
-              bv.watchChannel(channel.name);
-            }
-            a.href="javascript://"
-            a.innerText = "watch"
-            var li = document.createElement("li");
-            li.append(a);
-            li.appendstr(" "+channel.name);
-            $("#channels").append(li);
-          }
-        });
-      }
-
-      var rworker = new Worker('recorder-worker.js');
-      var rconfig = { sample: 2 << 16, channels: 1 };
-      rworker.postMessage({
-        command: 'init',
-        config: {
-          sampleRate: audioCtx.sampleRate,
-          numChannels: 2,
-        }
-      });
-
-      rworker.onmessage = (e) => {
-        if (e.data.audioUrl) {
-          log(" got url " + e.data.audioUrl)
-          $("#audio2").src = e.data.audioUrl;
-          $("#audio2").controls = true;
-          $("#audio2").parentElement.appendstr(`<a href='${e.data.audioUrl}'>${e.data.audioUrl}</a>`)
-        }
-        console.log(e);
-      };
-
 
       var recorderProcessor = audioCtx.createScriptProcessor(1024, 2, 2);
 
@@ -261,10 +233,20 @@
         });
       };
 
+
+      var playbackGain = audioCtx.createGain({ gain: 1 });
+
       ctv.analyzer.connect(recorderProcessor);
-      recorderProcessor.connect(audioCtx.destination);
+
+      recorderProcessor.connect(playbackGain);
+      playbackGain.connect(audioCtx.destination);
+
       var isRecording = false;
       var chunks = [];
+      const outputdiv = $("#output_cp");
+
+      const playbackGainSlider = slider(outputdiv, { prop: playbackGain.gain, min: "0", max: "4", step: "0.05", label: "Local Playback gain" });
+
       $("#recorder").onclick = function (e) {
         if (isRecording == false) {
           isRecording = true;
@@ -277,6 +259,73 @@
           })
         }
       }
+
+      $("#obs").onclick = function (e) {
+        var userId = window.location.search.replace("?", "") 
+        || prompt("enter display name", (localStorage.getItem("displayName") || "")) 
+        || ("user_" + Math.floor(Math.random() * 10));
+
+        var peer = audioCtx.createMediaStreamDestination();
+        playbackGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+        playbackGainSlider.value = "0.001";
+        recorderProcessor.connect(peer);
+        localStorage.setItem("displayName",userId)
+        BroadcasterClient({
+          onEvent: log
+        }).broadcastAudio(userId, peer.stream);
+
+      }
+      const audio22 = $("video#rtc")
+      $("#listen").onclick = function (e) {
+        var bv = BoardcastViewerClient({
+          onEvent: log, mediaObjectReady: function (stream) {
+
+            audio22.srcObject = stream;
+            audio22.play();
+            //sream = new MediaStream([e.track]);
+            var source = audioCtx.createMediaStreamSource(stream);
+            audioTag.add_remote_stream(source, 1);
+          }
+        });
+
+
+        bv.listChannels().then(channels => {
+          for (const channel of Object.values(channels)) {
+            var a = document.createElement("a");
+            a.onclick = function () {
+              bv.watchChannel(channel.name);
+            }
+            a.href = "javascript://"
+            a.innerText = "watch"
+            var li = document.createElement("li");
+            li.append(a);
+            li.appendstr(" " + channel.name);
+            $("#channels").append(li);
+          }
+        });
+      }
+
+      var rworker = new Worker('recorder-worker.js');
+      var rconfig = { sample: 2 << 16, channels: 1 };
+      rworker.postMessage({
+        command: 'init',
+        config: {
+          sampleRate: audioCtx.sampleRate,
+          numChannels: 2,
+        }
+      });
+
+      rworker.onmessage = (e) => {
+        if (e.data.audioUrl) {
+          log(" got url " + e.data.audioUrl)
+          $("#audio2").src = e.data.audioUrl;
+          $("#audio2").controls = true;
+          $("#audio2").parentElement.appendstr(`<a href='${e.data.audioUrl}'>${e.data.audioUrl}</a>`)
+        }
+        console.log(e);
+      };
+
+
       window.vfs = [group, audioTag, noiseGate, bandpassFilterNode, audioCtx, group];
 
       window.index_stdin = function (str) {
@@ -304,8 +353,8 @@
             return true;
           case 'v':
           case 'video':
-              
-            g_audioTag.loadURLTo("/api"+arg1+".mp3",1);
+
+            g_audioTag.loadURLTo("/api" + arg1 + ".mp3", 1);
             break;
           default: return false;
         }

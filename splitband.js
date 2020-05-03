@@ -256,6 +256,7 @@ export function split_band(ctx, hz_list) {
     cp.appendChild(presetOptions);
     cp.appendstr("<input type=checkbox id=mode_parallel>paralell mode</input>");
     const table = document.createElement("table");
+    table.className='text-white'
     table.setAttribute("border","1")
     const header = document.createElement("tr");
     header.innerHTML=`<tr><td>hz</td><td>gain</td>
@@ -264,9 +265,9 @@ export function split_band(ctx, hz_list) {
     table.appendChild(header);
     
     var gvctrls =  document.createElement("div");
-    slider(gvctrls, {prop: input.gain, min:"0", max: "4", name: "preamp"});
-    slider(gvctrls, {prop: output.gain, min:"0", max: "4", name:"postamp"});
-    slider(gvctrls, {prop: compressor.threshold, min:"-70", max:"0", name:"compressor threshold"});
+    slider(gvctrls, {prop: input.gain, min:"0", max: "4", name: "preamp:"});
+    slider(gvctrls, {prop: compressor.threshold, min:"-70", max:"0", name:"compressor: "});
+
     bands.forEach( (band,index)=>{
       const row = document.createElement("tr")
       row.innerHTML+=`<td>${band.frequency.value}</td>`;

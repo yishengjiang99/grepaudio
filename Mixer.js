@@ -90,6 +90,14 @@ export default async function (ctx, containerId) {
 
   ['YT_SEARCH', 'Microphone', 'notes.csv', 'waves.csv', 'songs.csv'].forEach(async (indexfile, index) => {
     var container = document.createElement("div");
+    container.className='card text-white bg-secondary mb-2'
+    var title = document.createElement("div");
+    title.innerText=indexfile;
+    title.className='card-title';
+    var panel = document.createElement("div");
+    panel.className='card-body';
+    container.append(title);
+    container.append(panel)
     if (indexfile == 'YT_SEARCH') {
 
       var select = document.getElementById("ytsearch");
@@ -117,7 +125,7 @@ export default async function (ctx, containerId) {
       });
       select.setAttribute("data-chord", 1);
       var buttons = "<button value='/samples/piano'>piano</input>";
-      container.appendstr(buttons);
+      panel.appendstr(buttons);
       container.querySelectorAll("button").forEach(button=>button.addEventListener("click", (e) => {
         loadURL(e);
       }));
@@ -126,11 +134,12 @@ export default async function (ctx, containerId) {
       var select = document.createElement("div");
 
 
-      select.innerHTML = song_db.filter(t => t.trim() !== "").map((n, j) => {
+      select.innerHTML = "<div class='btn-toolbar'>"+
+      song_db.filter(t => t.trim() !== "").map((n, j) => {
         var url = "samples/"+n;
         var name = n.replace(".mp3","");
-        return `<button value='${url}'>${name}</button> ${(j + 1) % 3 == 0 ? "<br>" : ""}`
-      }).join("");
+        return `<button class="btn btn-secondary" value='${url}'>${name}</button>`
+      }).join("") + "</div>"
 
       // select.querySelectorAll("button").forEach(button=>button.addEventListener("click", (e) => {
       //   var url = e.target.value;
@@ -155,13 +164,14 @@ export default async function (ctx, containerId) {
     var stop = document.createElement("button")
     stop.innerHTML = "stop";
     stop.style.display='none';
-    if (indexfile != 'YT_SEARCH') container.appendChild(select.wrap("div"));
-    container.class='well'
-    container.appendChild(apply);
-    container.appendChild(stop);
-    container.appendChild(nowPlayingLabel.wrap("div"));
-    slider(container, {prop: controls[index].gain, step:"0.01",  max:"2", min:"0"});
+    if (indexfile != 'YT_SEARCH') panel.appendChild(select.wrap("div"));
+
+    panel.appendChild(nowPlayingLabel.wrap("div"));
+    slider(panel, {prop: controls[index].gain, step:"0.01",  max:"2", min:"0",wrapper:"span"});
+    container.append(panel)
     cp.appendChild(container)
+    panel.appendChild(apply);
+    panel.appendChild(stop);
     stop.onclick = (e) => {
       inputs[index].disconnect();
       inputs[index] = null;
