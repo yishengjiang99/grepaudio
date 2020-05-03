@@ -25,19 +25,18 @@
   <h3>Mix Sounds </h3>
 
   <div style='height:30%' id="eq_update_form">
-    <canvas id='band_freq_out' style='position:absolute;right:10px;top:1px'></canvas>
     <form id='noisegate'>
-      Noise Gate:
-      <div class="range-wrap">
-        <output id=threshold_l>Gate: </output><output class="bubble"></output>
+      <span class="range-wrap">
+             Noise Gate:
+
+	 <output id=threshold_l>Gate: </output><output class="bubble"></output>
 
         <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range"
           name='threshold'>
-      </div>
+      </span>
     </form>
+    <canvas id='band_freq_out' style='position:absolute;right:10px;top:1px'></canvas>
   </div>
-
-
   <br>
   <div style='position:relative'>
     <span style='width:350px;'>

@@ -254,7 +254,6 @@ export function split_band(ctx, hz_list) {
     }
 
     cp.appendChild(presetOptions);
-
     cp.appendstr("<input type=checkbox id=mode_parallel>paralell mode</input>");
     const table = document.createElement("table");
     table.setAttribute("border","1")
@@ -292,6 +291,7 @@ export function split_band(ctx, hz_list) {
 
     cp.appendChild(gvctrls);
     cp.append(table);
+   cp.appendChild($("#noisegate"));
     
     return cp;
   }
@@ -340,7 +340,7 @@ function histogram2(elemId, analyzer, fc){
   }      
   const bin_number_to_freq = (i)=> 0.5 * gctx.sampleRate * i/analyzer.frequencyBinCount;
   if(window.g_request_timer) cancelAnimationFrame(window.g_request_timer);
-  function drawBars(){
+	  function drawBars(){
       window.g_request_timer = requestAnimationFrame(drawBars);
 
       analyzer.getByteFrequencyData(dataArray);
