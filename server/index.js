@@ -10,8 +10,6 @@ const httpport = process.env.PORT || 3333
 const https = require('https');
 const fetch = require('node-fetch');
 
-
-
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
@@ -21,7 +19,7 @@ app.use(function (req, res, next) {
 
 
 
-const rtc_routes = require("../dsp_rtc/index.js");
+const rtc_routes = require("./dsp_rtc.js");
 app.use("/api/rtc", rtc_routes);
 
 const spotify_routes = require("./spotify.js");

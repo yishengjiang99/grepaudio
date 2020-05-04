@@ -46,6 +46,7 @@ router.use(express.static(__dirname + '/public'))
 
 router.get('/cb', function(req,res){
   console.log(req.body);
+  res.redirect("/");
 });
 
 router.get('/login', function(req, res) {

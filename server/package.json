@@ -16,9 +16,11 @@
     "express": "^4.17.1",
     "ffmpeg": "0.0.4",
     "fluent-ffmpeg": "^2.1.2",
+    "fluent-ffmpeg-multistream": "^1.0.0",
     "node-fetch": "^2.6.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.5",
+    "wrtc": "^0.4.4",
     "ws": "^7.2.3",
     "ytdl": "^1.3.0"
   }
