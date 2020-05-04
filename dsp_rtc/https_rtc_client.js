@@ -1,72 +1,59 @@
 
 
-const https_rtc_client = function(container, options){
-    options = {
-        audioNode: null,
-        service: 'audiofilter',
-        customizePeerConnection: function(peerConnection){  console.log("about to call server")},
-        gotRemoteTrack: function( track){ console.log('got track') },
-        onError: e=>console.log(e),
-        ...options
-    }
+const list_services = function (container,gotRemoteStream) {
 
-    fetch("/api/rtc/list").then(res => res.json()).then(json=>{
-        json.map( service => {
+    fetch("/api/rtc/list").then(res => res.json()).then(json => {
+        json.map(service => {
             var b = document.createElement("button");
-            b.onclick=function(e){
-                connectToService(options);
+            b.onclick = function (e) {
+                connectToService(service, gotRemoteStream);
             }
-            b.innerText=service;
+            b.innerText = service;
             container.append(b);
         })
     });
-    
-   
+}
 
-    
-    async function connectToService( options ) {
 
-        const {audioNode, service, customizePeerConnection, gotRemoteTrack} = options;
-    
+    async function connectToService(service,gotRemoteStream) {
+
         try{
- 
-        
-            var peer = audioNode.context.createMediaStreamDestination();
-            var ctx = audioNode.context;
-            audioNode.connect(peer);
-            var localStream =peer.stream;
-            log("first call")
+            const res = await fetch("/api/rtc/" + service + "/connect")
+            const remotePeer = await res.json();
+            var pc = new RTCPeerConnection({
+                sdpSemantics: 'unified-plan'
+            });
+            await pc.setRemoteDescription(new RTCSessionDescription(remotePeer.localDescription));
+            const localStream = await window.navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: false
+            });
 
-            const res = await fetch("/api/rtc/"+service+"/connect")
-            const offer = await res.json();
-            var pc = new RTCPeerConnection(options.rtcPeerConnectionOptions);
-            await pc.setRemoteDescription(new RTCSessionDescription(offer));
+            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+            const remoteStream = new MediaStream(pc.getReceivers().map(receiver => receiver.track));
+          //  gotRemoteStream(gotRemoteStream);
+             gotRemoteStream(remoteStream);    
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
-            log("first call done")
 
-            customizePeerConnection(pc);      
-            pc.ontrack = (e)=> gotRemoteTrack(e.track);
 
-            await fetch("/api/rtc/answer/" + offer.index, {
-                    method: 'POST',
-                    body: JSON.stringify(pc.localDescription),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }).then(resp => resp.text()).then(t => b.append(t)).catch( e=> options.onError(e));
-           
+            await fetch("/api/rtc/" + service + "/answer/" + remotePeer.id, {
+                method: 'POST',
+                body: JSON.stringify(pc.localDescription),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
             return pc;
-
-        }catch(e){
-            options.onError(e);
+        }catch (e) {
+            log(e.message);
+            throw e;
         }
     }
 
-    return {
-        connectToService
-    }
-
-
+const https_rtc_client = {
+    list_services, connectToService
 }
+
 export default https_rtc_client;

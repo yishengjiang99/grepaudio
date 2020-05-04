@@ -4,8 +4,8 @@ const httpport = process.env.PORT || 4000
 const wrtc = require("wrtc");
 const { PassThrough } = require('stream');
 const ffmpeg = require('fluent-ffmpeg');
-const { StreamInput,StreamOutput } = require('fluent-ffmpeg-multistream');
-const { RTCAudioSink, RTCVideoSink,RTCAudioSource } = require('wrtc').nonstandard;
+const { StreamInput, StreamOutput } = require('fluent-ffmpeg-multistream');
+const { RTCAudioSink, RTCVideoSink, RTCAudioSource } = require('wrtc').nonstandard;
 const WebSocket = require('ws');
 
 var rtcConnections = [];
@@ -19,28 +19,50 @@ const SERVER_RTC_SERVICES = {
 
             const audioOutput = new RTCAudioSource();
             const outputTrack = audioOutput.createTrack();
-            peerConnection.addTrack(outputTrack);
+            audioTransceiver.sender.replaceTrack(outputTrack);
+            console.log('audio filter');
 
+
+            const sampleRate = audioTrack.sampleRate;;
+            const bitsPerSample = 16;
+            const numberOfFrames = 441800 / 100;
+            const bitrate = bitsPerSample * sampleRate;
+            const outputData = new Uint8Array(numberOfFrames * bitrate);
+            const channelCount = 2;
+            const data = {
+                outputData,
+                sampleRate,
+                bitsPerSample,
+                channelCount,
+                numberOfFrames
+            };
 
             const pipe = new PassThrough();
             var pipedToFFmpeg = false;
-            var outputFormat=null;
-    
-            audioTrack.addEventListener('data', function (data, sampleRate, bitsPerSample, channelCount, numberOfFrames) {
-                if(dataFormat === null)  dataFormat = { sampleRate, bitsPerSample, channelCount, numberOfFrames };
-                console.log("audio track got data");
-                if (pipedToFFmpeg == false) pipe.push(Buffer.from(data.buffer)) && (pipedToFFmpeg = true);
+            var outputFormat = null;
+            debugger;
+            audioTrack.addEventListener('frame', function (data, sampleRate, bitsPerSample, channelCount, numberOfFrames) {
+                console.log('onframe')
+            });
+            audioTrack.addEventListener('data', function (data) {
+                pipe.push(Buffer.from(data.samples.buffer))
             });
 
             const stdout = new PassThrough();
-            stdout.on("data",(chunk)=>{
-                outputData.sample=e.data;
-                audioOutput.onData({chunk, ...outputFormat});
+            stdout.on("data", (chunk) => {
+                console.log(chunk)
+                sample = chunk;
+                audioOutput.onData(data);
             })
-            ffmpeg().addInput(new StreamInput(pipe).url)
-            .audioFilters("silencedetect=n=-50db:d=5")
-            .on("start", (e) => { console.log('started') })
-            .addOutput( stdout).on("end",(e)=>{ console.log("end") });
+
+            var proc = ffmpeg().preset("")
+                .addInput(pipe)
+                .on("error", function(e){ console.log(e, 'ERROR')})
+                .on("start", (e) => { console.log('started') })
+                .on("end", (e) => { debugger;  console.log("end", e); })
+                .on("data", (e) => { console.log('ondata', e) })
+                .pipe(audioOutput);
+
         }
     },
     radio: "SERVER_SENDING",
@@ -78,16 +100,24 @@ router.get("/:service/connect", async function (req, res, next) {
         if (!service) {
             return res.sendStatus(404);
         }
-        service.serverFunction(pc);
+        service.serverFunction(pc,{});
+
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
-        pc.onIceCandidate = console.log;
-        pc.index = rtcConnections.length;
+        // pc.onIceCandidate = console.log;
+        pc.id = rtcConnections.length;
 
-        offer.index = pc.index;
         rtcConnections.push(pc);
+
         console.log("dd");
-        return res.json(offer);
+        return res.json({
+            id: pc.id,
+            iceConnectionState: pc.iceConnectionState,
+            connectionState: pc.connectionState,
+            localDescription: pc.localDescription,
+            signalingState: pc.signalingState,
+            state:"" 
+        })
     } catch (e) {
         console.log('err')
         next(e);
@@ -100,11 +130,28 @@ router.post("/:service/answer/:id", async function (req, res, next) {
     var pc = rtcConnections[id];
 
     if (!pc) res.sendStatus(404) && res.end("peer connection not found in with session id");
-    console.log('rrr', req.body);
+
+    const onIceConnectionStateChange = () => {
+        console.log(pc.iceConnectionState);
+    };
+
+    pc.addEventListener('iceconnectionstatechange', onIceConnectionStateChange);
 
 
-    pc.setRemoteDescription(req.body);
-    res.end("answer set");
+
+    await pc.setRemoteDescription(req.body);
+
+
+
+    //res.end("answer set");
+    return res.json({
+        id: pc.id,
+        iceConnectionState: pc.iceConnectionState,
+        connectionState: pc.connectionState,
+        localDescription: pc.localDescription,
+        signalingState: pc.signalingState,
+        state:"" 
+    })
 
 });
 
@@ -121,6 +168,8 @@ router.post("/:service/offer", async function (req, res) {
 
 
         await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
+        console.log("ice candidate resolved");
+
         res.json(answer);
     } catch (e) {
         console.log(e);
@@ -170,4 +219,4 @@ async function waitUntilIceGatheringStateComplete(peerConnection, options) {
     await deferred.promise;
 }
 
-module.exports=router;
+module.exports = router;

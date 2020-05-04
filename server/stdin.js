@@ -24,7 +24,6 @@ const wss = new WebSocket.Server({
 });
 
 const fs = require("fs");
-console.log(fs);
 wss.on('connection',function connection(ws,req){
   console.log(req.headers);
   var uuid = req.headers['sec-websocket-key']

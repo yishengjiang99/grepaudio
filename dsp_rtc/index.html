@@ -61,6 +61,7 @@
 
     </figure>
   </div>
+  <div class=stats-box></div>
 
   <script src='../polyfills.js'></script>
   <script type="module">
@@ -80,25 +81,59 @@
       let a = ctx.createAnalyser(), b = ctx.createAnalyser(), c = ctx.createAnalyser();
       let a1 = ctx.createAnalyser(), b1 = ctx.createAnalyser(), c1 = ctx.createAnalyser();
 
-      var source = await chord("/samples/piano");
+      var source = await chord("../samples/piano");
       var ctv = AnalyzerView(source, { fft: 256 });
 
       ctv.histogram("output_freq", 300, 300); //, { fft: 256 })
-      ctv.analyzer.connect(ctx.destination)
-      var container = $("#ctrls");
+      var g = ctx.createGain();
+      ctv.analyzer.connect(g);
+      g.connect(ctx.destination);
 
-      const opts={  
-        audioNode: source,
-        service: "audioFilter",
-        customizePeerConnection: (pc) => {localStream.getTracks().forEach( t=> pc.addTrack(t)) },
-        gotRemoteTrack: (track)=>{
-          var stream = new MediaStream(track);
-          var source = ctx.createMediaStreamSource(stream);
-          var processed = AnalyzerView(source, { fft: 256 });
-          processed.histogram("processed_freq", 300, 300); //, { fft: 256 })    
-        }
-      }
-      https_rtc_client(container,opts); //.connectToService(opts);
+      var container = $("#ctrls");
+      https_rtc_client.list_services(container, (stream)=>{
+        var source = ctx.createMediaStreamSource(stream);
+        var processed = AnalyzerView(source, { fft: 256 });
+        var processed = AnalyzerView(source, { fft: 256 });
+      });
+
+
+      // const opts={  
+      //   audioNode: g,
+      //   service: "audioFilter",
+      //   customizePeerConnection: (pc) => {
+      //     // ctx.createMediaStreamDestination(source).stream
+      //     // .getTracks().forEach( t=> pc.addTrack(t)) ;
+      //     //localStream.getTracks().forEach( t=> pc.addTrack(t)) 
+      //   },
+      //   gotRemoteTrack: (tracks)=>{
+      //     var stream = new MediaStream(tracks);
+      //     var source = ctx.createMediaStreamSource(stream);
+      //     var processed = AnalyzerView(source, { fft: 256 });
+      //     var processed = AnalyzerView(source, { fft: 256 });
+      //   }
+      // }
+      // var pc = await https_rtc_client(container,opts).connectToService(opts); //.connectToService(opts);
+      // window.setInterval(function() {
+      //       var statsOutput=''
+      //       pc.getStats(null).then(stats => {
+      //       stats.forEach(report => {
+      //         statsOutput += `<h2>Report: ${report.type}</h3>\n<strong>ID:</strong> ${report.id}<br>\n` +
+      //                        `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
+              
+      //         // Now the statistics for this report; we intentially drop the ones we
+      //         // sorted to the top above
+        
+      //         Object.keys(report).forEach(statName => {
+      //           if (statName !== "id" && statName !== "timestamp" && statName !== "type") {
+      //             statsOutput += `<strong>${statName}:</strong> ${report[statName]}<br>\n`;
+      //           }
+      //         });
+      //       })
+      //       document.querySelector(".stats-box").innerHTML = statsOutput;
+
+      //   });
+        
+      //   },0);
     }
 
   </script>
