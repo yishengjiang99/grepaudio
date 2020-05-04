@@ -24,6 +24,9 @@ app.use(function (req, res, next) {
 const rtc_routes = require("../dsp_rtc/index.js");
 app.use("/api/rtc", rtc_routes);
 
+const spotify_routes = require("./spotify.js");
+app.use("/api/spotify", spotify_routes);
+
 app.get("/api/list", function(req,res){
   var list = [
     {
@@ -38,6 +41,7 @@ app.get("/api/list", function(req,res){
   res.json(list)
 
 })
+
 app.get("/api", function(req,res,next){
   const fs = require('fs');
   exec("ls -l", {cwd:'../public/samples'}, (err, stdout,stderr)=>{
