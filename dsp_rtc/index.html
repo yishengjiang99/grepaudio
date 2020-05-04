@@ -1,49 +1,107 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
 
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="mobile-web-app-capable" content="yes">
+  <!-- The core Firebase JS SDK is always required and must be listed first -->
+  <script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-auth.js"></script>
 
-    <style>
-        body {
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../simple-console.css">
+  <script src="../simple-console.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="../simple-console.css">
 
-            color: #C0C0C0;
-            background-color: black;
-            position: fixed;
-            overflow-x: hidden;
-            position: fixed;
-            overflow-y: scroll;
-            width: 100%;
-        }
-    </style>
+
+
 </head>
 
-<body>
+<body class='bg-dark text-light'>
+  
+  <video controls id="yourVideo" autoplay></video>
+  <video controls id="friendsVideo" autoplay></video>
+  <button>start</button>
+  <div id='ctrls'></div>
 
-</body>
-<script>
-    const b = document.body;
-    fetch("/list").then(res => res.json()).then(json => b.append(JSON.stringify(json)));
+  <div class='canvas_wrapper'>
+    <div class="btn-group mr-2">
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id='showfft' type=checkbox checked>fft</input>
+        <label class="form-check-label" for="inlineCheckbox1">fft</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" id='showcummulative' type=checkbox>
+        <label class="form-check-label" for="inlineCheckbox2">timeseries</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" id='showcummulative' type=checkbox>
+        <label class="form-check-label" for="inlineCheckbox3">cumulative fft</label>
+      </div>
 
-    function connectToPeer() {
-        fetch("/connect").then(res => res.json()).then(async offer => {
-            var pc = new RTCPeerConnection({ sdpSemantics: 'unified-plan' });
-            await pc.setRemoteDescription(new RTCSessionDescription(offer));
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
+      <button id='zoomin' type="button" class="btn btn-sm btn-outline-secondary">+</button>
+      <button id='zoomout' type="button" class="btn btn-sm btn-outline-secondary">-</button>
+    </div>
 
-            b.append(JSON.stringify(answer))
-            fetch("/answer/" + offer.index, {
-                method: 'POST',
-                body: JSON.stringify(pc.localDescription),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }).then(resp => resp.text()).then(t => b.append(t));
-            return pc;
+    <figure class='well'>
+      <canvas id='output_freq'></canvas>
+      <figcaption class="figure-caption">FFT Bins</figcaption>
 
-        });
+    </figure>
+    <figure class='well'>
+      <span id='rx0'></span>
+      <span id='rx1'></span>
+      <canvas id='processed_freq'></canvas>
+      <figcaption class="figure-caption">PCM 32bit sample</figcaption>
+
+    </figure>
+  </div>
+
+  <script src='../polyfills.js'></script>
+  <script type="module">
+
+    import Mixer from '../Mixer.js';
+    import { histogram2, chord, slider } from '../functions.js';
+    import https_rtc_client from './https_rtc_client.js';
+    
+    import AnalyzerView from '../AnalyzerView.js'
+    var yourVideo = document.getElementById("yourVideo");
+    var friendsVideo = document.getElementById("friendsVideo");
+
+    $("button").onclick = async function (evt) {
+      const ctx = await new AudioContext();
+      window.g_audioCtx = ctx;
+
+      let a = ctx.createAnalyser(), b = ctx.createAnalyser(), c = ctx.createAnalyser();
+      let a1 = ctx.createAnalyser(), b1 = ctx.createAnalyser(), c1 = ctx.createAnalyser();
+
+      var source = await chord("/samples/piano");
+      var ctv = AnalyzerView(source, { fft: 256 });
+
+      ctv.histogram("output_freq", 300, 300); //, { fft: 256 })
+      ctv.analyzer.connect(ctx.destination)
+      var container = $("#ctrls");
+
+      const opts={  
+        audioNode: source,
+        service: "audioFilter",
+        customizePeerConnection: (pc) => {localStream.getTracks().forEach( t=> pc.addTrack(t)) },
+        gotRemoteTrack: (track)=>{
+          var stream = new MediaStream(track);
+          var source = ctx.createMediaStreamSource(stream);
+          var processed = AnalyzerView(source, { fft: 256 });
+          processed.histogram("processed_freq", 300, 300); //, { fft: 256 })    
+        }
+      }
+      https_rtc_client(container,opts); //.connectToService(opts);
     }
 
-</script>
+  </script>
+</body>
 
 </html>

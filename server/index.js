@@ -9,12 +9,20 @@ const app = express()
 const httpport = process.env.PORT || 3333
 const https = require('https');
 const fetch = require('node-fetch');
+
+
+
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
   res.header("Transfer-Encoding","chunked");
   next();
 });
+
+
+
+const rtc_routes = require("../dsp_rtc/index.js");
+app.use("/api/rtc", rtc_routes);
 
 app.get("/api/list", function(req,res){
   var list = [
