@@ -1,38 +1,84 @@
 const express = require('express')
-const app = express();
-const httpport = process.env.PORT || 3333
-var session = require('express-session')
-const wrtc = require("wrtc");
 const bodyParser = require('body-parser');
+const httpport = process.env.PORT || 4000
+const wrtc = require("wrtc");
+const { PassThrough } = require('stream');
+const ffmpeg = require('fluent-ffmpeg');
+const { StreamInput,StreamOutput } = require('fluent-ffmpeg-multistream');
+const { RTCAudioSink, RTCVideoSink,RTCAudioSource } = require('wrtc').nonstandard;
+const WebSocket = require('ws');
 
-app.use(bodyParser.json());
-
-app.use(session({
-    secret: 'keyboard cat',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: true }
-}))
 var rtcConnections = [];
+var signalServerclient = new WebSocket("https://api.grepawk.com/signal");
+
+const SERVER_RTC_SERVICES = {
+    audioFilter: {
+        serverFunction: function (peerConnection, params) {
+            const audioTransceiver = peerConnection.addTransceiver('audio');
+            const audioTrack = new RTCAudioSink(audioTransceiver.receiver.track);
+
+            const audioOutput = new RTCAudioSource();
+            const outputTrack = audioOutput.createTrack();
+            peerConnection.addTrack(outputTrack);
 
 
-app.get('/', function(req, res){
-    res.sendFile(__dirname + '/index.html');
-  });
-  
+            const pipe = new PassThrough();
+            var pipedToFFmpeg = false;
+            var outputFormat=null;
+    
+            audioTrack.addEventListener('data', function (data, sampleRate, bitsPerSample, channelCount, numberOfFrames) {
+                if(dataFormat === null)  dataFormat = { sampleRate, bitsPerSample, channelCount, numberOfFrames };
+                console.log("audio track got data");
+                if (pipedToFFmpeg == false) pipe.push(Buffer.from(data.buffer)) && (pipedToFFmpeg = true);
+            });
 
-app.get("/list", function (req, res) {
-    res.json(Object.values(rtcConnections))
+            const stdout = new PassThrough();
+            stdout.on("data",(chunk)=>{
+                outputData.sample=e.data;
+                audioOutput.onData({chunk, ...outputFormat});
+            })
+            ffmpeg().addInput(new StreamInput(pipe).url)
+            .audioFilters("silencedetect=n=-50db:d=5")
+            .on("start", (e) => { console.log('started') })
+            .addOutput( stdout).on("end",(e)=>{ console.log("end") });
+        }
+    },
+    radio: "SERVER_SENDING",
+    sendFile: "SERVER_RECEIVING",
+    tom: "SERVER_FRIEND"
+}
+
+signalServerclient.on('open', function () {
+    Object.keys(SERVER_RTC_SERVICES).forEach(service => {
+        signalServerclient.send(JSON.stringify({ type: "register_stream", channel_name: service }));
+    })
 })
-app.get("/connect", async function (req, res, next) {
 
+
+
+const app = express();
+var router = express.Router()
+
+router.use(bodyParser.json());
+router.get('/', function (req, res) {
+    res.sendFile(__dirname + '/index.html');
+});
+
+router.get("/list", function (req, res) {
+    res.json(Object.keys(SERVER_RTC_SERVICES))
+})
+
+
+router.get("/:service/connect", async function (req, res, next) {
     try {
         var pc = new wrtc.RTCPeerConnection({
             sdpSemantics: 'unified-plan'
         });
-
- 
-
+        const service = SERVER_RTC_SERVICES[req.params.service];
+        if (!service) {
+            return res.sendStatus(404);
+        }
+        service.serverFunction(pc);
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
         pc.onIceCandidate = console.log;
@@ -40,29 +86,50 @@ app.get("/connect", async function (req, res, next) {
 
         offer.index = pc.index;
         rtcConnections.push(pc);
+        console.log("dd");
         return res.json(offer);
     } catch (e) {
         console.log('err')
         next(e);
     }
-
-    res.end("gg");
 });
 
-app.post("/answer/:id", async function (req, res, next) {
+router.post("/:service/answer/:id", async function (req, res, next) {
     var id = req.params.id;
 
     var pc = rtcConnections[id];
-//    const pc = rtcConnections[req.body];
 
     if (!pc) res.sendStatus(404) && res.end("peer connection not found in with session id");
     console.log('rrr', req.body);
 
 
     pc.setRemoteDescription(req.body);
-    res.end();
+    res.end("answer set");
 
 });
+
+router.post("/:service/offer", async function (req, res) {
+    var offer = req.body;
+
+    var pc = new wrtc.RTCPeerConnection({
+        sdpSemantics: 'unified-plan'
+    });
+    try {
+        await pc.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+
+
+        await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
+        res.json(answer);
+    } catch (e) {
+        console.log(e);
+        next(e);
+    }
+
+
+})
+app.use(errorHandler);
 function errorHandler(err, req, res, next) {
     if (res.headersSent) {
         return next(err)
@@ -70,6 +137,7 @@ function errorHandler(err, req, res, next) {
     res.status(500)
     res.render('error', { error: err })
 }
+
 //https://github.com/node-webrtc/node-webrtc-examples/blob/master/lib/server/connections/webrtcconnection.js
 async function waitUntilIceGatheringStateComplete(peerConnection, options) {
     if (peerConnection.iceGatheringState === 'complete') {
@@ -102,76 +170,11 @@ async function waitUntilIceGatheringStateComplete(peerConnection, options) {
     await deferred.promise;
 }
 
-app.listen(httpport);
-// const wrtc = require("wrtc");
-// var pc = new wrtc.RTCPeerConnection();
-// var transcoder = pc.addTransceiver('audio');
+module.exports=router;
 
-
-// var pc = new wrtc.RTCPeerConnection();
-// var transcoder = pc.addTransceiver('audio');
-
-
-
-// async function sendSDPWaitForResponse(desc){
-
-//     // .then(() => remoteConnection.setRemoteDescription(localConnection.localDescription))
-//     // .then(() => remoteConnection.createAnswer())
-//     // .then(answer => remoteConnection.setLocalDescription(answer))
-// }
-
-// async function connect(remotePeerSocket){
-//     const  sendSDPAndWaitForResponse  =(sdp)=>{
-//         return new Promise((resolve,reject)=>{
-//             remotePeerSocket.send(JSON.stringify)
-//         })
-//     }
-//     localConnection.createOffer()
-//     .then(offer => localConnection.setLocalDescription(offer))
-//     .then(desc => sendSDPAndWaitForResponse(desc))
-//     .then(() => localConnection.setRemoteDescription(remoteConnection.localDescription))
-//     .catch(handleCreateDescriptionError);
-// }
-
-
-
-
-// let listener = new WebRtcConnection(1, {
-//     beforeOffer: function(){
-//         const audio = peerConnection.addTransceiver('audio');
-//         const audioTransceiver = peerConnection.addTransceiver('video');
-
-//     }
-// })
-
-
-// const { RTCAudioSink, RTCVideoSink } = require('wrtc').nonstandard;
-// const ffmpeg = require('fluent-ffmpeg')
-// const { StreamInput } = require('fluent-ffmpeg-multistream')
-// const wrtc = require("wrtc");
-// const express = require('express')
-// const app = express()
-// const httpport = process.env.PORT || 3333
-// // var pc = new wrtc.RTCPeerConnection();
-// // var transcoder = pc.addTransceiver('audio');
-
-
-
-
-
-// // let listener = new WebRtcConnection(1, {
-// //     beforeOffer: function(){
-// //         const audio = peerConnection.addTransceiver('audio');
-// //         const audioTransceiver = peerConnection.addTransceiver('video');
-
-// //     }
-// // })
-
-
-// // const { RTCAudioSink, RTCVideoSink } = require('wrtc').nonstandard;
-// // const ffmpeg = require('fluent-ffmpeg')
-// // const { StreamInput } = require('fluent-ffmpeg-multistream')
-// // const wrtc = require("wrtc");
-// // const express = require('express')
-// // const app = express()
-// // const httpport = process.env.PORT || 3333
+{/* <pre>TypeError: stdout.addEventListener is not a function<br> &nbsp; &nbsp;at Object.serverFunction
+(/Users/yisheng/grepawk3/grepaudio/dsp_rtc/index.js:44:20)<br> &nbsp; &nbsp;at /Users/yisheng/grepawk3/grepaudio/dsp_rtc/index.js:95:17
+<br> &nbsp; &nbsp;at Layer.handle [as handle_request] (/Users/yisheng/grepawk3/grepaudio/dsp_rtc/node_modules/express/lib/router/layer.js:95:5)<
+    br> &nbsp; &nbsp;at next (/Users/yisheng/grepawk3/grepaudio/dsp_rtc/node_modules/express/lib/router/route.js:137:13)<br> &nbsp; &nbsp;at Ro
+    ute.dispatch (/Users/yisheng/grepawk3/grepaudio/dsp_rtc/node_modules/express/lib/router/route.js:112:3)<br> &nbsp; &nbsp;at Layer.handle [as handle_request] (/Users/yisheng/grepawk3/grepaudio/dsp_rtc/node_modules/express/lib/router/layer.js:95:5)<br> &nbsp; &nbsp;at /Users/yisheng/grepawk3/grepaudio/dsp_rtc/node_modules/express/lib/router/index.js:281:22<br> &nbsp; &nbsp;at param (/Users/yisheng/grepawk3/grepaudio/dsp_rtc/node_modules/express/lib/router/index.js:354:14)<br> &nbsp; &nbsp;at param (/Users/yisheng/grepawk3/grepaudio/dsp_rtc/node_modules/express/lib/router/index.js:365:14)<br> &nbsp; &nbsp;a
+t Function.process_params (/Users/yisheng/grepawk3/grepaudio/dsp_rtc/node_modules/express/lib/router/index.js:410:3)</pre> */}
