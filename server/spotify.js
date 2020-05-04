@@ -44,11 +44,6 @@ router.use(express.static(__dirname + '/public'))
    .use(cookieParser());
 
 
-router.get('/cb', function(req,res){
-  console.log(req.body);
-  res.redirect("/");
-});
-
 router.get('/login', function(req, res) {
 
   var state = generateRandomString(16);
@@ -66,7 +61,7 @@ router.get('/login', function(req, res) {
     }));
 });
 
-router.get('/callback', function(req, res) {
+router.get('/cb', function(req, res) {
 
   // your application requests refresh and access tokens
   // after checking the state parameter
@@ -113,7 +108,7 @@ router.get('/callback', function(req, res) {
         });
 
         // we can also pass the token to the browser to make requests from there
-        res.redirect('/#' +
+        res.redirect('/playback.html#' +
           querystring.stringify({
             access_token: access_token,
             refresh_token: refresh_token
