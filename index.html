@@ -278,8 +278,8 @@
       const audio22 = $("video#rtc")
       $("#listen").onclick = function (e) {
         var bv = BoardcastViewerClient({
-          onEvent: log, mediaObjectReady: function (stream) {
-
+          onEvent: log, 
+          mediaObjectReady: function (stream) {
             audio22.srcObject = stream;
             audio22.play();
             //sream = new MediaStream([e.track]);

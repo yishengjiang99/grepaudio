@@ -21,9 +21,9 @@
   
   <video controls id="yourVideo" autoplay></video>
   <video controls id="friendsVideo" autoplay></video>
+  <br>
   <button>start</button>
-  <button id=bc>broadcast</button>
-  <button id=friend>friend</button>
+
   <div>a
     <canvas id='a'></canvas>
   </div>
@@ -36,62 +36,17 @@
     <canvas id='a1'></canvas>
     <canvas id='bands_freq_out'></canvas>
   </div>
-  <div id=name>
-
-  </div>
-  <div id=channels>
-
-  </div>
-  <div id='ctrls'></div>
 
   <script src='../polyfills.js'></script>
   <script type="module">
 
     import Mixer from '../Mixer.js';
     import { histogram2, chord, slider } from '../functions.js';
-    import twitch from '../twitch_audio.js'
+    import http_rtc_client from '../http_rtc_client.js';
 
+    
     var yourVideo = document.getElementById("yourVideo");
     var friendsVideo = document.getElementById("friendsVideo");
-
-    var userId = window.location.search.replace("?","") || localStorage.getItem("uid") ||  ("user_" + Math.floor(Math.random() * 10));
-    
-    localStorage.setItem('uid', userId);
-
-
-    $("#name").innerHTML = userId;
-    const div = $("#channels");
-    
-    function displaychannel(channel) {
-      const channelval = channel.val();
-      if(channelval.online == false) return;
-
-      div.appendstr("<li>" + JSON.stringify(channel.val()) + "</li>");
-      var a = document.createElement("a");
-      a.onclick = function () {
-        twitch.watch(userId, channelval['id']);
-      }
-      a.innerText = "watch";
-      div.append(a);
-    }
-
-    twitch.channels(function (list) {
-      list.forEach(channel => displaychannel(channel));
-    }, function (newchannel) {
-      displaychannel(newchannel)
-    });
-
-
-    // pc.ontrack=function(e){
-    //   if(e.track){
-    //     remoteStream = window.g_audioCtx.createMediaStreamTrackSource(e.track)
-    //     remoteStream.connect(window.g_audioCtx.destination)
-    //     friendsVideo.srcObject = recomoteStream;
-    // }}
-    // pc.ontrack = (e=> friendsVideo.stream.addTrack(e.track))
-
-
-
     $("button").onclick = async function (evt) {
       const ctx = await new AudioContext();
 
@@ -99,9 +54,10 @@
       let a = ctx.createAnalyser(), b = ctx.createAnalyser(), c = ctx.createAnalyser();
       let a1 = ctx.createAnalyser(), b1 = ctx.createAnalyser(), c1 = ctx.createAnalyser();
 
-
-      twitch.broadcast(ctx, userId);
-
+      var source = await chord("/samples/piano");
+      a.connect(source);
+      source.connect(ctx.destination);
+      histogram2('a',a);
     }
 
 
