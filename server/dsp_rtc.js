@@ -128,6 +128,7 @@ router.get("/:service/connect", async function (req, res, next) {
 
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
+      //  var candidates = await waitUntilIceGatheringStateComplete(pc, {})
         // pc.onIceCandidate = console.log;
         pc.id = rtcConnections.length;
 
@@ -159,8 +160,10 @@ router.post("/:service/answer/:id", async function (req, res, next) {
     if (!pc) res.sendStatus(404) && res.end("peer connection not found in with session id");
 
     const onIceConnectionStateChange = () => {
-        console.log(pc.iceConnectionState);
+        console.log('ice candidate'+pc.iceConnectionState);
     };
+    var iceCandidates = await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
+
 
     pc.addEventListener('iceconnectionstatechange', onIceConnectionStateChange);
 
@@ -177,6 +180,7 @@ router.post("/:service/answer/:id", async function (req, res, next) {
         connectionState: pc.connectionState,
         localDescription: pc.localDescription,
         signalingState: pc.signalingState,
+        iceCandidates: iceCandidates,
         state:"" 
     })
 
@@ -189,12 +193,18 @@ router.post("/:service/offer", async function (req, res) {
         sdpSemantics: 'unified-plan'
     });
     try {
+        var iceCandidates=[];
+        pc.onIceCandidate=function(e){
+            if(e.candidate){
+
+            }
+        }
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
 
 
-        await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
+       var icecandidates =  await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
         console.log("ice candidate resolved");
 
         res.json(answer);
@@ -228,16 +238,22 @@ async function waitUntilIceGatheringStateComplete(peerConnection, options) {
         deferred.reject = reject;
     });
 
-    const timeout = options.setTimeout(() => {
+    const timeout = setTimeout(() => {
         peerConnection.removeEventListener('icecandidate', onIceCandidate);
         deferred.reject(new Error('Timed out waiting for host candidates'));
     }, timeToHostCandidates);
-
+    var candidates=[];
     function onIceCandidate({ candidate }) {
+        if(candidate){
+            candidates.push(candidate)
+        }
         if (!candidate) {
-            options.clearTimeout(timeout);
+            clearTimeout(timeout);
             peerConnection.removeEventListener('icecandidate', onIceCandidate);
-            deferred.resolve();
+            deferred.resolve(candidate);
+        }else{
+            candidates.push(candidate)
+
         }
     }
 

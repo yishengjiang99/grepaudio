@@ -19,7 +19,9 @@
   <link rel="stylesheet" href="../simple-console.css">
 
 
-
+<style>video{
+max-width:100px;
+}</style>
 </head>
 
 <body class='bg-dark text-light'>
@@ -96,43 +98,43 @@
       });
 
 
-      // const opts={  
-      //   audioNode: g,
-      //   service: "audioFilter",
-      //   customizePeerConnection: (pc) => {
-      //     // ctx.createMediaStreamDestination(source).stream
-      //     // .getTracks().forEach( t=> pc.addTrack(t)) ;
-      //     //localStream.getTracks().forEach( t=> pc.addTrack(t)) 
-      //   },
-      //   gotRemoteTrack: (tracks)=>{
-      //     var stream = new MediaStream(tracks);
-      //     var source = ctx.createMediaStreamSource(stream);
-      //     var processed = AnalyzerView(source, { fft: 256 });
-      //     var processed = AnalyzerView(source, { fft: 256 });
-      //   }
-      // }
-      // var pc = await https_rtc_client(container,opts).connectToService(opts); //.connectToService(opts);
-      // window.setInterval(function() {
-      //       var statsOutput=''
-      //       pc.getStats(null).then(stats => {
-      //       stats.forEach(report => {
-      //         statsOutput += `<h2>Report: ${report.type}</h3>\n<strong>ID:</strong> ${report.id}<br>\n` +
-      //                        `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
+      const opts={  
+        audioNode: g,
+        service: "audioFilter",
+        customizePeerConnection: (pc) => {
+          // ctx.createMediaStreamDestination(source).stream
+          // .getTracks().forEach( t=> pc.addTrack(t)) ;
+          //localStream.getTracks().forEach( t=> pc.addTrack(t)) 
+        },
+        gotRemoteTrack: (tracks)=>{
+          var stream = new MediaStream(tracks);
+          var source = ctx.createMediaStreamSource(stream);
+          var processed = AnalyzerView(source, { fft: 256 });
+          var processed = AnalyzerView(source, { fft: 256 });
+        }
+      }
+      var pc = await https_rtc_client(container,opts).connectToService(opts); //.connectToService(opts);
+      window.setInterval(function() {
+            var statsOutput=''
+            pc.getStats(null).then(stats => {
+            stats.forEach(report => {
+              statsOutput += `<h2>Report: ${report.type}</h3>\n<strong>ID:</strong> ${report.id}<br>\n` +
+                             `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
               
-      //         // Now the statistics for this report; we intentially drop the ones we
-      //         // sorted to the top above
+              // Now the statistics for this report; we intentially drop the ones we
+              // sorted to the top above
         
-      //         Object.keys(report).forEach(statName => {
-      //           if (statName !== "id" && statName !== "timestamp" && statName !== "type") {
-      //             statsOutput += `<strong>${statName}:</strong> ${report[statName]}<br>\n`;
-      //           }
-      //         });
-      //       })
-      //       document.querySelector(".stats-box").innerHTML = statsOutput;
+              Object.keys(report).forEach(statName => {
+                if (statName !== "id" && statName !== "timestamp" && statName !== "type") {
+                  statsOutput += `<strong>${statName}:</strong> ${report[statName]}<br>\n`;
+                }
+              });
+            })
+            document.querySelector(".stats-box").innerHTML = statsOutput;
 
-      //   });
+        });
         
-      //   },0);
+        },2000);
     }
 
   </script>
