@@ -43,7 +43,7 @@ var friendsVideo = document.getElementById("friendsVideo");
 
 const list_services = function (container,gotRemoteStream) {
     var onoff={}, pcs ={};
-    fetch("https://dsp.grepawk.com/api/rtc/list").then(res => res.json()).then(json => {
+    fetch("/api/rtc/list").then(res => res.json()).then(json => {
         json.map(service => {
             onoff[service]='off';
             
@@ -70,7 +70,7 @@ const list_services = function (container,gotRemoteStream) {
     async function connectToService(service,gotRemoteStream) {
 
         try{
-            const res = await fetch("https://local.grepawk.com/api/rtc/" + service + "/connect")
+            const res = await fetch("https://dsp.grepawk.com/api/rtc/" + service + "/connect")
             const remotePeer = await res.json();
             var pc = new RTCPeerConnection(peerRTCConfig);
             await pc.setRemoteDescription(new RTCSessionDescription(remotePeer.localDescription));
@@ -88,7 +88,7 @@ const list_services = function (container,gotRemoteStream) {
             await pc.setLocalDescription(answer);
 
 
-            await fetch("https://local.grepawk.com/api/rtc/" + service + "/answer/" + remotePeer.id, {
+            await fetch("https://dsp.grepawk.com/api/rtc/" + service + "/answer/" + remotePeer.id, {
                 method: 'POST',
                 body: JSON.stringify(pc.localDescription),
                 headers: {
