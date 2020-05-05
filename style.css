@@ -65,16 +65,7 @@ height:30px;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff5f5f5', endColorstr='#ffe8e8e8', GradientType=0);
   background-repeat: repeat-x;
 }
-body{
-
-  color: #C0C0C0;
-  background-color:#35363a;
-  position: fixed;
-  overflow-x:hidden;
-  position:fixed;
-  overflow-y:scroll;
-  width:100%;
-}
+body{color: #C0C0C0;background-color:#35363a;/* position: fixed; *//* overflow-x:hidden; *//* position:fixed; *//* overflow-y:scroll; */width:100%;}
 table{
     display: table-row-group;
   vertical-align: top;
@@ -87,19 +78,17 @@ td{
 
 .simple-console{
   display: fixed;
-    flex: 1;
-    flex-direction: column;
-    font-family: sans-serif;
-    position: fixed;
-  
-opacity:0.5;  
+  flex: 1;
+  flex-direction: column;
+  font-family: sans-serif;
+  position: fixed;
+  opacity:0.5;
   bottom: 1px;
-    right:10px;
-    overflow-y: scroll;
-    width: 30vw;
-    background-color:black;
-    color:white;
-
+  right:10px;
+  overflow-y: scroll;
+  width: 30vw;
+  /* background-color:black; */
+  color:white;
 }
 .badge{
   display: inline-block;
@@ -116,9 +105,10 @@ opacity:0.5;
   min-height:20vh;
   max-height:30vh;
   overflow-y:scroll;
-  background-color: rgba(0,0,0,0.9);
+  /* background-color: rgba(0,0,0,0.9); */
   color:white;
   font-size:1.2em;
+  opacity: 0.2;
 }
 
 .draggable {

@@ -59,10 +59,9 @@
         <input type='file' id='file'>
       </nav>
 
-      <main role="main" class="col-md-6 ml-sm-auto col-lg-6 px-4">
+      <main role="main" class="col-md-8 ml-sm-auto col-lg-8 px-1">
         <h4>Mix Sounds</h4>
         <div id='serverlist'></div>
-
         <div class='d-block p-2' id="eq_update_form">
         </div>
         <div class='canvas_wrapper'>
@@ -102,30 +101,28 @@
 
           </figure>
         </div>
-
       </main>
-      <div class='col-md-3'>
-        <span id=output_cp style='position:absolute; top:100px;right:320px'>
-          <button id=obs>Broadcast</button>
-          <button id=listen>Listen</button>
-          <ul id=channels></ul>
-          <video controls playsinline id=rtc></video>
 
-          <div>
-            <button id="recorder">Start Recording</button>
-            <audio id='audio2' controls autoplay></audio>
-
-          </div>
-
-        </span>
       </div>
 
     </div>
   </div>
-        <audio id='audio1' controls autoplay></audio>
 
 
+          <span id=output_cp style='position:fixed; top:40vh;right:0;'>
+            <button id=obs>Broadcast</button>
+            <button id=listen>Listen</button>
+            <ul id=channels></ul>
+            <video  id=rtc></video>
+  
+            <div>
+              <button id="recorder">Start Recording</button>
+              <audio id='audio2' controls autoplay></audio>
+              <audio id='audio1' controls autoplay></audio>
 
+            </div>
+
+          </span>
   <script>
     var blob = window.URL || window.webkitURL;
 

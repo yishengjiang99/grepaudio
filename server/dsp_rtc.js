@@ -10,16 +10,40 @@ const WebSocket = require('ws');
 
 var rtcConnections = [];
 var signalServerclient = new WebSocket("https://api.grepawk.com/signal");
-
+const peerRTCConfig = {
+    'RTCIceServers': [{url:'stun:stun01.sipphone.com'},
+    {url:'stun:stun.ekiga.net'},
+    {url:'stun:stun.fwdnet.net'},
+    {url:'stun:stun.ideasip.com'},
+    {url:'stun:stun.iptel.org'},
+    {url:'stun:stun.rixtelecom.se'},
+    {url:'stun:stun.schlund.de'},
+    {url:'stun:stun.l.google.com:19302'},
+    {url:'stun:stun1.l.google.com:19302'},
+    {url:'stun:stun2.l.google.com:19302'},
+    {url:'stun:stun3.l.google.com:19302'},
+    {url:'stun:stun4.l.google.com:19302'}],
+    sdpSemantics: 'unified-plan'
+}
 const SERVER_RTC_SERVICES = {
+    mirror:{
+        serverFunction: (peerConnection)=>{
+            const audioTransceiver = peerConnection.addTransceiver('audio');
+            const videoTransceiver = peerConnection.addTransceiver('video');
+            return Promise.all([
+              audioTransceiver.sender.replaceTrack(audioTransceiver.receiver.track),
+              videoTransceiver.sender.replaceTrack(videoTransceiver.receiver.track)
+            ]);
+        }
+    },
     audioFilter: {
-        serverFunction: function (peerConnection, params) {
+        serverFunction: function (peerConnection, param, res) {
             const audioTransceiver = peerConnection.addTransceiver('audio');
             const audioTrack = new RTCAudioSink(audioTransceiver.receiver.track);
 
-            const audioOutput = new RTCAudioSource();
-            const outputTrack = audioOutput.createTrack();
-            audioTransceiver.sender.replaceTrack(outputTrack);
+            // const audioOutput = new RTCAudioSource();
+            // const outputTrack = audioOutput.createTrack();
+            audioTransceiver.sender.replaceTrack(audioTrack);
             console.log('audio filter');
 
 
@@ -40,7 +64,7 @@ const SERVER_RTC_SERVICES = {
             const pipe = new PassThrough();
             var pipedToFFmpeg = false;
             var outputFormat = null;
-            debugger;
+
             audioTrack.addEventListener('frame', function (data, sampleRate, bitsPerSample, channelCount, numberOfFrames) {
                 console.log('onframe')
             });
@@ -48,21 +72,23 @@ const SERVER_RTC_SERVICES = {
                 pipe.push(Buffer.from(data.samples.buffer))
             });
 
-            const stdout = new PassThrough();
-            stdout.on("data", (chunk) => {
-                console.log(chunk)
-                sample = chunk;
-                audioOutput.onData(data);
+            peerConnection.on("close", audioTrack.end());
+
+            stream.proc = ffmpeg()
+            .addInput((new StreamInput(pipe)).url)
+            .addInputOptions([
+              '-f s16le',
+              '-ar 48k',
+              '-ac 1',
+            ])
+            .on('start', ()=>{
+              console.log('Start recording >> ', stream.recordPath)
             })
+            .on('end', ()=>{
 
-            var proc = ffmpeg().preset("")
-                .addInput(pipe)
-                .on("error", function(e){ console.log(e, 'ERROR')})
-                .on("start", (e) => { console.log('started') })
-                .on("end", (e) => { debugger;  console.log("end", e); })
-                .on("data", (e) => { console.log('ondata', e) })
-                .pipe(audioOutput);
-
+                console.log("record end");            //   stream.recordEnd = true;
+             // console.log('Stop recording >> ', stream.recordPath)
+            }).output('output.wav')
         }
     },
     radio: "SERVER_SENDING",
@@ -93,9 +119,7 @@ router.get("/list", function (req, res) {
 
 router.get("/:service/connect", async function (req, res, next) {
     try {
-        var pc = new wrtc.RTCPeerConnection({
-            sdpSemantics: 'unified-plan'
-        });
+        var pc = new wrtc.RTCPeerConnection(peerRTCConfig);
         const service = SERVER_RTC_SERVICES[req.params.service];
         if (!service) {
             return res.sendStatus(404);
@@ -124,6 +148,9 @@ router.get("/:service/connect", async function (req, res, next) {
     }
 });
 
+router.post("/:service/answer/:id/stop", async function (req, res, next) {
+
+})
 router.post("/:service/answer/:id", async function (req, res, next) {
     var id = req.params.id;
 

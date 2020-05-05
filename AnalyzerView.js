@@ -177,12 +177,13 @@ var AnalyzerView = function(audioNode, params){
 
           //24000
         // freq =
-
+          canvasCtx.fillText(fft.context.currentTime, 0,0, 20, 10)
           for(var i = 0; i < bins/zoomScale; i++) {
             barHeight = dataArray[i] * zoomScale
+            let hue = i/fft.frequencyBinCount * 360;
 
             barHeigthCC = cummulativeFFT[i];
-            canvasCtx.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
+            canvasCtx.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
 
             if(draw) canvasCtx.fillRect(x,height-barHeight/2-25,barWidth,(barHeight/2));
 
@@ -191,7 +192,15 @@ var AnalyzerView = function(audioNode, params){
             if(draw_accum) canvasCtx.fillRect(x,height-barHeigthCC/2-25,barWidth,(barHeigthCC/2));
 
 
-            x += barWidth + 1;
+            // x += barWidth + 1;
+            // value =  dataArray[i];
+            // percent = value / 256;
+            // height = HEIGHT * percent;
+            // offset = HEIGHT - height - 1;
+            // barWidth = WIDTH / fft.frequencyBinCount;
+            // let hue = i/fft.frequencyBinCount * 360;
+            // canvasCtx.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+            // this.drawContext.fillRect(i * barWidth, offset, barWidth, height);
           }
 
           canvasCtx.fillText(zoomScale, 0, height-5);
