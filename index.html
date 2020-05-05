@@ -27,7 +27,7 @@
   </div>
 </div>
 
-<body onclick="void(0);">
+<body>
   <nav class="navbar navbar-dark bg-dark text-light flex-md-nowrap p-0 shadow">
     <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">GrepAwk DSP</a>
     <input class="form-control form-control-dark w-100" type="text" placeholder="Search Music" aria-label="Search">
@@ -109,20 +109,19 @@
   </div>
 
 
-          <span id=output_cp style='position:fixed; top:40vh;right:0;'>
-            <button id=obs>Broadcast</button>
-            <button id=listen>Listen</button>
+          <div id=output_cp class=text-white style='position:fixed; width:20%; top:40vh;right:0;'>
             <ul id=channels></ul>
-            <video  id=rtc></video>
-  
+            <div><button id=obs>Broadcast</button> <button id=listen>Listen</button></div>
             <div>
               <button id="recorder">Start Recording</button>
-              <audio id='audio2' controls autoplay></audio>
-              <audio id='audio1' controls autoplay></audio>
+              <span class='text-white' id='rinfo'></span>
+              <span class='text-white' id='rdownload'></span>
 
             </div>
-
-          </span>
+            <div><audio id='audio2' controls></audio></div>
+            <div><audio id='audio1' controls src=''></audio></div>
+            <video  id=rtc></video>
+          </div>
   <script>
     var blob = window.URL || window.webkitURL;
 
@@ -209,7 +208,7 @@
       ctv.timeseries("output_timeline", 128, 700, 300); //, { fft: 256 })
 
       var recorderProcessor = audioCtx.createScriptProcessor(1024, 2, 2);
-
+      var counter =0;
       recorderProcessor.onaudioprocess = (e) => {
 
         // The input buffer is the song we loaded earlier
@@ -234,8 +233,8 @@
           command: 'record',
           buffer: buffer
         });
+        counter +=buffer.length;
       };
-
 
       var playbackGain = audioCtx.createGain({ gain: 1 });
 
@@ -248,20 +247,9 @@
       var chunks = [];
       const outputdiv = $("#output_cp");
 
-      const playbackGainSlider = slider(outputdiv, { prop: playbackGain.gain, min: "0", max: "4", step: "0.05", label: "Local Playback gain" });
+      const playbackGainSlider = slider(outputdiv, { wrap:"inline", prop: playbackGain.gain, min: "0", max: "4", step: "0.05", label: "Local Playback gain" });
 
-      $("#recorder").onclick = function (e) {
-        if (isRecording == false) {
-          isRecording = true;
-          e.target.innerText = 'Done'
-        } else {
-          isRecording = false;
-          e.target.innerText = 'record'
-          rworker.postMessage({
-            command: "exportWAV"
-          })
-        }
-      }
+
 
       $("#obs").onclick = function (e) {
         var userId = window.location.search.replace("?", "") 
@@ -308,6 +296,28 @@
         });
       }
 
+      $("#recorder").onclick = function (e) {
+        var t;
+        function showCounter(){
+            document.getElementById("rinfo").innerHTML= (counter/1000)+"kb";
+            t=setTimeout(showCounter, 1000);
+        }
+        if (isRecording == false) {
+          showCounter();
+          isRecording = true;
+          e.target.innerText = 'Done'
+        } else {
+          isRecording = false;
+          debugger;
+          rworker.postMessage({
+            command: "exportWAV",
+            type: "audio/wav"
+          })
+          e.target.innerText = 'record'
+
+          cancelAnimationFrame(t)
+        }
+      }
       var rworker = new Worker('recorder-worker.js');
       var rconfig = { sample: 2 << 16, channels: 1 };
       rworker.postMessage({
@@ -323,7 +333,8 @@
           log(" got url " + e.data.audioUrl)
           $("#audio2").src = e.data.audioUrl;
           $("#audio2").controls = true;
-          $("#audio2").parentElement.appendstr(`<a href='${e.data.audioUrl}'>${e.data.audioUrl}</a>`)
+          isRecording=false;
+          $("#rdownload").innerHTML=`<a href='${e.data.audioUrl}'>Download</a>`;
         }
         console.log(e);
       };
