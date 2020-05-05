@@ -10,7 +10,27 @@ const firebaseConfig = {
 	appId: "1:731533454193:web:d62fcaf297e1fe5cf624d0",
 	measurementId: "G-8RCQ4PX008"
 };
+window.loadBuffer=function(url){
+	var ctx = window.g_audioCtx;
+	const xhr = new XMLHttpRequest();
+	xhr.open("get", url, true);
+	xhr.responseType = 'arraybuffer';
+	xhr.setRequestHeader("Range", "Bytes:0-")
 
+	xhr.onreadystatechange = function () {
+	  if (xhr.readyState > 2) {
+		// process newData
+		if (xhr.response !== null) {
+		  ctx.decodeAudioData(xhr.response, function (processed) {
+
+			var source = ctx.createBufferSourceNode(); 
+			source.buffer = processed;
+			Promise.resolve(source)
+		  });
+		}
+	  }
+	};
+}
 window.get_db = function(ref){
 	if(!window.db){
 		firebase.initializeApp(firebaseConfig);
