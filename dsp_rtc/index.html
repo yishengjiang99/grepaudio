@@ -20,7 +20,7 @@
 
 
 <style>video{
-max-width:100px;
+  max-width:20vw;
 }</style>
 </head>
 
@@ -91,29 +91,14 @@ max-width:100px;
       g.connect(ctx.destination);
 
       var container = $("#ctrls");
+
       https_rtc_client.list_services(container, (stream)=>{
         var source = ctx.createMediaStreamSource(stream);
         var processed = AnalyzerView(source, { fft: 256 });
-        var processed = AnalyzerView(source, { fft: 256 });
+        processed.histogram("processed_freq", 256, 300,300);
       });
 
 
-      const opts={  
-        audioNode: g,
-        service: "audioFilter",
-        customizePeerConnection: (pc) => {
-          // ctx.createMediaStreamDestination(source).stream
-          // .getTracks().forEach( t=> pc.addTrack(t)) ;
-          //localStream.getTracks().forEach( t=> pc.addTrack(t)) 
-        },
-        gotRemoteTrack: (tracks)=>{
-          var stream = new MediaStream(tracks);
-          var source = ctx.createMediaStreamSource(stream);
-          var processed = AnalyzerView(source, { fft: 256 });
-          var processed = AnalyzerView(source, { fft: 256 });
-        }
-      }
-      var pc = await https_rtc_client(container,opts).connectToService(opts); //.connectToService(opts);
       window.setInterval(function() {
             var statsOutput=''
             pc.getStats(null).then(stats => {

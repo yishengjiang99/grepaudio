@@ -193,12 +193,7 @@ router.post("/:service/offer", async function (req, res) {
         sdpSemantics: 'unified-plan'
     });
     try {
-        var iceCandidates=[];
-        pc.onIceCandidate=function(e){
-            if(e.candidate){
-
-            }
-        }
+  
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
@@ -207,8 +202,15 @@ router.post("/:service/offer", async function (req, res) {
        var icecandidates =  await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
         console.log("ice candidate resolved");
 
-        res.json(answer);
-    } catch (e) {
+        return res.json({
+            id: pc.id,
+            iceConnectionState: pc.iceConnectionState,
+            connectionState: pc.connectionState,
+            localDescription: pc.localDescription,
+            signalingState: pc.signalingState,
+            iceCandidates: icecandidates,
+        })
+        } catch (e) {
         console.log(e);
         next(e);
     }
@@ -244,13 +246,11 @@ async function waitUntilIceGatheringStateComplete(peerConnection, options) {
     }, timeToHostCandidates);
     var candidates=[];
     function onIceCandidate({ candidate }) {
-        if(candidate){
-            candidates.push(candidate)
-        }
+
         if (!candidate) {
             clearTimeout(timeout);
             peerConnection.removeEventListener('icecandidate', onIceCandidate);
-            deferred.resolve(candidate);
+            deferred.resolve(candidates);
         }else{
             candidates.push(candidate)
 
