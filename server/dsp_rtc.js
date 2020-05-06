@@ -139,7 +139,7 @@ router.get("/:service/connect", async function (req, res, next) {
 
       //  var candidates = await waitUntilIceGatheringStateComplete(pc, {})
 
-    var iceCandidates = await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
+        var iceCandidates = await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
 
         pc.id = rtcConnections.length;
 
@@ -163,6 +163,7 @@ router.get("/:service/connect", async function (req, res, next) {
 router.post("/:service/answer/:id/stop", async function (req, res, next) {
 
 })
+
 router.post("/:service/answer/:id", async function (req, res, next) {
     var id = req.params.id;
 
@@ -176,20 +177,10 @@ router.post("/:service/answer/:id", async function (req, res, next) {
     var { offer, iceCandidates } = req.body;
 
     await pc.setRemoteDescription(offer);
-
-    pc.addEventListener('iceconnectionstatechange', onIceConnectionStateChange);
-    var s_iceCandidates = await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
-
-    console.log(iceCandidates, " ... ice cands in post anser");
-
-
-    pc.addEventListener('iceconnectionstatechange', onIceConnectionStateChange);
-
-
-
     iceCandidates.forEach(can=> pc.addIceCandidate(can));
 
-
+    var s_iceCandidates = await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
+    console.log("s_candidates in post answer", s_iceCandidates);
     //res.end("answer set");
     return res.json({
         id: pc.id,

@@ -77,7 +77,7 @@ async function connectToService(service,gotRemoteStream) {
             }
             await pc.setRemoteDescription(new RTCSessionDescription(remotePeer.localDescription));
             const localStream = await window.navigator.mediaDevices.getUserMedia({
-                audio: {echoCancellation:true},
+                audio: false,
                 video: true
             });
 
@@ -91,7 +91,7 @@ async function connectToService(service,gotRemoteStream) {
             await pc.setLocalDescription(answer);
 
             await sleep(2);
-
+window.pc = pc;
             await fetch("/api/rtc/" + service + "/answer/" + remotePeer.id, {
                 method: 'POST',
                 body: JSON.stringify({offer: pc.localDescription, iceCandidates:icecandidates }),
