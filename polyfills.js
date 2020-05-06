@@ -45,7 +45,6 @@ window.logErr = function (text) {
   window.log(text);
 
 }
-const $ = (selector) => document.querySelector(selector);
 document.onload = function () {
   const allRanges = document.querySelectorAll(".range-wrap");
   allRanges.forEach(wrap => {
@@ -128,5 +127,3 @@ function xinspect(o,i){
   }
   return r.join(i+'\n');
 }
-
-const bigchart_ctx = $("#big-chart") && $("#big-chart").getContext('2d');

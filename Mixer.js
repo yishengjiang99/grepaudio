@@ -27,16 +27,22 @@ export default async function (ctx, containerId) {
       inputs[index] = source;
       return loadURL(url);
     }
+
     function loadURL(url) {
+      nowPlayingLabels[index].innerHTML = 'loading '+url;
+
       const xhr = new XMLHttpRequest();
       xhr.open("get", url, true);
       xhr.responseType = 'arraybuffer';
       xhr.setRequestHeader("Range", "Bytes:0-")
       var counter = 0;
-
+      xhr.onprogress = (e)=>{
+        
+      }
       xhr.onreadystatechange = function () {
+        nowPlayingLabels[index]='ready state '+xhr.readyState;
+
         if (xhr.readyState > 2) {
-          // process newData
           if (xhr.response !== null) {
             ctx.decodeAudioData(xhr.response, function (processed) {
               source.buffer = processed;

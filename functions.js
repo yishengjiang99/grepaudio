@@ -74,7 +74,9 @@ export const DEFAULT_PRESET_GAINS =
 	'62.5': 0.375
 }
 window.$ = function (str) {
-	document.getElementById(str) || document.querySelector(str);
+	var t = document.getElementById(str) ;
+	if(t !==null && typeof t !== 'undefined') return document.getElementById(str);
+	return document.querySelector(str);
 }
 HTMLElement.prototype.appendstr = function (string) {
 

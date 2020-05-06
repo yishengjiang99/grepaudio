@@ -170,7 +170,7 @@ export function split_band(ctx, hz_list) {
 
     cp.appendChild(gvctrls);
     cp.append(table);
-   cp.appendChild($("#noisegate"));
+   //cp.appendChild($("#noisegate"));
     
     return cp;
   }
