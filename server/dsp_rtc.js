@@ -173,12 +173,12 @@ router.post("/:service/answer/:id", async function (req, res, next) {
     const onIceConnectionStateChange = () => {
         console.log('ice candidate'+pc.iceConnectionState);
     };
-    var { offer, c_iceCandidates } = req.body;
+    var { offer, iceCandidates } = req.body;
 
     await pc.setRemoteDescription(offer);
 
     pc.addEventListener('iceconnectionstatechange', onIceConnectionStateChange);
-    var iceCandidates = await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
+    var s_iceCandidates = await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
 
     console.log(iceCandidates, " ... ice cands in post anser");
 
@@ -187,7 +187,7 @@ router.post("/:service/answer/:id", async function (req, res, next) {
 
 
 
-    c_iceCandidates.forEach(can=> pc.addIceCandidate(can));
+    iceCandidates.forEach(can=> pc.addIceCandidate(can));
 
 
     //res.end("answer set");
@@ -197,7 +197,7 @@ router.post("/:service/answer/:id", async function (req, res, next) {
         connectionState: pc.connectionState,
         localDescription: pc.localDescription,
         signalingState: pc.signalingState,
-        iceCandidates: iceCandidates,
+        iceCandidates: s_iceCandidates,
         state:"" 
     })
 
@@ -217,6 +217,7 @@ router.post("/:service/offer", async function (req, res) {
 
 
        var icecandidates =  await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
+
         console.log("ice candidate resolved");
 
         return res.json({
