@@ -70,14 +70,19 @@ const list_services = function (container,gotRemoteStream) {
     async function connectToService(service,gotRemoteStream) {
 
         try{
-            const res = await fetch("https://dsp.grepawk.com/api/rtc/" + service + "/connect")
+            const res = await fetch("/api/rtc/" + service + "/connect")
             const remotePeer = await res.json();
             var pc = new RTCPeerConnection(peerRTCConfig);
+            var icecandidates=[];
+            pc.onicecandidate = function(ev){
+              icecandidates.push(ev.candidate)
+            }
             await pc.setRemoteDescription(new RTCSessionDescription(remotePeer.localDescription));
             const localStream = await window.navigator.mediaDevices.getUserMedia({
                 audio: {echoCancellation:true},
                 video: true
             });
+
             yourVideo.srcObject=localStream;
             localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
@@ -87,18 +92,18 @@ const list_services = function (container,gotRemoteStream) {
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
 
+            // await sleep(2);
 
-            await fetch("https://dsp.grepawk.com/api/rtc/" + service + "/answer/" + remotePeer.id, {
+            await fetch("/api/rtc/" + service + "/answer/" + remotePeer.id, {
                 method: 'POST',
                 body: JSON.stringify(pc.localDescription),
                 headers: {
                     'Content-Type': 'application/json'
                 }
             }).then(resp=>resp.json()).then(ret=>{
-  alert(JSON.stringify(ret));           
-   if(ret.iceCandidates){
-                debugger;
-              }
+                if(ret.iceCandidates){
+                    ret.iceCandidates.forEach(c=>pc.addIceCandidate(c));
+                }
 
             });
             return pc;
