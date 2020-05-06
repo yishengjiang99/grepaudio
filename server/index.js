@@ -26,6 +26,7 @@ const spotify_routes = require("./spotify.js");
 app.use("/api/spotify", spotify_routes);
 
 app.get("/api/list", function(req,res){
+  
   var list = [
     {
       name:"spotlight",
@@ -52,13 +53,46 @@ app.get("/api", function(req,res,next){
 
 
 app.get("/api/yt", function(req,res,next){
-  const query = req.params.q;
   const youtube_api_key = process.env.google_key      
-  const url = `https://www.googleapis.com/youtube/v3/videoCategories&part=snippet&key=${youtube_api_key}`
+  const url = `https://www.googleapis.com/youtube/v3/videoCategories?regionCode=US&part=snippet&key=${youtube_api_key}`
   fetch(url).then(resp=>resp.json()).then(json=>{
-      console.log(json);
+    res.json(json);
   }).catch(e=>res.end(e.message));
 });
+
+
+function parseYt(body){
+    return body.items.map(item => {
+
+      return {
+        vid: item.id.videoId,
+        thumbnail: item.snippet.thumbnails.default.url,
+        title: item.snippet.title,
+        channelTitle: item.snippet.channelTitle,
+        value: `<li><img src='${item.snippet.thumbnails.default.url}'> ${item.snippet.title}</li>`
+      };
+    });
+}
+app.get("/api/yt.json", function(req,res,next){
+  const youtube_api_key = process.env.google_key
+  const url = `https://www.googleapis.com/youtube/v3/search?type=video&part=snippet&maxResults=50&q=rap+music&key=${youtube_api_key}`;
+
+  fetch(url).then(resp=>resp.json()).then(json=>{
+    console.log(json);
+    res.json(parseYt(json));
+  }).catch(e=>res.end(e.message));
+});
+
+
+app.get("/api/yt/:query", function(req,res,next){
+  const youtube_api_key = process.env.google_key
+  const url = `https://www.googleapis.com/youtube/v3/search?type=video&part=snippet&maxResults=10&q=${req.params.query}&key=${youtube_api_key}`
+  fetch(url).then(resp=>resp.json()).then(json=>{
+    res.json(parseYt(json));
+
+  }).catch(e=>res.end(e.message));
+});
+
 app.use("/samples", express.static("/samples"));
 
 app.get("/api/twitch/(:uri)", function (req, res, next) {
