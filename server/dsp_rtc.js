@@ -129,7 +129,7 @@ router.get("/:service/connect", async function (req, res, next) {
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
       //  var candidates = await waitUntilIceGatheringStateComplete(pc, {})
-        // pc.onIceCandidate = console.log;
+         pc.onIceCandidate = console.log;
         pc.id = rtcConnections.length;
 
         rtcConnections.push(pc);
