@@ -22,7 +22,14 @@ const peerRTCConfig = {
     {url:'stun:stun1.l.google.com:19302'},
     {url:'stun:stun2.l.google.com:19302'},
     {url:'stun:stun3.l.google.com:19302'},
-    {url:'stun:stun4.l.google.com:19302'}],
+    {url:'stun:stun4.l.google.com:19302'},
+    {
+        url: 'turn:numb.viagenie.ca',
+        credential: 'welcome',
+        username: 'yisheng.jiang@gmail.com'
+    }
+
+],
     sdpSemantics: 'unified-plan'
 }
 const SERVER_RTC_SERVICES = {
@@ -127,9 +134,13 @@ router.get("/:service/connect", async function (req, res, next) {
         service.serverFunction(pc,{});
 
         const offer = await pc.createOffer();
+
         await pc.setLocalDescription(offer);
+
       //  var candidates = await waitUntilIceGatheringStateComplete(pc, {})
-         pc.onIceCandidate = console.log;
+
+    var iceCandidates = await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
+
         pc.id = rtcConnections.length;
 
         rtcConnections.push(pc);
@@ -141,7 +152,7 @@ router.get("/:service/connect", async function (req, res, next) {
             connectionState: pc.connectionState,
             localDescription: pc.localDescription,
             signalingState: pc.signalingState,
-            state:"" 
+	     iceCandidates: iceCandidates
         })
     } catch (e) {
         console.log('err')
@@ -162,15 +173,21 @@ router.post("/:service/answer/:id", async function (req, res, next) {
     const onIceConnectionStateChange = () => {
         console.log('ice candidate'+pc.iceConnectionState);
     };
+    var { offer, c_iceCandidates } = req.body;
+
+    await pc.setRemoteDescription(offer);
+
+    pc.addEventListener('iceconnectionstatechange', onIceConnectionStateChange);
     var iceCandidates = await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
+
+    console.log(iceCandidates, " ... ice cands in post anser");
 
 
     pc.addEventListener('iceconnectionstatechange', onIceConnectionStateChange);
 
 
 
-    await pc.setRemoteDescription(req.body);
-
+    c_iceCandidates.forEach(can=> pc.addIceCandidate(can));
 
 
     //res.end("answer set");
@@ -229,7 +246,7 @@ function errorHandler(err, req, res, next) {
 //https://github.com/node-webrtc/node-webrtc-examples/blob/master/lib/server/connections/webrtcconnection.js
 async function waitUntilIceGatheringStateComplete(peerConnection, options) {
     if (peerConnection.iceGatheringState === 'complete') {
-        return;
+        return [];
     }
 
     const { timeToHostCandidates } = options;
@@ -243,8 +260,10 @@ async function waitUntilIceGatheringStateComplete(peerConnection, options) {
     const timeout = setTimeout(() => {
         peerConnection.removeEventListener('icecandidate', onIceCandidate);
         deferred.reject(new Error('Timed out waiting for host candidates'));
+	   deferred.resolve([]);
     }, timeToHostCandidates);
     var candidates=[];
+
     function onIceCandidate({ candidate }) {
 
         if (!candidate) {

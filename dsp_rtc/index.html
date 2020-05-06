@@ -101,7 +101,7 @@
 
       window.setInterval(function() {
             var statsOutput=''
-            pc.getStats(null).then(stats => {
+            window.pc.getStats(null).then(stats => {
             stats.forEach(report => {
               statsOutput += `<h2>Report: ${report.type}</h3>\n<strong>ID:</strong> ${report.id}<br>\n` +
                              `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;

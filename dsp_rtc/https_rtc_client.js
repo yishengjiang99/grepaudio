@@ -1,5 +1,4 @@
 
-
 const peerRTCConfig = {
     'RTCIceServers': [{url:'stun:stun01.sipphone.com'},
     {url:'stun:stun.ekiga.net'},
@@ -26,15 +25,12 @@ const peerRTCConfig = {
         username: 'webrtc@live.com'
     },
     {
-        url: 'turn:192.158.29.39:3478?transport=udp',
-        credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-        username: '28224511:1379330808'
-    },
-    {
-        url: 'turn:192.158.29.39:3478?transport=tcp',
-        credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-        username: '28224511:1379330808'
-        }]
+         url: 'turn:numb.viagenie.ca',
+        credential: 'welcome',
+        username: 'yisheng.jiang@gmail.com'
+	}
+    ],
+    sdpSemantics: 'unified-plan'
 }
 
 var yourVideo = document.getElementById("yourVideo");
@@ -66,8 +62,10 @@ const list_services = function (container,gotRemoteStream) {
     });
 }
 
+function sleep(ms){ return new Promise( (resolve, reject) => setTimeout(resolve, ms))}
 
-    async function connectToService(service,gotRemoteStream) {
+    
+async function connectToService(service,gotRemoteStream) {
 
         try{
             const res = await fetch("/api/rtc/" + service + "/connect")
@@ -75,7 +73,7 @@ const list_services = function (container,gotRemoteStream) {
             var pc = new RTCPeerConnection(peerRTCConfig);
             var icecandidates=[];
             pc.onicecandidate = function(ev){
-              icecandidates.push(ev.candidate)
+              icecandidates.push(ev.candidate);
             }
             await pc.setRemoteDescription(new RTCSessionDescription(remotePeer.localDescription));
             const localStream = await window.navigator.mediaDevices.getUserMedia({
@@ -92,11 +90,11 @@ const list_services = function (container,gotRemoteStream) {
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
 
-            // await sleep(2);
+            await sleep(2);
 
             await fetch("/api/rtc/" + service + "/answer/" + remotePeer.id, {
                 method: 'POST',
-                body: JSON.stringify(pc.localDescription),
+                body: JSON.stringify({offer: pc.localDescription, iceCandidates:icecandidates }),
                 headers: {
                     'Content-Type': 'application/json'
                 }
