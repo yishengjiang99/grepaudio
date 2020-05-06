@@ -144,6 +144,7 @@ import BandPassFilterNode from './band_pass_lfc/BandPassFilterNode.js'
 import BroadcasterClient from './twitch/BroadcastClient.js'
 import BoardcastViewerClient from './twitch/BroadcastViewerClient.js'
 import { selector, slider, numeric } from "./functions.js";
+import https_rtc_client from './dsp_rtc/https_rtc_client.js';
 
 let audioCtx, audioTag, eq;
 
@@ -245,6 +246,16 @@ overlay.onclick = async function (e) {
   const outputdiv = $("#output_cp");
 
   const playbackGainSlider = slider(outputdiv, { wrap: "inline", prop: playbackGain.gain, min: "0", max: "4", step: "0.05", label: "Local Playback gain" });
+  var bv = BoardcastViewerClient({
+      onEvent: log,
+      mediaObjectReady: function (stream) {
+        // audio22.srcObject = stream;
+        // audio22.play();
+        // //sream = new MediaStream([e.track]);
+        var source = audioCtx.createMediaStreamSource(stream);
+        audioTag.add_remote_stream(source, 1);
+      }
+    });
 
 
 
@@ -265,18 +276,6 @@ overlay.onclick = async function (e) {
   }
   const audio22 = $("video#rtc")
   $("#listen").onclick = function (e) {
-    var bv = BoardcastViewerClient({
-      onEvent: log,
-      mediaObjectReady: function (stream) {
-        audio22.srcObject = stream;
-        audio22.play();
-        //sream = new MediaStream([e.track]);
-        var source = audioCtx.createMediaStreamSource(stream);
-        audioTag.add_remote_stream(source, 1);
-      }
-    });
-
-
     bv.listChannels().then(channels => {
       for (const channel of Object.values(channels)) {
         var a = document.createElement("a");
@@ -305,7 +304,6 @@ overlay.onclick = async function (e) {
       e.target.innerText = 'Done'
     } else {
       isRecording = false;
-      debugger;
       rworker.postMessage({
         command: "exportWAV",
         type: "audio/wav"
@@ -348,31 +346,22 @@ overlay.onclick = async function (e) {
     }
   });
 
-  ytSearch.initialize();
-
-  $j('#ytsearch').typeahead(
-  {
-    hint: true,
-    highlight: true,
-    minLength: 1
-  }, 
-  {
-  name: 'ytmusic',
-  templates: {
-    empty: [
-      '<div class="empty-message">',
-        'not found',
-      '</div>'
-    ].join('\n'),
-    suggestion: template,
-  },
- displayKey: 'title',
-  source: ytSearch 
-}).on('typeahead:selected', function(evt, item) {
-
-  audioTag.loadURLTo('/api/'+item.vid+'.mp3',0);
-  return item;
-});
+ytSearch.initialize();
+$j('#ytsearch').typeahead(
+  { hint: true, highlight: true,minLength: 1},
+  { 
+    name: 'ytmusic', 
+    templates: {
+      empty: ['<div class="empty-message">','not found','</div>'].join('\n'),
+      suggestion: template
+    },
+    displayKey: 'title',source: ytSearch
+  })
+  .on('typeahead:selected', function(evt, item) {
+    audio1.src = '/api/'+item.vid+'.mp3';
+    audioTag.add_remote_stream( audioCtx.createMediaElementSource(audio1), 0, "loading "+item.title);
+    return item;
+  });
 
   window.vfs = [group, audioTag, noiseGate, bandpassFilterNode, audioCtx, group];
 

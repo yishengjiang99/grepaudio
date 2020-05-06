@@ -38,6 +38,9 @@ var SimpleConsole = function(options) {
 	output.className = "simple-console-output";
 	output.setAttribute("role", "log");
 	output.setAttribute("aria-live", "polite");
+	output.onclick() = {
+		output.css.opacity *= 2;
+	}
 
 	var input_wrapper = document.createElement("div");
 	input_wrapper.className = "simple-console-input-wrapper";

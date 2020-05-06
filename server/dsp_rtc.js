@@ -7,6 +7,8 @@ const ffmpeg = require('fluent-ffmpeg');
 const { StreamInput, StreamOutput } = require('fluent-ffmpeg-multistream');
 const { RTCAudioSink, RTCVideoSink, RTCAudioSource } = require('wrtc').nonstandard;
 const WebSocket = require('ws');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ytdl = require('ytdl-core')
 
 var rtcConnections = [];
 var signalServerclient = new WebSocket("https://api.grepawk.com/signal");
@@ -43,6 +45,46 @@ const SERVER_RTC_SERVICES = {
             ]);
         }
     },
+    streamer:{
+        serverFunction: (peerConnection,req) => {
+            const format = req.params.format;
+            console.log('try to create data chan');
+            var channel = peerConnection.createDataChannel('napster');
+            channel.onopen = function(){
+                ffmpeg.setFfmpegPath(ffmpegPath);
+                var input = new PassThrough();
+                ytdl(req.params.vid, { audioFormat: 'mp3',filter:"audioonly",liveBuffer:30*418000})
+                .pipe(input);
+                var proc = ffmpeg().addInput(input).format('mp3')
+;
+                proc.ondata = function(){
+
+                }
+            }
+
+            peerConnection.ondatachannel = function(evt){
+                const dataChannel = evt.channel;
+                console.log(dataChannel.stream);
+                console.log('remote datachannel created');
+                dataChannel.onopen = function(){
+                    ffmpeg.setFfmpegPath(ffmpegPath);
+                    const p = new PassThrough();
+                    var vid = ytdl(req.params.vid, { audioFormat: 'mp3' });
+                    vid.pipe(p);
+                    console.log(p);
+                    console.log("text tick");
+                    var output = ffmpeg().addInput(p)
+                    .format('mp3')
+                    .pipe(new PassThrough())
+                    .pipe(dataChannel.stream);
+                    output.on('data',function(evt){
+                        dataChannel.send(evt.data);
+                    });
+                }
+            }      
+        }
+    },
+
     audioFilter: {
         serverFunction: function (peerConnection, param, res) {
             const audioTransceiver = peerConnection.addTransceiver('audio');
@@ -108,15 +150,19 @@ signalServerclient.on('open', function () {
         signalServerclient.send(JSON.stringify({ type: "register_stream", channel_name: service }));
     })
 })
-
-
-
 const app = express();
 var router = express.Router()
 
 router.use(bodyParser.json());
 router.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
+});
+
+router.get('/connections', function (req, res) {
+    signalServerclient.send(JSON.stringify({type:"list"}));
+    signalServerclient.onmessage(event=>{
+        res.json(event.data);
+    })
 });
 
 router.get("/list", function (req, res) {
@@ -131,14 +177,13 @@ router.get("/:service/connect", async function (req, res, next) {
         if (!service) {
             return res.sendStatus(404);
         }
-        service.serverFunction(pc,{});
+        service.serverFunction(pc,req);
 
         const offer = await pc.createOffer();
 
         await pc.setLocalDescription(offer);
 
-      //  var candidates = await waitUntilIceGatheringStateComplete(pc, {})
-
+        
         var iceCandidates = await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
 
         pc.id = rtcConnections.length;
@@ -152,7 +197,7 @@ router.get("/:service/connect", async function (req, res, next) {
             connectionState: pc.connectionState,
             localDescription: pc.localDescription,
             signalingState: pc.signalingState,
-	     iceCandidates: iceCandidates
+	        iceCandidates: iceCandidates
         })
     } catch (e) {
         console.log('err')
@@ -160,9 +205,6 @@ router.get("/:service/connect", async function (req, res, next) {
     }
 });
 
-router.post("/:service/answer/:id/stop", async function (req, res, next) {
-
-})
 
 router.post("/:service/answer/:id", async function (req, res, next) {
     var id = req.params.id;
@@ -194,22 +236,26 @@ router.post("/:service/answer/:id", async function (req, res, next) {
 
 });
 
-router.post("/:service/offer", async function (req, res) {
-    var offer = req.body;
-
-    var pc = new wrtc.RTCPeerConnection({
-        sdpSemantics: 'unified-plan'
-    });
+router.use("/:service/offer/(:vid).(:format)", async function (req, res) {
+    console.log(req.params.vid);
     try {
-  
-        await pc.setRemoteDescription(new RTCSessionDescription(offer));
+        const service = SERVER_RTC_SERVICES[req.params.service];
+        if (!service) {
+            return res.sendStatus(404);
+        }
+
+        var pc = new wrtc.RTCPeerConnection(peerRTCConfig);
+        pc.id = rtcConnections.length;
+        rtcConnections.push(pc);
+        var { offer, iceCandidates } = req.body;
+        service.serverFunction(pc,req);
+
+       await pc.setRemoteDescription(new wrtc.RTCSessionDescription(offer));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
 
-
        var icecandidates =  await waitUntilIceGatheringStateComplete(pc, { timeToHostCandidates: 5000 });
-
-        console.log("ice candidate resolved");
+        console.log("ice cans "+icecandidates);
 
         return res.json({
             id: pc.id,
@@ -220,19 +266,20 @@ router.post("/:service/offer", async function (req, res) {
             iceCandidates: icecandidates,
         })
         } catch (e) {
-        console.log(e);
-        next(e);
+          console.log(e);
     }
-
-
 })
+
+
+
 app.use(errorHandler);
 function errorHandler(err, req, res, next) {
     if (res.headersSent) {
         return next(err)
     }
     res.status(500)
-    res.render('error', { error: err })
+    res.json({ error: err })
+
 }
 
 //https://github.com/node-webrtc/node-webrtc-examples/blob/master/lib/server/connections/webrtcconnection.js
@@ -248,13 +295,12 @@ async function waitUntilIceGatheringStateComplete(peerConnection, options) {
         deferred.resolve = resolve;
         deferred.reject = reject;
     });
+    var candidates=[];
 
     const timeout = setTimeout(() => {
         peerConnection.removeEventListener('icecandidate', onIceCandidate);
-        deferred.reject(new Error('Timed out waiting for host candidates'));
-	   deferred.resolve([]);
+	   deferred.resolve(candidates);
     }, timeToHostCandidates);
-    var candidates=[];
 
     function onIceCandidate({ candidate }) {
 

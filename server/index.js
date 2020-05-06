@@ -192,6 +192,7 @@ app.use("/api/(:vid).mp3", async (req, res, next) => {
 app.use(function (req, res) {
   res.end(req.path);
 })
+console.log("listening on httpport "+httpport);
 app.listen(httpport);
 
 require("./stdin.js");

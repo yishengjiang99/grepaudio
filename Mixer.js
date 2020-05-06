@@ -30,17 +30,16 @@ export default async function (ctx, containerId) {
 
     function loadURL(url) {
       nowPlayingLabels[index].innerHTML = 'loading '+url;
-
       const xhr = new XMLHttpRequest();
       xhr.open("get", url, true);
       xhr.responseType = 'arraybuffer';
       xhr.setRequestHeader("Range", "Bytes:0-")
       var counter = 0;
       xhr.onprogress = (e)=>{
-        
+        log(e.progress);
       }
       xhr.onreadystatechange = function () {
-        nowPlayingLabels[index]='ready state '+xhr.readyState;
+        nowPlayingLabels[index].innerHTML="ready state "+xhr.readyState;
 
         if (xhr.readyState > 2) {
           if (xhr.response !== null) {
@@ -64,7 +63,7 @@ export default async function (ctx, containerId) {
         }
       }
       xhr.send();
-    }
+  }
     return source;
   }
   var audioPlayer
@@ -107,7 +106,7 @@ export default async function (ctx, containerId) {
     if (indexfile == 'YT_SEARCH') {
 
       var select = document.getElementById("ytsearch");
-      // var select=document.createElement("span");
+//       var select=document.createElement("span");
     } else if (indexfile == 'Microphone') {
 
 
@@ -147,10 +146,10 @@ export default async function (ctx, containerId) {
         return `<button class="btn btn-secondary" value='${url}'>${name}</button>`
       }).join("") + "</div>"
 
-      // select.querySelectorAll("button").forEach(button=>button.addEventListener("click", (e) => {
-      //   var url = e.target.value;
-      //   loadURLTo(url, index);
-      // }));
+      select.querySelectorAll("button").forEach(button=>button.addEventListener("click", (e) => {
+        var url = e.target.value;
+        loadURLTo(url, index);
+      }));
 
     } else {
       const song_db = await fetch("./samples/" + indexfile).then(res => res.text()).then(text => text.split("\n"));
@@ -189,11 +188,11 @@ export default async function (ctx, containerId) {
     }))
 
     apply.onclick = loadURL;
-    select.addEventListener("input", e=>{
-      if(e.target.type !=='text'){
-        loadURL(e);
-      }
-    });
+    // select.addEventListener("input", e=>{
+    //   if(e.target.type !=='text'){
+    //     loadURL(e);
+    //   }
+    // });
 
     async function loadURL(e) {
       var url = select.value;
