@@ -155,7 +155,7 @@ var router = express.Router()
 
 router.use(bodyParser.json());
 router.get('/', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/public/rtc.html');
 });
 
 router.get('/connections', function (req, res) {
