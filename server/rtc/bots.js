@@ -130,10 +130,10 @@ const SERVER_RTC_SERVICES = {
     tom: "SERVER_FRIEND"
 }
 
-// var bots = Object.keys(SERVER_RTC_SERVICES).map(service=>{
-//     var prepareStream = SERVER_RTC_SERVICES[service].serverFunction || function(){ console.log(" svr callback for "+service)};
-//     BroadcasterClient({ onEvent: console.log, prepareStream: prepareStream}).startBroadcast(service);
-// });
+ var bots = Object.keys(SERVER_RTC_SERVICES).map(service=>{
+     var prepareStream = SERVER_RTC_SERVICES[service].serverFunction || function(){ console.log(" svr callback for "+service)};
+     BroadcasterClient({ onEvent: console.log, prepareStream: prepareStream}).startBroadcast(service);
+ });
 
 console.log("HI");
 
