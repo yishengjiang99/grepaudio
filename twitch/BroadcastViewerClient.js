@@ -47,92 +47,85 @@ function BroadcastViewerClient(config) {
     let onEvent = config.onEvent || console.log;
     let mediaObjectReady = config.mediaObjectReady || console.log;
 
+    let mediaObjectOffline = config.mediaObjectOffline;
     let signalConnection;
     let clientConnection;
     let remoteTracks = {};
     let remoteTrackMetaData = {};
     let metadataChannel;
     let host_uuid;
-    let audioCtx = window.g_audioCtx;
 
-    signalConnection = new WebSocket(hostname);
-    signalConnection.onopen = function (e) {
-        signalConnection.onmessage = function (event) {
-            let data = JSON.parse(event.data);
-            switch (data.type) {
-                case 'offer':
-                    onEvent("got offer: host_uuid=", data.host_uuid);
-                    gotSDP(data.offer, data.host_uuid);
-                    break;
-                case 'candidate':
-                    onEvent("got candidate");
-                    clientConnection.addIceCandidate(data.candidate);
-                    break;
+    function listChannels() {
+        return new Promise((resolve, reject) => {
+            signalConnection = new WebSocket(hostname);
+            signalConnection.onopen = function (e) {
+                signalConnection.onmessage = function (event) {
+                    let data = JSON.parse(event.data);
 
-                case 'error':
-                    onEvent("Error: " + data.message);
-                    break;
-                default:
-                    break;
+                    if (data.type === 'list') {
+                        signalConnection.close();
+                        resolve(data.data);
+                    }
+                };
+
+                signalConnection.send(JSON.stringify({
+                    type: "list",
+                }))
+            }
+        })
+
+    }
+    function watchChannel(channelName) {
+        signalConnection = new WebSocket(hostname);
+        signalConnection.onopen = function (e) {
+            signalConnection.send(JSON.stringify({
+                type: "watch_stream",
+                channel: channelName
+            }))
+
+            signalConnection.onmessage = function (event) {
+                let data = JSON.parse(event.data);
+                onEvent("Signal Server msg type " + data.type);
+                switch (data.type) {
+                    case 'offer':
+                        onEvent("got offer: host_uuid=", data.host_uuid);
+                        gotSDP(data.offer, data.host_uuid);
+                        break;
+                    case 'candidate':
+                        onEvent("got candidate");
+                        clientConnection.addIceCandidate(data.candidate);
+                        break;
+
+                    case 'error':
+                        onEvent("Error: " + data.message);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }
 
-
-
-    function listChannels() {
-        return new Promise((resolve, reject) => {
-            signalConnection.send(JSON.stringify({
-                    type: "watch_stream",
-                    channel: channelName,
-                    args: [arg1, arg2] 
-                
-            }))
-        })
-    }
-
-    function watchChannel(channelName, arg1, arg2) {
-        signalConnection.send(JSON.stringify({
-            type: "list",
-        }))
-
-    }
 
     async function gotSDP(offer, hostId) {
         host_uuid = hostId;
         clientConnection = new RTCPeerConnection(peerRTCConfig);
-        clientConnection.ondatachannel = function (evt) {
-            var channel = evt.channel;
-
-            if(channel.binaryType=='arrayBuffer'){
-                channel.onopen = () => {
-                    log("binary chan open")
-                    channel.onmessage = ( message )=>{
-                        audioCtx.decodeAudioData(message.data).then(audioBuffer=>{
-                            source.buffer = audioBuffer;  
-                            gotRemoteStream(source.stream);
-                            source.oncanplay = ()=>this.play();
-                        });
-                    }
-                }
-            }
-
-            evt.channel.onopen = () => onEvent("metadata channel on client open====");
-
-            evt.channel.onmessage = (e) => {
-                onEvent("got metadata " + e.data);
-                let data = JSON.parse(e.data);
-                if (data.type == 'mediaMetadata') {
-                    let mediaDescriptors = data.data;
-                    mediaDescriptors.forEach(trackMetaData => {
-                        let trackId = trackMetaData.trackId;
-                        remoteTrackMetaData[trackId] = trackMetaData;
-                    });
-                }
-                showRemoteTracks();
-            }
-        }
-
+        // clientConnection.ondatachannel = function (evt) {
+        //     evt.channel.onopen = () => onEvent("metadata channel on client open");
+        //     evt.channel.onmessage = (e) => {
+        //         onEvent("got metadata " + e.data);
+        //         let data = JSON.parse(e.data);
+        //         if (data.type == 'mediaMetadata') {
+        //             let mediaDescriptors = data.data;
+        //             mediaDescriptors.forEach(trackMetaData => {
+        //                 let trackId = trackMetaData.trackId;
+        //                 remoteTrackMetaData[trackId] = trackMetaData;
+        //             });
+        //         }
+        //         showRemoteTracks();
+        //     }
+        // }
+        
 
         function showRemoteTracks() {
             onEvent("showing remote tracks: " + Object.keys(remoteTrackMetaData).length);
@@ -157,7 +150,7 @@ function BroadcastViewerClient(config) {
 
         clientConnection.onicecandidate = (e) => {
             onEvent("client on ice candidate ", e);
-
+        
             if (e.candidate) {
                 signalConnection.send(JSON.stringify({
                     type: "candidate",
@@ -170,8 +163,10 @@ function BroadcastViewerClient(config) {
         clientConnection.ontrack = (e) => {
             remoteTracks.push(e.track);
             mediaObjectReady(new MediaStream(remoteTracks));
+
+                    
         }
-        clientConnection.onaddstream = (e) => {
+        clientConnection.onaddstream = (e)=>{
             mediaObjectReady(e.streams[0])
         }
         await clientConnection.setRemoteDescription(new RTCSessionDescription(offer));
@@ -193,8 +188,8 @@ function BroadcastViewerClient(config) {
     "signalingstatechange": Event;
     "statsended": RTCStatsEvent;
     "track": RTCTrackEvent;*/
-        clientConnection.addEventListener("connectionstatechange", e => {
-            if (e.target.connectState == 'connected') {
+        clientConnection.addEventListener("connectionstatechange", e=>{
+            if(e.target.connectState=='connected'){
                 mediaObjectReady(new MediaStream(remoteTracks));
             }
         });
@@ -212,4 +207,5 @@ function BroadcastViewerClient(config) {
         listChannels: listChannels
     }
 }
+
 export default BroadcastViewerClient;
