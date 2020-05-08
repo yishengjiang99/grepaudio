@@ -5,8 +5,12 @@ var wss = new WebSocketServer({
 });
 
 function sendTo(connection, message) {
-console.log('sending ',message);
+try{	
+  console.log('sending ',message);
    connection.send(JSON.stringify(message));
+  }catch(e){
+	console.log(e);
+  }
 }
 
 function sendError(connection, msg) {
