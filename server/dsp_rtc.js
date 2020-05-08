@@ -147,7 +147,7 @@ const SERVER_RTC_SERVICES = {
 
 signalServerclient.on('open', function () {
     Object.keys(SERVER_RTC_SERVICES).forEach(service => {
-        signalServerclient.send(JSON.stringify({ type: "register_stream", channel_name: service }));
+        signalServerclient.send(JSON.stringify({ type: "register_stream",channel: service }));
     })
 })
 const app = express();
