@@ -82,29 +82,17 @@ function BroadcastViewerClient(config) {
 
     function listChannels() {
         return new Promise((resolve, reject) => {
-            signalConnection = new WebSocket(hostname);
-            signalConnection.onopen = function (e) {
-                signalConnection.onmessage = function (event) {
-                    let data = JSON.parse(event.data);
-                    if (data.type === 'list') {
-                        signalConnection.close();
-                        resolve(data.data);
-                    }
-                };
-
-                signalConnection.send(JSON.stringify({
-                    type: "list",
-                }))
-            }
+            signalConnection.send(JSON.stringify({
+                type: "list",
+            }))
         })
     }
 
     function watchChannel(channelName, arg1, arg2) {
         signalConnection.send(JSON.stringify({
-            type: "watch_stream",
-            channel: channelName,
-            args: [arg1, arg2]
-        }));
+            type: "list",
+        }))
+
     }
 
     async function gotSDP(offer, hostId) {

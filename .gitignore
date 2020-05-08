@@ -24,3 +24,8 @@ cert.pem
 fullchain.pem
 .gitignore
 privkey.pem
+bower_components/*
+samples/impulses/
+*.save
+server/nodemon.json
+server/Dr Dre- Still Dre instrumental-JVISRjhXzzM.jpg

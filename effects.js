@@ -14,21 +14,18 @@ function Effects(ctx,params){
 	const keys = 'asdfghj'.split("");
 	const notes = '261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88'.split(", ");
 
-	var masterGain = g_audioCtx.createGain();
-	masterGain.gain.setValueAtTime(1, g_audioCtx.currentTime)
+	var masterGain = ctx.createGain();
+	masterGain.gain.setValueAtTime(1, ctx.currentTime)
     var wetGain = ctx.createGain();
     wetGain.gain.value = 1.3
     var wetDelay = ctx.createDelay();
     wetDelay.delayTime.value = 0.1;
 	var adsrs = {};
-	var ctx = g_audioCtx;
 
 	var convolver = null;
     var waveShaper =null;
     var loaded = false;
-    Promise.all(setWaveShaper(waveformURL), setImpulse(impulseUrl)).then(function(){
-        loaded=true;
-    })
+
     function connect(node){
         this.masterGain.connect(node)
     }
@@ -77,25 +74,42 @@ function Effects(ctx,params){
 		this.waveShaper =g_audioCtx.createPeriodicWave(json.real, json.imag)
 	}
     
-	function createEnvelope(index){
-        var LFO = ctx.createOscillator();
-		LFO.frequency.value = notes[index];
-		LFO.type = 'sine'
-		if(waveShaper) {
-			LFO.setPeriodicWave(waveShaper);
-		}
+	function createEnvelope(i){
 
+        var LFO = ctx.createOscillator();
+		LFO.frequency.value = notes[i];
+		LFO.type = 'square'
 		var gain = ctx.createGain();
 		gain.gain.value = 0;
-		LFO.connect(gain).connect(masterGain)
-		if(convolver){
-            LFO.connect(convolver);
-            convolver.connect(wetDelay).connect(wetGain).connect(gain);
-		}
+        if(waveShaper){
+            LFO.setPeriodicWave(waveShaper);
+
+        }
+        
 		var gainEnvelope = new Envelope(min, max, attack, decay, sustain, release, gain.gain);
-		adsrs[index]= gainEnvelope;
+		adsrs[i] = gainEnvelope;
+		LFO.connect(gain);
 		gain.connect(masterGain)
-		LFO.start(0);
+        LFO.start(0);
+        
+        // var LFO = ctx.createOscillator();
+		// LFO.frequency.value = notes[index];
+		// LFO.type = 'sine'
+		// if(waveShaper) {
+		// 	LFO.setPeriodicWave(waveShaper);
+		// }
+
+		// var gain = ctx.createGain();
+		// gain.gain.value = 0;
+		// LFO.connect(gain).connect(masterGain)
+		// if(convolver){
+        //     LFO.connect(convolver);
+        //     convolver.connect(wetDelay).connect(wetGain).connect(gain);
+		// }
+		// var gainEnvelope = new Envelope(min, max, attack, decay, sustain, release, gain.gain);
+		// adsrs[index]= gainEnvelope;
+		// gain.connect(masterGain)
+		// LFO.start(0);
   
 		return gainEnvelope;
     }

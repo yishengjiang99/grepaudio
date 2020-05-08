@@ -11,25 +11,27 @@ const firebaseConfig = {
 	measurementId: "G-8RCQ4PX008"
 };
 window.loadBuffer=function(url){
-	var ctx = window.g_audioCtx;
-	const xhr = new XMLHttpRequest();
-	xhr.open("get", url, true);
-	xhr.responseType = 'arraybuffer';
-	xhr.setRequestHeader("Range", "Bytes:0-")
+    return new Promise((resolve, reject) => {
+        var ctx = window.g_audioCtx;
+        const xhr = new XMLHttpRequest();
+        xhr.open("get", url, true);
+        xhr.responseType = 'arraybuffer';
+        xhr.setRequestHeader("Range", "Bytes:0-")
 
-	xhr.onreadystatechange = function () {
-	  if (xhr.readyState > 2) {
-		// process newData
-		if (xhr.response !== null) {
-		  ctx.decodeAudioData(xhr.response, function (processed) {
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState > 2) {
+                // process newData
+                if (xhr.response !== null) {
+                    ctx.decodeAudioData(xhr.response, function (processed) {
 
-			var source = ctx.createBufferSourceNode(); 
-			source.buffer = processed;
-			Promise.resolve(source)
-		  });
-		}
-	  }
-	};
+                        var source = ctx.createBufferSourceNode();
+                        source.buffer = processed;
+                        Promise.resolve(source)
+                    });
+                }
+            }
+        };
+    })
 }
 window.get_db = function(ref){
 	if(!window.db){
@@ -101,33 +103,41 @@ export async function chord(url, params) {
 	var ctx = g_audioCtx;
 	var waveform = g_audioCtx.createPeriodicWave(json.real, json.imag)
 
-	keys.forEach((l, i) => {
-		var LFO = ctx.createOscillator();
-		LFO.frequency.value = notes[i];
-		LFO.type = 'square'
+	function createKey(i){
+		var osc1 = ctx.createOscillator();
+		osc1.frequency.value = notes[i];
+		osc1.type = 'sine'
+
+		var osc2 = ctx.createOscillator();
+		osc2.frequency.value = notes[i] * 2;
+		osc2a.type = 'sawtooth'
+
 		var gain = ctx.createGain();
 		gain.gain.value = 0;
 
-		LFO.setPeriodicWave(waveform)
+		osc1.setPeriodicWave(waveform)
 		var gainEnvelope = new Envelope(min, max, attack, decay, sustain, release, gain.gain);
 		adsrs.push(gainEnvelope)
-		LFO.connect(gain);
+		osc1.connect(gain);
 		gain.connect(masterGain)
-		LFO.start(0);
-	})
+		osc1.start(0);
+		return gainEnvelope;
+	}
 
 	var lastkeydown = {
 
 	};
 
 	window.addEventListener("keydown", function (e) {
-		if (keys.indexOf(e.key) > -1) {
+		var i = keys.indexOf(e.key);
 
-			var env = adsrs[keys.indexOf(e.key)];
+		if (i>-1) {
+			if (!adsrs[i]){
+				adsrs[i] = createKey(i);
+			}
+			var env =adsrs[i] ;
 
 			if (e.repeat) {
-				var timelapsed = ctx.currentTime - lastkeydown[e.key];
-//				log(" repeat afterr " + timelapsed)
 				env.hold(ctx.currentTime);
 			} else {
 				env.trigger(ctx.currentTime);
@@ -283,6 +293,8 @@ export function histogram2(elemId, analyzer) {
 		cvt.strokeText(f.toFixed(0) + "Hz", x, 20);
 		cvt.strokeText(meta, width - 20, 20);
 	}
+
+	
 	const bin_number_to_freq = (i) => 0.5 * gctx.sampleRate * i / analyzer.frequencyBinCount;
 	//HZ_LIST
 	function drawBars() {

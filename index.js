@@ -1,4 +1,4 @@
-git    import equilizer from "./equalizer.js";
+    import equilizer from "./equalizer.js";
     import Mixer from './Mixer.js';
     import NoiseGate from './NoiseGate/NoiseGate.js'
     import { split_band } from './splitband.js'

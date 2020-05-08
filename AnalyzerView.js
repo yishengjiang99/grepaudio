@@ -129,6 +129,7 @@ var AnalyzerView = function(audioNode, params){
       return histogram(elemId, width, height, false);
     },
     histogram: function(elemId, width = 430, height= 200, repeating=true){
+      debugger;
       // var fromBin = xshift * zoomScale;
       // var toBin = Math.min(bins, (xshift - bins) * zoomScale);
       // var barWidth = width / (fromBin - toBin);
@@ -148,7 +149,7 @@ var AnalyzerView = function(audioNode, params){
       
       function drawBars(){
           var draw= !($("#showfft") && $("#showfft").checked == false)
-          var draw_accum = !($("#showcummulative") && $("#showcummulative").checked == false)
+          var draw_accum = false;!($("#showcummulative") && $("#showcummulative").checked == false)
           var t = requestAnimationFrame(drawBars);;
 
           fft.getByteFrequencyData(dataArray);
@@ -233,3 +234,5 @@ var AnalyzerView = function(audioNode, params){
 }
 
 export default AnalyzerView;
+
+
