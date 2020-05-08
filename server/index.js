@@ -195,4 +195,4 @@ app.use(function (req, res) {
 console.log("listening on httpport "+httpport);
 app.listen(httpport);
 
-require("./stdin.js");
+require("./stream_signal.js");

@@ -5,6 +5,7 @@ var wss = new WebSocketServer({
 });
 
 function sendTo(connection, message) {
+console.log('sending ',message);
    connection.send(JSON.stringify(message));
 }
 
@@ -103,7 +104,7 @@ wss.on('connection', function (connection) {
       }
       connection.on("close", function () {
          if (connection.uuid) {
-             delete users[connection.uuid];
+             delete connections[connection.uuid];
              if (connection.otheruuid) {
                 console.log("Disconnecting from ", connection.otheruuid);
                 var conn = users[connection.otheruuid];

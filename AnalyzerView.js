@@ -129,7 +129,6 @@ var AnalyzerView = function(audioNode, params){
       return histogram(elemId, width, height, false);
     },
     histogram: function(elemId, width = 430, height= 200, repeating=true){
-      debugger;
       // var fromBin = xshift * zoomScale;
       // var toBin = Math.min(bins, (xshift - bins) * zoomScale);
       // var barWidth = width / (fromBin - toBin);
