@@ -83,7 +83,10 @@ function BroadcastViewerClient(config) {
     function listChannels() {
         return new Promise((resolve, reject) => {
             signalConnection.send(JSON.stringify({
-                type: "list",
+                    type: "watch_stream",
+                    channel: channelName,
+                    args: [arg1, arg2] 
+                
             }))
         })
     }
