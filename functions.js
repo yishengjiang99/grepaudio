@@ -110,14 +110,14 @@ export async function chord(url, params) {
 
 		var osc2 = ctx.createOscillator();
 		osc2.frequency.value = notes[i] * 2;
-		osc2a.type = 'sawtooth'
+		osc2.type = 'sawtooth'
 
 		var gain = ctx.createGain();
 		gain.gain.value = 0;
 
 		osc1.setPeriodicWave(waveform)
 		var gainEnvelope = new Envelope(min, max, attack, decay, sustain, release, gain.gain);
-		adsrs.push(gainEnvelope)
+		adsrs[i] = gainEnvelope
 		osc1.connect(gain);
 		gain.connect(masterGain)
 		osc1.start(0);
