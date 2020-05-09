@@ -47,6 +47,7 @@ const ctx = new AudioContext();
 import {HZ_LIST} from './constants.js';
 import Effects from './effects.js'
 import AnalyzerView from './AnalyzerView.js'
+import EventEmitter from './EventEmitter.js';
 
 var node = ctx.createMediaElementSource(audio1);
 
@@ -128,36 +129,17 @@ c.connect(a).connect(ctx.destination);
 var dbScale = 12;
 var pixelsPerDb = (0.5 * height) / dbScale;
 
-// log(freqs);
-canvas.addEventListener('wheel', function (event) {
-  event.preventDefault();
-
-  if (event.deltaY < 0) {
-    console.log('scrolling up');
-    if (canvas_zoomscale < 3) canvas_zoomscale += 0.05;
-    dirty=true;
-    document.getElementById('status').textContent = 'scrolling up';
-    drawScalesAndFrequencyResponses();
-
-  }
-  else if (event.deltaY > 0) {
-    if (canvas_zoomscale > 0.5) canvas_zoomscale -= 0.05;
-    dirty=true;    
-    drawScalesAndFrequencyResponses();
-    console.log('scrolling down');
-    document.getElementById('status').textContent = 'scrolling down';
-  }
-});
 
 var shiftup = 0;
 function YToDb(y){
   var db = (0.5 * height -   (y - shiftup) / canvas_zoomscale) / pixelsPerDb;
   return db;
 }
-  function dbToY(db) {
-    var y = ((0.5 * height) - pixelsPerDb * db) * canvas_zoomscale + shiftup;
-    return y;
-  }
+function dbToY(db) {
+  var y = ((0.5 * height) - pixelsPerDb * db) * canvas_zoomscale + shiftup;
+  return y;
+}
+var centerFreqKnobs = Array()
 
 var dirty = true;
 var canvas_zoomscale = 1;
@@ -166,7 +148,7 @@ drawScalesAndFrequencyResponses();
 function drawScalesAndFrequencyResponses() {
   centerFreqKnobs = Array(filters.length).fill(null);
   vtx.clearRect(0, 0, width, height);
-  vtx.fillStyle = 'rgba(255,255,255,0.01)';
+  vtx.fillStyle = 'black';
   vtx.fillRect(0, 0, width, height);
   // Draw frequency scale.
   var curveColor = "rgb(192,192,192)";
@@ -214,7 +196,7 @@ function drawScalesAndFrequencyResponses() {
   
   var centerFreqXMap = {};
 
-  for (let i in filters) {
+for (let i in filters) {
     const filter = filters[i]
     vtx.beginPath();
     vtx.moveTo(0, dbToY(0));
@@ -231,10 +213,12 @@ function drawScalesAndFrequencyResponses() {
         }
         if (freqs[k] > filter.frequency.value && centerFreqKnobs[i] == null) {
           centerFreqKnobs[i] = [k, y];
+          log("center for "+k+' set at '+k+ ' '+y);
           centerFreqXMap[k] = i;
         }
       }
     }
+
     vtx.stroke();
     vtx.closePath();
     console.log(i, 'vs', filterIndexInFocus)
@@ -263,7 +247,7 @@ function drawScalesAndFrequencyResponses() {
   vtx.closePath();
   vtx.stroke();
   dirty = false;
-  //requestAnimationFrame(drawScalesAndFrequencyResponses);
+  requestAnimationFrame(drawScalesAndFrequencyResponses);
 }
 
 
@@ -279,62 +263,81 @@ canvas.ondblclick = function (e) {
     drawScalesAndFrequencyResponses();
   }
 }
-var mousedown = false;
-canvas.onmousedown = function(e){
-  mousedown = true;
-}
-canvas.onmouseup = function(e){
-  mousedown = false;
-}
-canvas.onmousemove = function (e) {
-  focusClosest(e);
-  if(mousedown===true && filterIndexInFocus>-1) {
+// var mousedown = false;
+// canvas.onmousedown = function(e){
+//   mousedown = true;
+// }
+// canvas.onmouseup = function(e){
+//   mousedown = false;
+// }
+// canvas.onmousemove = function (e) {
+//   focusClosest(e);
+//   if(mousedown===true && filterIndexInFocus>-1) {
 
-    if(e.movementY * e.movementY > 25 ) {
-      var currentQ = filters[filterIndexInFocus].Q.value;
-      var targetQ;
-      if(e.offSetY > 0 ) targetQ = currentQ * 1.02;
-      else targetQ = currentQ * 0.97;
+//     if(e.movementY * e.movementY > 25 ) {
+//       var currentQ = filters[filterIndexInFocus].Q.value;
+//       var targetQ;
+//       if(e.offSetY > 0 ) targetQ = currentQ * 1.02;
+//       else targetQ = currentQ * 0.97;
 
 
-      filters[filterIndexInFocus].gain.setTargetAtTime(YToDb(e.offsetY), ctx.currentTime+0.001, 0.001);
-      filters[filterIndexInFocus].Q.setTargetAtTime(targetQ, ctx.currentTime+0.001, 0.001);
+//       filters[filterIndexInFocus].gain.setTargetAtTime(YToDb(e.offsetY), ctx.currentTime+0.001, 0.001);
+//       filters[filterIndexInFocus].Q.setTargetAtTime(targetQ, ctx.currentTime+0.001, 0.001);
 
-    }
-    if(e.movementX * e.movementX > 10 ) {
+//     }
+//     if(e.movementX * e.movementX > 10 ) {
         
-       filters[filterIndexInFocus].frequency.setTargetAtTime(  xToFreq(e.offsetX), ctx.currentTime+0.001, 0.001);
-    }
-    dirty = true;
+//        filters[filterIndexInFocus].frequency.setTargetAtTime(  xToFreq(e.offsetX), ctx.currentTime+0.001, 0.001);
+//     }
+//     dirty = true;
+//     drawScalesAndFrequencyResponses();
+//   }
+// //  e.offsetX;
+// }
+
+
+// canvas.ondragstart = function(e){
+
+//   focusClosest(e);
+
+// }
+
+// function focusClosest(e){
+//   const mousex = e.offsetX;
+//   var lastFocus = filterIndexInFocus;
+//   var closest = width;
+//   lastClick = ctx.currentTime;
+//   for (let i in centerFreqKnobs) {
+//     if (Math.abs(centerFreqKnobs[i][0] - mousex) < closest) {
+//       filterIndexInFocus = i;
+//       closest = Math.abs(centerFreqKnobs[i][0] - mousex);
+//     }
+//   }
+//   if (filterIndexInFocus !== lastFocus) {
+//     dirty = true;
+//     drawScalesAndFrequencyResponses();
+//   }
+// }
+// log(freqs);
+canvas.addEventListener('wheel', function (event) {
+  event.preventDefault();
+
+  if (event.deltaY < 0) {
+    console.log('scrolling up');
+    if (canvas_zoomscale < 3) canvas_zoomscale += 0.05;
+    dirty=true;
+    document.getElementById('status').textContent = 'scrolling up';
     drawScalesAndFrequencyResponses();
+
   }
-//  e.offsetX;
-
-}
-
-
-canvas.ondragstart = function(e){
-
-  focusClosest(e);
-
-}
-
-function focusClosest(e){
-  const mousex = e.offsetX;
-  var lastFocus = filterIndexInFocus;
-  var closest = width;
-  lastClick = ctx.currentTime;
-  for (let i in centerFreqKnobs) {
-    if (Math.abs(centerFreqKnobs[i][0] - mousex) < closest) {
-      filterIndexInFocus = i;
-      closest = Math.abs(centerFreqKnobs[i][0] - mousex);
-    }
-  }
-  if (filterIndexInFocus !== lastFocus) {
-    dirty = true;
+  else if (event.deltaY > 0) {
+    if (canvas_zoomscale > 0.5) canvas_zoomscale -= 0.05;
+    dirty=true;    
     drawScalesAndFrequencyResponses();
+    console.log('scrolling down');
+    document.getElementById('status').textContent = 'scrolling down';
   }
-}
+});
 
 function calcNyquists(width) {
   var freq = new Float32Array(width);

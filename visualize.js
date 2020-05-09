@@ -143,7 +143,7 @@ export function time_series(canvasId){
 
 
 function dbToY(db) {
-    var y = (0.5 * height) - pixelsPerDb * db;
+    var y = (0.5 * this.height) - pixelsPerDb * db;
     return y;
 }
 

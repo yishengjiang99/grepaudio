@@ -1,94 +1,115 @@
 import EventEmitter from './EventEmitter.js';
+import { LitElement, html } from './node_modules/lit-element/lit-element.js'
+AudioParam.prototype.request_value_change_UI_thread = function (newValue) {
+  this.cancelScheduledValues(context.currentTime)
+  this.setValueAtTime(newValue, context.currentTime + context.baseLatency);
+}
+const margin_left = 15;
+const margin_top = 15;
+const noctaves = 11;
 
-
-export default function Draw_EQ(ctx, filters) {
-  const nyquist = ctx.sampleRate/2
-  var dbScale = 32;
-  var canvas = document.querySelectorAll('#geq canvas')[0];
-  var histogram = document.querySelectorAll('#eq canvas')[1];
-  var vtx = canvas.getContext('2d');
-
-  var width_plus_margins = Math.max(800, canvas.parentElement.clientWidth);
-  var height_plus_margins = Math.max(500,canvas.parentElement.clientHeight);
-  canvas.setAttribute('width', canvas.parentElement.clientWidth);
-  canvas.setAttribute('height', canvas.parentElement.clientHeight);
-
-  const width = width_plus_margins - 30;
-  const height = height_plus_margins - 30;
-  const margin_top = 15;
-  const margin_left = 15;
-  var pixelsPerDb = (0.5 * height) / dbScale;
-  console.log(pixelsPerDb,'pixelsPerDb')
-  var filterIndexInFocus = -1;
-  var centerFreqKnobs = Array()
-
-  const noctaves = 11;
-  var shiftup = 0;
-  var dirty = true;
-  var canvas_zoomscale = 1;
-  const freqs = calcNyquists(width); //a list of frequecies each pixel on x-axis represent.. i know..
-
-  function xToFreq(x) {
-    return freqs[x];
+class DrawEQ extends LitElement {
+  static get properties() {
+    return {
+      ctx: { type: AudioContext },
+      biquadFilters: { type: Array(BiquadFilterNode) },
+      dbScale: { type: Number },
+      filterIndexInFocus: { type: Number }
+    };
   }
-  function YToDb(y) {
-    var db = (0.5 * height - (y - shiftup) / canvas_zoomscale) / pixelsPerDb;
-    return db;
+  handleEvent(e) {
+    console.log(e)
   }
-  function dbToY(db) {
-    var y = ((0.5 * height-margin_top) - pixelsPerDb * db) * canvas_zoomscale + shiftup;
-    return y;
-  }
-  var dsp_lock = 0;
-
- drawFrequencyResponses();
-
-  function drawFrequencyResponses(){
-    dsp_lock =1;
+  constructor(){
+    super();
+    this.render_frequency_response.bind(this)
     
-    if(dsp_lock ==1); return;
-    if( request_dsp_L.dsp_loc>4){
-      pause
-    }
-    requestAnimationFrame(call_canvas)
-    dsp_lock = dsp_lock = 0;
+  }
+  bind(ctx, biquadFilters) {
+
+    this.canvas = this.shadowRoot.querySelector('#geq .layer0');
+    this.histogram = this.shadowRoot.querySelector('#geq .layer2');
+    this.static_marks = this.shadowRoot.querySelector('#geq .layer1');
+    this.width_plus_margins = this.parentElement.clientWidth;
+    this.height_plus_margins = this.parentElement.clientHeight;
+    this.canvas.setAttribute('width', this.width_plus_margins);
+    this.canvas.setAttribute('height', this.height_plus_margins);
+    this.histogram.setAttribute('width', this.width_plus_margins);
+    this.histogram.setAttribute('height', this.height_plus_margins);
+    this.static_marks.setAttribute('width', this.width_plus_margins);
+    this.static_marks.setAttribute('height', this.height_plus_margins);
+    this.width = this.width_plus_margins-2*margin_left;
+    this.height = this.height_plus_margins -2 * margin_top;
+    this.zoomescale = 1;
+    this.ctx = 12;
+    this.pixelsPerDb =  (0.5 * this.height) / this.dbScale;
+    this.nyquist = ctx.sampleRate / 2
+    this.dbScale = 32;
+    this.filterIndexInFocus = -1;
+    this.dbToY=(db)=> {
+      debugger;
+      return ((0.5 * this.height) - this.pixelsPerDb * db) * this.zoomscale + this.shiftup;
+    };
+
+    this.yToDb = (y) =>(this.height - (y - this.shiftup) / this.canvas_zoomscale) /this.pixelsPerDb;
+    console.log("got cts")
+    this.render_static_layer();
+    this.filters = biquadFilters;
+    this.vtx = this.canvas.getContext('2d');
+
+    this.shiftup = 0;
+
+    this.render_frequency_response();
+//
   }
 
 
 
-  function call_canvas(){
-    vtx.clearRect(margin_left, margin_top, width, height);
-    vtx.fillStyle = 'black'
-    vtx.fillRect(0, 0, width_plus_margins, height_plus_margins);
+
+  render_static_layer() {
+    
+    let height = this.height;
+    let width = this.width;
+    let dbScale = this.dbScale
+    let vtx = this.shadowRoot.querySelector('#geq .layer1').getContext("2d");
+    vtx.clearRect(0,0, this.width_plus_margins,this.height.plus_margins);
+    vtx.fillStyle = "rgb(1,11,11)";
+
+    vtx.fillRect(0, 0, this.width + 2 * margin_left, this.height + 2 * margin_top);
 
     // Draw frequency scale.
     var curveColor = "rgb(192,192,192)";
     var curveColorSubbands = "rgb(192,192,192,0.4)";
-
     var playheadColor = "rgb(80, 100, 80)";
     var gridColor = "rgb(100,100,100)";
     // Draw 0dB line.
-    // vtx.strokeStyle=gridColor;
+    vtx.lineWidth=2;
+    vtx.strokeStyle=gridColor;
     vtx.beginPath();
     vtx.moveTo(0, 0.5 * height);
     vtx.lineTo(width, 0.5 * height);
     vtx.stroke();
-    for (var octave = 0; octave <= noctaves; octave++) {
+    var shiftup = 0;
+
+    
+    for (var octave = 1; octave <= noctaves; octave++) {
       var x = octave * width / noctaves + margin_left;
       vtx.strokeStyle = gridColor;
       vtx.moveTo(x, 30);
-      vtx.lineTo(x, height);
+      vtx.lineTo(x, this.height);
       vtx.stroke();
-      var f = ctx.sampleRate / 2 * Math.pow(2.0, octave - noctaves);
+      var f = this.ctx.sampleRate / 2 * Math.pow(2.0, octave - noctaves);
       vtx.textAlign = "center";
       vtx.strokeStyle = curveColor;
       vtx.strokeText(f.toFixed(0) + "Hz", x, 20);
     }
     const canvasContext = vtx;
-    for (var db = -dbScale; db < dbScale; db += 5) {
-      var y = dbToY(db);
+    for (var db = -dbScale; db < dbScale; db += 5) {  
+
+      var y = this.dbToY(db);
+      console.log(db + "mappped to "+y);
       canvasContext.strokeStyle = curveColor;
-      canvasContext.strokeText(db.toFixed(0)-35 + "dB", width - 40, y);
+      canvasContext.strokeText(db.toFixed(0) - 35 + "dB", this.width - 40, y);
       canvasContext.strokeStyle = gridColor;
       canvasContext.beginPath();
       canvasContext.moveTo(0, y);
@@ -96,21 +117,30 @@ export default function Draw_EQ(ctx, filters) {
       canvasContext.stroke();
     }
 
+
+  }
+
+  render_frequency_response() {
+    var freqs  =this.calcNyquists(this.width);
     var cc = ['blue', 'red', 'green'];
+    const knobcolors = ['blue', 'red', 'green', 'white', 'grey'];
+
     var magResponse = new Float32Array(freqs.length);
     var phaseResponse = new Float32Array(freqs.length);
     var aggregate = new Float32Array(freqs.length).fill(0);
     var knobRadius = 5;
-  
-      vtx.strokeWidth = '1px';
-  //  vtx.clearRect(0,0,width,height)
-    var centerFreqXMap={};
-    for (let i in filters) {
-      const filter = filters[i]
+    const vtx =  this.canvas.getContext('2d');
+    vtx.strokeWidth = '1px';
+    //  vtx.clearRect(0,0,width,this.height)
+    let dbToY = this.dbToY;
+    var centerFreqXMap = {};
+    var centerFreqKnobs = [];
+   for (let i in this.filters) {
+      const filter = this.filters[i]
       vtx.beginPath();
-      vtx.moveTo(0, height);
+      vtx.moveTo(0, this.height);
 
-      if (centerFreqKnobs[i] === null ||  dirty == true) {
+      if (centerFreqKnobs[i] === null ||this.dirty == true) {
         filter.getFrequencyResponse(freqs, magResponse, phaseResponse);
         for (var k = 0; k < width; ++k) {
           db = 20.0 * Math.log(magResponse[k]) / Math.LN10;
@@ -118,240 +148,99 @@ export default function Draw_EQ(ctx, filters) {
           var realdb = db;//db * Math.cos(phaseDeg);
           aggregate[k] += realdb;
           let y = dbToY(realdb)
-          vtx.lineTo(k, dbToY(realdb));
-          if (k>0 && freqs[k] > filter.frequency.value && freqs[k-1] < filter.frequency.value ) {
-
+          vtx.lineTo(k, y);
+          if (k > 0 && freqs[k] > filter.frequency.value && freqs[k - 1] < filter.frequency.value) {
+            var color = knobcolors[k % 3];
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(k, y, 10, 0, 2 * Math.PI, false);
+            ctx.fill();
             centerFreqKnobs[i] = [k, y];
             centerFreqXMap[i] = i;
           }
         }
       }
-      vtx.lineTo(width,height);
-      vtx.lineTo(0,height)
+      vtx.lineTo(this.width, this.height);
+      vtx.lineTo(0, this.height)
       vtx.stroke();
-      if (i == filterIndexInFocus) {
+      if (i == this.filterIndexInFocus) {
         vtx.fillStyle = `rgb(211,211,211,0.1)`;
         vtx.fill();
-      }else{
+      } else {
         vtx.fillStyle = `rgb(111,111,111,0.05)`;
         vtx.fill();
-
       }
-
     }
-  
-
-    const knobcolors = ['blue','red','green','white','grey'];
-    for (let i = 0; i < centerFreqKnobs.length; i++) {
-      const k = centerFreqKnobs[i][0];
-    
-      const y = centerFreqKnobs[i][1];
-      vtx.beginPath();
-  
-      vtx.arc(k-knobRadius, y-knobRadius, knobRadius, 0, Math.PI * 2, false);
-      vtx.fillStyle=knobcolors % i ;
-      vtx.fill();
-
-      vtx.closePath();
-    }
-
+//
     vtx.beginPath();
     vtx.strokestyle = '3px';
-    vtx.moveTo(0,height);
-    for (var k = 0; k < width; ++k) {
+    vtx.moveTo(0, this.height);
+    for (var k = 0; k < this.width; ++k) {
       var y = dbToY(aggregate[k])
 
       vtx.lineTo(k, y);
 
     }
-    vtx.lineTo(width,height);
-    vtx.moveTo(0,height);
+    vtx.lineTo(this.width, this.height);
+    vtx.moveTo(0, this.height);
     vtx.stroke();
     vtx.closePath();
     vtx.stroke();
-    vtx.fillStyle=''
+    vtx.fillStyle = 'red'
     // vtx.fill();
-    dirty = false;
+    this.dirty = false;
+
   }
 
-  var filterIndexInFocus = -1;
-  var lastClick;
-  canvas.ondblclick = function (e) {
-    log(" time sinze last click " + (ctx.currentTime - lastClick));
-    if (filterIndexInFocus > -1) {
-       filters[filterIndexInFocus].gain.setValueAtTime(YToDb(e.offsetY), ctx.currentTime);
-
-      dirty = true;
+  canvas_dbl_click(e) {
+    if (this.filterIndexInFocus > -1) {
+      filters[this.filterIndexInFocus].gain.setValueAtTime(YToDb(e.offsetY), ctx.currentTime);
+     this.dirty = true;
       drawScalesAndFrequencyResponses();
     }
   }
-  var mousedown = false;
-  canvas.onmousedown = function (e) {
-    mousedown = true;
-  }
-  canvas.onmouseup = function (e) {
-    mousedown = false;
-  }
-
-  canvas.onmousemove = function (e) {
-    if (mousedown === true && filterIndexInFocus > -1) {
+  canvas_onmousemove() {
+    if (this.mousedown === true && this.filterIndexInFocus > -1) {
       if (e.movementY * e.movementY > 25) {
-        var currentQ = filters[filterIndexInFocus].Q.value;
+        var currentQ = filters[this.filterIndexInFocus].Q.value;
         var targetQ;
         if (e.offSetY > 0) targetQ = currentQ * 1.02;
         else targetQ = currentQ * 0.97;
-        filters[filterIndexInFocus].gain.setTargetAtTime(YToDb(e.offsetY), ctx.currentTime + 0.001, 0.001);
-        filters[filterIndexInFocus].Q.setTargetAtTime(targetQ, ctx.currentTime + 0.001, 0.001);
+        filters[this.filterIndexInFocus].gain.setTargetAtTime(YToDb(e.offsetY), ctx.currentTime + 0.001, 0.001);
+        filters[this.filterIndexInFocus].Q.setTargetAtTime(targetQ, ctx.currentTime + 0.001, 0.001);
       }
       if (e.movementX * e.movementX > 10) {
 
-        filters[filterIndexInFocus].frequency.setTargetAtTime(xToFreq(e.offsetX), ctx.currentTime + 0.001, 0.001);
-      }
-      dirty = true;
-      drawFrequencyResponses();
+        // filters[this.filterIndexInFocus].frequency.request_value_change_UI_thread(xToFreq(e.offsetX));
 
-    }else{
+      }
+     this.dirty = true;
+      drawFrequencyResponses();
+    } else {
       focusClosest(e);
     }
-
   }
-
-
-  var filterIndexInFocus = -1;
-  var lastClick;
-
-  canvas.ondblclick = function (e) {
-    log(" time sinze last click " + (ctx.currentTime - lastClick));
-    if (filterIndexInFocus > -1) {
-      let cval = filters[filterIndexInFocus].gain.value;
-      filters[filterIndexInFocus].gain.setValueAtTime(YToDb(e.offsetY), ctx.currentTime);
-
-      dirty = true;
-      drawFrequencyResponses();
-    }
+  render() {
+    return html`
+    <div id='geq' class='wrapper' style="background-color:black; position: relative; display:block; height:900px; height:500px;">
+      <canvas class="layer2"  style="position: absolute;left: 0; top: 0; z-index: 2;"></canvas>
+      <canvas class="layer1"  style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+      <canvas class="layer0"  style="position: absolute; top: 0; z-index: 0;"></canvas>
+    </div>`
   }
-  var mousedown = false;
-  canvas.onmousedown = function (e) {
-    mousedown = true;
+  calcNyquists() {
+    let width = 225;
+    var freq = new Float32Array(width);
+    for (var k = 0; k < width; ++k) {
+      var f = k / width;
+      f = Math.pow(2.0, noctaves * (f - 1.0));
+      freq[k] = Math.floor(f * this.nyquist);
+    }
+    window.allfreqs = freq;
+    console.log(freq.join(", "));
+    return freq;
   }
-  canvas.onmouseup = function (e) {
-    mousedown = false;
-  }
-  canvas.onmousemove = function (e) {
-    if( mousedown === false)     focusClosest(e);
+}
+customElements.define('draw-eq', DrawEQ);
 
-    if (mousedown === true && filterIndexInFocus > -1) {
-
-      if (e.movementY * e.movementY > 25) {
-        var currentQ = filters[filterIndexInFocus].Q.value;
-        var targetQ;
-        if (e.offSetY > 0) targetQ = currentQ * 1.02;
-        else targetQ = currentQ * 0.97;
-
-
-        filters[filterIndexInFocus].gain.setTargetAtTime(YToDb(e.offsetY), ctx.currentTime + 0.001, 0.001);
-        filters[filterIndexInFocus].Q.setTargetAtTime(targetQ, ctx.currentTime + 0.001, 0.001);
-
-      }
-      if (e.movementX * e.movementX > 10) {
-
-        filters[filterIndexInFocus].frequency.setTargetAtTime(xToFreq(e.offsetX), ctx.currentTime + 0.001, 0.001);
-      }
-      dirty = true;
-      drawFrequencyResponses();
-    }
-  }
-    //  e.offsetX;
-
-    function focusClosest(e) {
-      const mousex = e.offsetX;
-      var lastFocus = filterIndexInFocus;
-      var closest = width;
-      lastClick = ctx.currentTime;
-      for (let i in centerFreqKnobs) {
-        if (Math.abs(centerFreqKnobs[i][0] - mousex) < closest) {
-          filterIndexInFocus = i;
-          closest = Math.abs(centerFreqKnobs[i][0] - mousex);
-        }
-      }
-      if (filterIndexInFocus !== lastFocus) {
-        dirty = true;
-        drawFrequencyResponses();
-      }
-    }
-    console.log(centerFreqKnobs);
-
-
-    // log(freqs);
-    canvas.addEventListener('wheel', function (event) {
-      event.preventDefault();
-
-      if (event.deltaY < 0) {
-        console.log('scrolling up');
-        if (canvas_zoomscale < 3) canvas_zoomscale += 0.05;
-        dirty = true;
-        drawFrequencyResponses();
-      }
-      else if (event.deltaY > 0) {
-        if (canvas_zoomscale > 0.5) canvas_zoomscale -= 0.05;
-        dirty = true;
-        drawFrequencyResponses();
-        console.log('scrolling down');
-      }
-    });
-
-    function calcNyquists(width) {
-      var freq = new Float32Array(width);
-      for (var k = 0; k < width; ++k) {
-        var f = k / width;
-        f = Math.pow(2.0, noctaves * (f - 1.0));
-        freq[k] = f * nyquist;
-      }
-      window.allfreqs = freq;
-      return freq;
-    }
-
-    function drawOverlayFrequencies(analyzer){
-      var data =new Float32Array(1024);
-      const pixel_to_hz_map = window.allfreqs 
-  
-      const bin_number_to_freq = (i) => 0.5 * analyzer.context.sampleRate * i / analyzer.frequencyBinCount;
-    
-      const freq_to_x = (freq, hint)=>{
-        let k = hint || 2;
-        while(freq < pixel_to_hz_map[k]) k = k*2;
-        while(freq > pixel_to_hz_map[k]) k--;  
-        return k;
-      }
- 
-      function drawFrame(){
-        
-        analyzer.getFloatFrequencyData( data);
-        let lastk = 0;
-        for(let i = 0 ; i< data.length; i++){
-          var x = freq_to_x(bin_number_to_freq(i), lastk);
-          let hue = i/analyzer.frequencyBinCount * 360;
-          ctx.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
-          let barHeight = height/2*data[i];
-          vtx.fillRect(lastk, height - barHeight, x-lastk, barHeight);
-          lastk = x;
-          log(lastk, height-barHeight, x-lastk,barHeight )
-        }
-        requestAnimationFrame(drawFrame);
-      }
-      drawFrame();
-  
-    }
-  
-  
-    return {
-      updateFilter: drawFrequencyResponses,
-      drawOverlayFrequencies: drawOverlayFrequencies
-    }
-  }
-
-
-  
-
-
-  
+export default DrawEQ;

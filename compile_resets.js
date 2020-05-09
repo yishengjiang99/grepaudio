@@ -13,7 +13,7 @@ for(let i =0; i< lines.length; i+=13){
     bandpasses : [], 
   } 
   for(let j=i+2; j<i+11; j++){
-    presets[title]['bandpasses'].push( lines[j].split("=")[1]);
+    presets[title]['bandpasses'].push( lines[j].split("=")[1]));
   } 
 }
 

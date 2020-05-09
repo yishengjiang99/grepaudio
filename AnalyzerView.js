@@ -104,7 +104,7 @@ var AnalyzerView = function(audioNode, params){
         
          for (var i = 0; i < bufferLength; i++) {
             var y = dataArray[i];
-            if( Math.abs(y-127) < 2 ) continue;
+            if( Math.abs(y-127) < 1 ) continue;
               x = t / bufferLength  % width;
               t++;
               

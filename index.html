@@ -20,7 +20,7 @@
 </head>
 
 <body>
-  <div id="overlay" style="display: block; height:100%">
+  <div id="overlay" style="z-index:10; display: block; 100vh">
     <div class="text page-header">
       GrepAwk Audio is a shared DSP-over-webrtc tool.
 
@@ -32,6 +32,7 @@
 
     </div>
   </div>
+  
 
   <nav class="navbar navbar-dark bg-dark text-light flex-md-nowrap p-0 shadow">
     <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">GrepAwk DSP</a>
@@ -39,12 +40,18 @@
       aria-label="Search">
     <ul class="navbar-nav px-3">
       <li class="nav-item text-nowrap">
-        <button class="btn btn-primary" href="#">Broadcast</button>
+      <button type="button" data-toggle="modal" data-target="#draw_eq">Launch modal</button>
+
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#draw_eq">
+          Open Draw EQ
+          </button>
       </li>
     </ul>
   </nav>
+  <draw-eq></draw-eq>
 
   <div class="container-fluid bg-dark text-white">
+
     <div class="row">
       <nav class="navbar col-md-3 sidebar">
         <div id=ctrls class="nav flex-column">
@@ -54,7 +61,9 @@
 
       <main role="main" class="col-md-8 sp-3 col-lg-8">
         <h4>Mix Sounds</h4>
-        <div id='serverlist'></div>
+   
+        
+
         <div class='d-block p-2' id="eq_update_form">
         </div>
         <div class='canvas_wrapper'>
@@ -117,6 +126,8 @@
     <video id=rtc></video>
   </div>
 
+
+
   <script id="result-template" type="text/x-handlebars-template">
             <div class="ProfileCard u-cf">
               <img class="ProfileCard-avatar" src="{{thumbnail}}">
@@ -130,8 +141,6 @@
           </script>
 
   <script src='polyfills.js'></script>
-
-
   <script type='module'>
     var $j = jQuery.noConflict();
 
@@ -145,6 +154,7 @@ import BroadcasterClient from './twitch/BroadcastClient.js'
 import BoardcastViewerClient from './twitch/BroadcastViewerClient.js'
 import { selector, slider, numeric } from "./functions.js";
 import https_rtc_client from './dsp_rtc/https_rtc_client.js';
+import DrawEQ from './bundle.js'
 
 let audioCtx, audioTag, eq;
 
@@ -152,7 +162,7 @@ let audioCtx, audioTag, eq;
 const overlay = document.getElementById("overlay");
 
 overlay.onclick = async function (e) {
-  this.removeFromParent;
+  overlay.style.display='none'
 
   audioCtx = new AudioContext();
   await audioCtx.audioWorklet.addModule('../band_pass_lfc/processor.js');
@@ -172,8 +182,6 @@ overlay.onclick = async function (e) {
 
   ytSearch.initialize();
   const template = Handlebars.compile($j("#result-template").html());
-
-
   audioTag.add_audio_tag("audio1", 5);
   const audio1 = $("#audio1");
   window.g_audioTag = audioTag;
@@ -196,13 +204,14 @@ overlay.onclick = async function (e) {
   bandpassFilterNode.connect(compressor).connect(group.input);
 
   $("#eq_update_form").appendChild(group.UI_EQ(bandpassFilterNode, compressor));
-
-
-
-
   cursor = group.output;
+  var geq = document.querySelector("draw-eq")
+  geq.bind(audioCtx, group.bands);
+
+
   var ctv = AnalyzerView(cursor, { fft: 256 });
-  ctv.histogram("output_freq", 700, 300); //, { fft: 256 })
+  // geq.drawOverlayFrequencies(ctv.analyzer);
+  //ctv.histogram("output_freq", 700, 300); //, { fft: 256 })
   ctv.timeseries("output_timeline", 128, 700, 300); //, { fft: 256 })
 
   var recorderProcessor = audioCtx.createScriptProcessor(1024, 2, 2);
@@ -249,9 +258,7 @@ overlay.onclick = async function (e) {
   var bv = BoardcastViewerClient({
       onEvent: log,
       mediaObjectReady: function (stream) {
-        // audio22.srcObject = stream;
-        // audio22.play();
-        // //sream = new MediaStream([e.track]);
+
         var source = audioCtx.createMediaStreamSource(stream);
         audioTag.add_remote_stream(source, 1);
       }

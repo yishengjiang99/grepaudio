@@ -26,6 +26,7 @@
     "node-fetch": "^2.6.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.5",
+    "standardized-audio-context": "^24.1.13",
     "wrtc": "^0.4.4",
     "ws": "^7.2.3",
     "ytdl": "^1.3.0"

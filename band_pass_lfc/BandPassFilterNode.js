@@ -32,15 +32,15 @@ export default class BandPassFilterNode extends AudioWorkletNode{
         })
     }
 
-    setGainsProcessed=(gainupdates_processed=>{
+    setGainsProcessed(gainupdates_processed){
         var index = HZ_LIST.indexOf(freq);
         if(index<0) throw new Error("freq "+freq+" not mapped");
         this.postMessage({
             gainUpdate: {index: index, value: gain}
         })
-    })
+    }
 
-    defaultGains() {
+    defaultGains(){
         return  DEFAULT_PRESET_GAINS;
     }
 }

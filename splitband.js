@@ -1,8 +1,9 @@
 import { selector, slider,numeric} from "./functions.js";
 import {Q,HZ_LIST, DEFAULT_PRESET_GAINS} from './constants.js';
 import Presets from './presets.js'
-
+import EventEmitter from './EventEmitter.js'
 export function split_band(ctx, hz_list) {
+  var emt = new EventEmitter();
   var input = ctx.createGain();
   input.gain.setValueAtTime(1.2, ctx.currentTime+0.1);
  
@@ -16,15 +17,15 @@ export function split_band(ctx, hz_list) {
   var connectorMap ={};
 	if(mode=='series'){
     var c = output
-    for (let index = 5; index>=0; index--){
+    for (let index = hz_list.length; index>=0; index--){
       const hz = hz_list[index];
       if(index==hz_list.length-1){
-         bands.push(new BiquadFilterNode(ctx,{type:"lowshelf", frequency:hz, gain:1, Q:1, detune:100}));
+         bands.push(new BiquadFilterNode(ctx,{type:"lowshelf", frequency:hz, gain:1, Q:3, detune:100}));
       }
       else if(index==0){
-        bands.push(new BiquadFilterNode(ctx,{type:"highshelf", frequency:hz, gain:1, Q:1, detune:100}));
+        bands.push(new BiquadFilterNode(ctx,{type:"highshelf", frequency:hz, gain:1.2, Q:3, detune:100}));
       }else{
-        bands.push(new BiquadFilterNode(ctx,{type:"peaking", frequency:hz, gain:1, Q:1, detune:100}));
+        bands.push(new BiquadFilterNode(ctx,{type:"peaking", frequency:hz, gain:1, Q:5, detune:100}));
       } 
       
       bands[bands.length-1].connect(c);
@@ -154,12 +155,13 @@ export function split_band(ctx, hz_list) {
           gainUpdate:{ index: index, value: e.target.value }
         });
       }})
+      var emitter = ()=>{ emt.emit("filterChanged", input)};
       // slider(row,  {prop: band.compressor.threshold, min:-100, max: 0, step:1, index:index});  
       // row.innerHTML +="<td><label>"+ band.mainFilter.type+"</label></td>"
       selector(row, {prop: band.type, options: ["allpass" , "bandpass" , "highpass" , "highshelf" , "lowpass" , "lowshelf" , "notch" , "peaking"]})
-      slider(row, {prop: band.gain, min:-12, max: 12, step:0.1, index:index}); 
-      slider(row, {prop: band.Q, min:0.01, max:22, step:0.1, index:index}); 
-      slider(row, {prop: band.detune, min:0.0, max:0.5, step:"0.01", index:index}); 
+      slider(row, {prop: band.gain, min:-12, max: 12, step:0.1, index:index,eventEmitter: emitter}); 
+      slider(row, {prop: band.Q, min:0.01, max:22, step:0.1, index:index, eventEmitter:emitter}); 
+      slider(row, {prop: band.detune, min:0.0, max:0.5, step:"0.01", index:index, eventEmitt:emitter}); 
       var button = document.createElement("button");
       button.innerHTML='connect';
       button.onclick = (e)=>{probe(index)};

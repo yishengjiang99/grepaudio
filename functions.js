@@ -216,6 +216,9 @@ export function slider(container, options) {
 			label.innerHTML = e.target.value
 		}
 	}
+	if(options.eventEmitter){
+		options.eventEmitter();
+	}
 	var contain = document.createElement(params.wrapper || "td");
 	contain.style.position = 'relative';
 	label.style.minWidth = '4em';
