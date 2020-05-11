@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <link rel="stylesheet" href="./simple-console.css">
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
 
@@ -35,26 +35,32 @@
   </div>
   <nav class="navbar navbar-dark bg-dark text-light flex-md-nowrap p-0 shadow">
     <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">GrepAwk DSP</a>
-    <input id='ytsearch' class="type-ahead form-control form-control-dark w-100" type="text" placeholder="Search Music"
+    <input id='ytsearch' class="type-ahead form-control form-control-dark w-59" type="text" placeholder="Search Music"
       aria-label="Search">
     <ul class="navbar-nav px-3">
-      <li class="nav-item text-nowrap">
+ 
+      <li class="nav-item text-nowrap dropdown">
+          <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Listen
+          </button>
+          <div id='listen-menu' class="dropdown-menu" aria-labelledby="dropdownMenuButton" style='position:absolute; top:100%;right:0px;'>
+  </div>
+
+        </div>
+      </li>
+           <li class="nav-item text-nowrap">
        <div><button id=obs>Broadcast</button>  </div>
       </li>
-      <li class='nav-item'><a id=listen href="#">Listen</a></li>
-      <li class="dropdown">
-          <a href="#" id='listen' class="dropdown-toggle" data-toggle="dropdown">listen <b class="caret"></b></a>
-          <ul id='listenmenu' class="dropdown-menu">
-
-          </ul>
-        </li>
     </ul>
+
   </nav>
+
 
   <div class="container-fluid bg-dark text-white">
 
     <div class="row">
-      <nav class="navbar sidebar">
+      <nav class="navbar sidebar col-md-2">
         <div id=ctrls class="nav flex-column">
         </div>
         
@@ -63,14 +69,11 @@
 
       <main role="main" class="col-md-8 sp-3 col-lg-8">
         <h4>Mix Sounds</h4>
-   
-        
-    <div id='chart' class='wrapper' style="position: relative; width: 70vw; height:300px">
+      <div id='chart' class='wrapper' style="position: relative; width: 70vw; height:300px">
       <span id=status></span>
-    <canvas class="layer1" width="100" height="100" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
-    <canvas id='layer2' class="layer2" width="100" height="100" style="position: absolute; left: 0; top: 0; z-index:0;"></canvas>
-     <canvas id='output_timeline' style='position: absolute; left: 0; width:100%; top:100%; height:20%; z-index: 0;'></canvas>
-
+      <canvas class="layer1" width="100" height="100" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+      <canvas id='layer2' class="layer2" width="100" height="100" style="position: absolute; left: 0; top: 0; z-index:0;"></canvas>
+      <canvas id='output_timeline' style='position: absolute; left: 0; width:100%; top:100%; height:20%; z-index: 0;'></canvas>
     </div>
           <figure class='well'>
             <span id='rx0'></span>
@@ -115,17 +118,11 @@
     </div>
   </div>
 
-  <div id=output_cp class=text-white>
-    <ul id=channels></ul>
-    <div><button id=obs>Broadcast</button> <button id=listen>Listen</button></div>
-    <div>
+  <div id=output_cp class='footer text-white'>
       <button id="recorder">Start Recording</button>
       <span class='text-white' id='rinfo'></span>
       <span class='text-white' id='rdownload'></span>
-
-    </div>
-    <div><audio id='audio2' controls></audio></div>
-    <div><audio id='audio1' controls src=''></audio></div>
+      <audio id='audio1'  controls></audio>  
     <video id=rtc></video>
   </div>
 
@@ -302,25 +299,20 @@ overlay.onclick = async function (e) {
     }).broadcastAudio(userId, peer.stream);
 
   }
+
   const audio22 = $("video#rtc")
-  $("#listen").onclick = function (e) {
-    bv.listChannels().then(channels => {
-      for (const channel of Object.values(channels)) {
-        var a = document.createElement("a");
-        a.className='dropdown-item';
-        a.onclick = function () {
-          bv.watchChannel(channel.name);
-        }
-
-        
-        a.href = "javascript://"
-        a.innerText = channel.name;
-
-        $("#listenmenu").append(a);
-
+  bv.listChannels().then(channels => {
+    for (const channel of Object.values(channels)) {
+      var a = document.createElement("a");
+      a.className='dropdown-item';
+      a.onclick = function () {
+        bv.watchChannel(channel.name);
       }
-    });
-  }
+      a.href = "#listen:"+channel.name;
+      a.innerText = channel.name;
+      $("#listen-menu").append(a);
+    }
+});
 
   $("#recorder").onclick = function (e) {
     var t;
@@ -388,8 +380,9 @@ $j('#ytsearch').typeahead(
     displayKey: 'title',source: ytSearch
   })
   .on('typeahead:selected', function(evt, item) {
+    
     audio1.src = '/api/'+item.vid+'.mp3';
-    audioTag.add_remote_stream( audioCtx.createMediaElementSource(audio1), 0, "loading "+item.title);
+    
     return item;
   });
 
@@ -448,6 +441,9 @@ $j('#ytsearch').typeahead(
     $("#audio2").autoplay = true;
   });
 }
+
+
+
   </script>
 
 </body>
@@ -457,3 +453,23 @@ $j('#ytsearch').typeahead(
 </script>
 
 </html>
+<template>
+<h4 id='title'>${this.title}<h4>
+<h5 id='status'></h5>
+<span class="controls">
+  <select id='select'>
+  ${this.selectOptions.map( option=>`
+    <option value=${option.value}>${option.display}</option>
+  `)}
+  </select>
+  <span id='btn-group' class='btn-group'>
+  </span>
+    <button id='play' class="btn btn-primary">
+     Play
+    </button>
+    <button id='mute' class="btn btn-primary">
+      <i class="fa fa-volume-off"></i>
+    </button>
+    <input value='1.0' min='0.0' max='3.0' type=slider></input>
+</span>
+</template>

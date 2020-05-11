@@ -11,40 +11,7 @@ window.AudioContext = (function () {
 })();
 
 
-var con = new SimpleConsole({
-  placeholder: "",
-  id: "console",
-  handleCommand: function (command) {
-    try {
-      var resp = index_stdin(command);
-      con.log(resp)
-    } catch (error) {
-      con.log(error);
-    }
-  },
-  autofocus: true, // if the console is to be the primary interface of the page
-  storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
-})
-document.getElementById("console") ? document.getElementById("console").append(con.element) : document.body.append(con.element);
 
-window.con = con;
-// add the console to the page
-
-window.log = con.log;
-window.logErr = con.logError;
-
-window.onerror = function (msg, url, lineNo, columnNo, error) {
-  con.log([msg, url, lineNo, columnNo, error].join(', '))
-
-}
-window.log = (txt) => con.log(txt);;
-
-
-window.logErr = function (text) {
-  if (typeof text === 'object') text = JSON.stringify(text, null, '\n');
-  window.log(text);
-
-}
 document.onload = function () {
   const allRanges = document.querySelectorAll(".range-wrap");
   allRanges.forEach(wrap => {
