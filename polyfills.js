@@ -10,7 +10,29 @@ window.AudioContext = (function () {
   return window.webkitAudioContext || window.AudioContext || window.mozAudioContext;
 })();
 
+var con = new SimpleConsole({
+  placeholder: ">"
+  , id: "console"
+  , handleCommand: function(command) {
+      try {
+          window.addEventListener
+      } catch (error) {
+          con.log(error);
+      }
+  }
+  , autofocus: true, // if the console is to be the primary interface of the page
+  storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
+});
 
+window.log = con.log;
+window.con = con;
+window.logErr = con.error;
+
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+  con.log([msg, url, lineNo, columnNo, error].join(', '))
+
+}
+window.log = (txt) => con.log(txt);
 
 document.onload = function () {
   const allRanges = document.querySelectorAll(".range-wrap");
@@ -94,3 +116,4 @@ function xinspect(o,i){
   }
   return r.join(i+'\n');
 }
+

@@ -91,7 +91,7 @@ export async function chord(url, params) {
 		min: 0, max: 0.5, attack: 0.15, decay: 0.21, sustain: 0.21, release: 0.01
 	})
 	var str = await fetch(url).then(resp => resp.text());
-	var json = await JSON.parse(str);
+	var json = await JSON.parse(str);chord
 	var osc = g_audioCtx.createOscillator();
 	osc.setPeriodicWave(g_audioCtx.createPeriodicWave(json.real, json.imag))
 	const keys = 'asdfghj'.split("");

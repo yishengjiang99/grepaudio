@@ -92,6 +92,12 @@ var AnalyzerView = function(audioNode, params){
       var t = 0; 
       canvasCtx.lineWidth = 2;
       var x  = 0;
+      var zoomScale = 1;
+      canvas.onwheel = function(e) {
+        e.preventDefault();
+        if(e.deltaY<0) zoomScale -= 0.05;
+        else zoomScale += 0.05;
+      }
       function draw(){
               
          analyzer.getByteTimeDomainData(dataArray);
@@ -101,7 +107,7 @@ var AnalyzerView = function(audioNode, params){
         
         var rms = 0;
          for (var i = 0; i < bufferLength; i++) {
-            var y = dataArray[i] - fft.minDecibels;
+            var y = (dataArray[i] - fft.minDecibels)*zoomScale;
 
             if( y < 1 ) continue;
               x = t/ bufferLength  % width;

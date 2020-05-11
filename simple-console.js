@@ -436,35 +436,3 @@ var SimpleConsole = function(options) {
     this.clear = clear;
 
 };
-var con = new SimpleConsole({
-    placeholder: ">"
-    , id: "console"
-    , handleCommand: function(command) {
-        try {
-            window.addEventListener
-        } catch (error) {
-            con.log(error);
-        }
-    }
-    , autofocus: true, // if the console is to be the primary interface of the page
-    storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
-});
-window.log = con.log;
-window.con = con;
-// add the console to the page
-
-window.log = con.log;
-window.logErr = con.logError;
-
-window.onerror = function(msg, url, lineNo, columnNo, error) {
-    con.log([msg, url, lineNo, columnNo, error].join(', '))
-
-}
-window.log = (txt) => con.log(txt);;
-
-
-window.logErr = function(text) {
-    if (typeof text === 'object') text = JSON.stringify(text, null, '\n');
-    window.log(text);
-
-}

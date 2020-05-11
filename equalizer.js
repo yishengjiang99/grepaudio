@@ -8,7 +8,6 @@ import Presets from './presets.js'
 const NYQUIST_SAMPLE_RATE_x2 = 441000;
 
 var configs = window.location.hash.includes("parallel") ? 3 : 1;
-log('config ios ' + configs)
 
 let audioCtx,pre_amp,post_amp;
 var biquadFilters,compressors,bandpassFilters;

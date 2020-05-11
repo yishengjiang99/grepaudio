@@ -29,8 +29,11 @@
       <p style="font-size:20px;" class="w3-black w3-padding w3-hide-medium w3-hide-small">
         <i>"Wake up in the AM and compose a beat" -- Dr. Dre</i>
       </p>
-      <button type="button" class="btn btn-primary btn-block">start Audio Context. </button>
 
+
+      <button type="button" class="btn btn-primary btn-block">start Audio Context. </button>
+              <video width=320 id='rtc' controls playsinline src='/samples/video.webm'></video>
+              <audio width=320 id='audio1' controls playsinline src='/samples/song.mp3'></video>
     </div>
   </div>
   <nav class="navbar navbar-dark bg-dark text-light flex-md-nowrap p-0 shadow">
@@ -85,19 +88,6 @@
         </div>
         <div class='canvas_wrapper'>
           <div class="btn-group mr-2">
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" type="checkbox" id='showfft' type=checkbox checked>fft</input>
-              <label class="form-check-label" for="inlineCheckbox1">fft</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" id='showcummulative' type=checkbox>
-              <label class="form-check-label" for="inlineCheckbox2">timeseries</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" id='showcummulative' type=checkbox>
-              <label class="form-check-label" for="inlineCheckbox3">cumulative fft</label>
-            </div>
-
             <button id='zoomin' type="button" class="btn btn-sm btn-outline-secondary">+</button>
             <button id='zoomout' type="button" class="btn btn-sm btn-outline-secondary">-</button>
           </div>
@@ -107,31 +97,34 @@
             <figcaption class="figure-caption">FFT Bins</figcaption>
 
           </figure>
-=
-          <figure class='well'>
+          <figure class='well' style='display:none'>
             <canvas id='band_freq_out'></canvas>
             <figcaption class="figure-caption">FFT Bins</figcaption>
-
           </figure>
         </div>
       </main>
     </div>
   </div>
+  <div id=output_cp class='footer row'>
+    <div class=col-md-3>
+        <button id="recorder">Start Recording</button>
+        <span id='rinfo'></span>
+        <span id='rdownload'></span>
+        </div>
+    <div class=col-md-3>
+            
+      <div class="range-wrap">
+        <output id=threshold_l> Noise Gate: Gate: </output><output class="bubble"></output>  
+        <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range"
+          name='threshold'>
+      </div>
+  </div>
 
-  <div id=output_cp class='footer text-white'>
-      <button id="recorder">Start Recording</button>
-      <span class='text-white' id='rinfo'></span>
-      <span class='text-white' id='rdownload'></span>
-      <audio id='audio1'  controls></audio>  
-    <video id=rtc></video>
   </div>
 
   <div id=console></div>
 
   <div id='rx2log'></div>
-
-
-
 
   <script id="mix_input" type="text/x-handlebars-template">
             <div class="ProfileCard u-cf">
@@ -159,6 +152,26 @@
 
   <script src='polyfills.js'></script>
   <script type='module'>
+  var con = new SimpleConsole({placeholder: ">", id: "console", handleCommand: function(command) {
+      try {
+          window.index_stdin(cmd)
+      } catch (error) {
+          con.log(error);
+      }
+  }
+  , autofocus: true, // if the console is to be the primary interface of the page
+  storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
+});
+
+window.log = con.log;
+window.con = con;
+window.logErr = con.error;
+
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+  con.log([msg, url, lineNo, columnNo, error].join(', '))
+
+}
+window.log = (txt) => con.log(txt);
     var $j = jQuery.noConflict();
 
 import equilizer from "./equalizer.js";
@@ -172,7 +185,7 @@ import BoardcastViewerClient from './twitch/BroadcastViewerClient.js'
 import { selector, slider, numeric } from "./functions.js";
 import https_rtc_client from './dsp_rtc/https_rtc_client.js';
 import DrawEQ from './draw.js'
-  $j(".dropdown-toggle").dropdown();
+$j(".dropdown-toggle").dropdown();
 let audioCtx, audioTag, eq;
 const overlay = document.getElementById("overlay");
 
@@ -271,14 +284,14 @@ overlay.onclick = async function (e) {
   var isRecording = false;
   var chunks = [];
   const outputdiv = $("#output_cp");
+  const rtcViewer = $("video#rtc")
 
   const playbackGainSlider = slider(outputdiv, { wrap: "inline", prop: playbackGain.gain, min: "0", max: "4", step: "0.05", label: "Local Playback gain" });
   var bv = BoardcastViewerClient({
       onEvent: log,
       mediaObjectReady: function (stream) {
-
-        var source = audioCtx.createMediaStreamSource(stream);
-        audioTag.add_remote_stream(source, 1);
+         rtcViewer.srcObject = stream;
+         rtcViewer.autoplay = true;
       }
     });
 

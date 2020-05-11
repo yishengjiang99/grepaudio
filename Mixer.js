@@ -3,6 +3,7 @@ import Envelope from './envelope.js'
 import { chord, slider, numeric } from './functions.js'
 export default async function (ctx, containerId) {
   var ctx = ctx;
+  const audio1 = document.querySelector("audio#audio1");
 
   var inputs = new Array(6).fill(null)
   var channelQueues = new Array(6).fill(new Array())
@@ -67,13 +68,14 @@ export default async function (ctx, containerId) {
     return source;
   }
   var audioPlayer
-
+  
   const add_remote_stream = function (stream,i){
     inputs[i] = stream;
 
     inputs[i].connect(controls[i]).connect(masterGain);
     nowPlayingLabels[i].innerHTML = 'rtc stream';
   }
+
   const add_audio_tag = function (tagId, i) {
     audioPlayer = document.querySelector('audio#' + tagId);
     if (!audioPlayer) return false;
@@ -93,7 +95,7 @@ export default async function (ctx, containerId) {
   function connect(node) { this.masterGain.connect(node) };
   var cp = document.getElementById(containerId);
 
-  ['YT_SEARCH', 'Microphone', 'notes.csv', 'waves.csv', 'songs.csv'].forEach(async (indexfile, index) => {
+  ['YT_SEARCH', 'RTC', 'Microphone', 'notes.csv', 'waves.csv', 'songs.csv'].forEach(async (indexfile, index) => {
     var container = document.createElement("div");
     container.className='text-white bg-secondary mb-2'
     var title = document.createElement("div");
@@ -102,12 +104,19 @@ export default async function (ctx, containerId) {
     container.append(title);
     container.append(panel)
     if (indexfile == 'YT_SEARCH') {
+      var audio1 = document.querySelector("audio#audio1");
+      panel.append(audio1)
+    } else if(indexfile== 'RTC'){
+      var videoRtc = document.querySelector("video#rtc");
+      var source = ctx.createMediaElementSource(videoRtc);
+      inputs[index] = source;
+      inputs[index].connect(controls[index]).connect(masterGain);
+      videoRtc.oncanplay = function () {
+        videoRtc.play();
+      }
+      panel.appendChild(videoRtc);
 
-      var select = document.getElementById("ytsearch");
-//       var select=document.createElement("span");
-    } else if (indexfile == 'Microphone') {
-
-
+  }else if (indexfile == 'Microphone') {
       var select = document.createElement("select");
       select.setAttribute("tabindex", index);
       select.setAttribute("data-userMedia", "audio");
@@ -141,7 +150,7 @@ export default async function (ctx, containerId) {
       song_db.filter(t => t.trim() !== "").map((n, j) => {
         var url = "samples/"+n;
         var name = n.replace(".mp3","");
-        return `<button class="btn btn-secondary" value='${url}'>${name}</button>`
+        return `<button class="btn btn-secondary" value='${url}'>${name}</button>` ;
       }).join("") + "</div>"
 
       select.querySelectorAll("button").forEach(button=>button.addEventListener("click", (e) => {
@@ -166,8 +175,19 @@ export default async function (ctx, containerId) {
 
     var stop = document.createElement("button")
     stop.innerHTML = "stop";
-    if (indexfile != 'YT_SEARCH') panel.appendChild(select.wrap("div"));
-
+    if (select){
+       panel.appendChild(select);
+       select.querySelectorAll("button").forEach(button => button.addEventListener("click", (e) => {
+        var url = e.target.value;
+        loadURLTo(url, index);
+      }))
+  
+      select.addEventListener("input", e=>{
+        if(e.target.type !=='text'){
+          loadURL(e);
+        }
+      });
+    }
     panel.appendChild(nowPlayingLabel.wrap("div"));
     slider(panel, {prop: controls[index].gain, step:"0.01",  max:"2", min:"0",wrapper:"span"});
     container.append(panel)
@@ -185,17 +205,6 @@ export default async function (ctx, containerId) {
       inputs[index] = null;
       inputs[index] instanceof MediaStreamAudioSourceNode  ?  inputs[index].disconnect() : inputs[index].stop();
     }
-    select.querySelectorAll("button").forEach(button => button.addEventListener("click", (e) => {
-      var url = e.target.value;
-      loadURLTo(url, index);
-    }))
-
-    apply.onclick = loadURL;
-    select.addEventListener("input", e=>{
-      if(e.target.type !=='text'){
-        loadURL(e);
-      }
-    });
 
     async function loadURL(e) {
       var url = select.value;
@@ -231,10 +240,6 @@ export default async function (ctx, containerId) {
     return false;
 
   })
-
-
-
-
   return {
     inputs, outputNode, controls,
     connect, loadURLTo,
