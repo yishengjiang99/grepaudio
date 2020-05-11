@@ -79,7 +79,7 @@ const  status =(str)=>  document.getElementById('status').textContent=str;
     function drawScalesAndFrequencyResponses() {
         //centerFreqKnobs = Array(filters.length).fill(null);
         vtx.clearRect(0, 0, width, height);
-        vtx.fillStyle = 'rgba(0,22,22)';
+        vtx.fillStyle = 'rgba(0,22,22,0.01)';
         vtx.fillRect(0, 0, width, height);
         // Draw frequency scale.
  
@@ -182,8 +182,8 @@ const  status =(str)=>  document.getElementById('status').textContent=str;
             vtx.closePath();
             vtx.fill();
         }
-        vtx.beginPath();
 
+        vtx.beginPath();
         vtx.strokeStyle='yellow'
         for (var k = 0; k < width; ++k) {
             var y = 20 * Math.log(aggregate[k]) / Math.LN10;

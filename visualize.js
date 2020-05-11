@@ -102,7 +102,7 @@ export function line_chart(canvasId){
 
           canvasCtx.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
 
-          canvasCtx.fillRect(x,HEIGHT-barHeight/2,barWidth,barHeight/2);
+          canvasCtx.fillRect(x,height-barHeight/2,barWidth,barHeight/2);
 
           x += barWidth + 1;
         }

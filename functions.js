@@ -231,7 +231,10 @@ export function slider(container, options) {
 	contain.append(input);
 	contain.append(label);
 
-	if(!container) document.body.append(contain);
+	if(!container) {
+		
+		alert(' COANTDFD IS NOULL'+Object.values(options).join(","));
+	}
 else container.append(contain)
 	return input;
 }
