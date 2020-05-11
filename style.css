@@ -18,11 +18,13 @@ body{
                                     supported by Chrome, Opera and Firefox */
   
 }
-#audio1{
+.footer{
   position: fixed;
   bottom: 0;
-  left: 30vw;
-  width: 30vw;
+  left: 20vw;
+  width: 60vw;
+  height:10vw;
+  background-color;white;
 }
 #audio2{
 width:100px;
@@ -88,8 +90,8 @@ td{
 .sidebar {
   margin: 0;
   padding: 0;
-  width: 200px;
-  background-color: #f1f1f1;
+  /* width: 100px; */
+  /* background-color: #f1f1f1; */
   position: fixed;
   height: 100%;
   overflow: auto;
