@@ -150,7 +150,6 @@ export async function chord(url, params) {
 		if (keys.indexOf(e.key) > -1) {
 			var env = adsrs[keys.indexOf(e.key)];
 			env.release(ctx.currentTime);
-			log("keyup")
 		}
 	})
 
