@@ -93,7 +93,7 @@ export function line_chart(canvasId){
         canvasCtx.fillStyle = 'rgb(0, 0, 0)';
         canvasCtx.fillRect(0, 15, WIDTH, HEIGHT);
 
-        var barWidth = (WIDTH / 80) * 2.5;
+        var barWidth = (WIDTH / fftsize);
         var barHeight;
         var x = 0;
 

@@ -95,12 +95,10 @@ export default async function (ctx, containerId) {
 
   ['YT_SEARCH', 'Microphone', 'notes.csv', 'waves.csv', 'songs.csv'].forEach(async (indexfile, index) => {
     var container = document.createElement("div");
-    container.className='card text-white bg-secondary mb-2'
+    container.className='text-white bg-secondary mb-2'
     var title = document.createElement("div");
     title.innerText=indexfile;
-    title.className='card-title';
     var panel = document.createElement("div");
-    panel.className='card-body';
     container.append(title);
     container.append(panel)
     if (indexfile == 'YT_SEARCH') {
@@ -168,7 +166,6 @@ export default async function (ctx, containerId) {
 
     var stop = document.createElement("button")
     stop.innerHTML = "stop";
-    stop.style.display='none';
     if (indexfile != 'YT_SEARCH') panel.appendChild(select.wrap("div"));
 
     panel.appendChild(nowPlayingLabel.wrap("div"));
@@ -188,11 +185,11 @@ export default async function (ctx, containerId) {
     }))
 
     apply.onclick = loadURL;
-    // select.addEventListener("input", e=>{
-    //   if(e.target.type !=='text'){
-    //     loadURL(e);
-    //   }
-    // });
+    select.addEventListener("input", e=>{
+      if(e.target.type !=='text'){
+        loadURL(e);
+      }
+    });
 
     async function loadURL(e) {
       var url = select.value;

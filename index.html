@@ -8,12 +8,13 @@
   <link rel="stylesheet" href="style.css">
 
   <script src="./simple-console.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+    integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <link rel="stylesheet" href="./simple-console.css">
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"
-    integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
 
   <script src='typeahead.bundle.min.js'></script>
@@ -32,7 +33,8 @@
 
     </div>
   </div>
-  
+
+
 
   <nav class="navbar navbar-dark bg-dark text-light flex-md-nowrap p-0 shadow">
     <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">GrepAwk DSP</a>
@@ -40,21 +42,25 @@
       aria-label="Search">
     <ul class="navbar-nav px-3">
       <li class="nav-item text-nowrap">
-      <button type="button" data-toggle="modal" data-target="#draw_eq">Launch modal</button>
-
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#draw_eq">
-          Open Draw EQ
-          </button>
+       <div><button id=obs>Broadcast</button>  </div>
       </li>
+      <li class='nav-item'><a id=listen href="#">Listen</a></li>
+      <li class="dropdown">
+          <a href="#" id='listen' class="dropdown-toggle" data-toggle="dropdown">listen <b class="caret"></b></a>
+          <ul id='listenmenu' class="dropdown-menu">
+
+          </ul>
+        </li>
     </ul>
   </nav>
 
   <div class="container-fluid bg-dark text-white">
 
     <div class="row">
-      <nav class="navbar col-md-3 sidebar">
+      <nav class="navbar sidebar">
         <div id=ctrls class="nav flex-column">
         </div>
+        
         <input id=file type=file />;
       </nav>
 
@@ -65,10 +71,16 @@
     <div id='chart' class='wrapper' style="position: relative; width: 70vw; height:480px">
       <span id=status></span>
     <canvas class="layer1" width="100" height="100" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
-    <canvas id='layer2' class="layer2" width="100" height="100" 
-    style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
-    </div>
+    <canvas id='layer2' class="layer2" width="100" height="100" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
+  <canvas id='output_timeline' style='position: absolute; left: 0; width:100%; bottom:0px; height:20%; z-index: 0;'></canvas>
 
+    </div>
+          <figure class='well'>
+            <span id='rx0'></span>
+            <span id='rx1'></span>
+\            <figcaption class="figure-caption">PCM 32bit sample</figcaption>
+
+          </figure>
         <div class='d-block p-2' id="eq_update_form">
         </div>
         <div class='canvas_wrapper'>
@@ -95,13 +107,7 @@
             <figcaption class="figure-caption">FFT Bins</figcaption>
 
           </figure>
-          <figure class='well'>
-            <span id='rx0'></span>
-            <span id='rx1'></span>
-            <canvas id='output_timeline'></canvas>
-            <figcaption class="figure-caption">PCM 32bit sample</figcaption>
-
-          </figure>
+=
           <figure class='well'>
             <canvas id='band_freq_out'></canvas>
             <figcaption class="figure-caption">FFT Bins</figcaption>
@@ -117,21 +123,19 @@
   <div id='rx2log'></div>
 
 
-  <div id=output_cp class=text-white style='position:fixed; width:20%; top:40vh;right:0;'>
-    <ul id=channels></ul>
-    <div><button id=obs>Broadcast</button> <button id=listen>Listen</button></div>
-    <div>
-      <button id="recorder">Start Recording</button>
-      <span class='text-white' id='rinfo'></span>
-      <span class='text-white' id='rdownload'></span>
-
-    </div>
-    <div><audio id='audio2' controls></audio></div>
-    <div><audio id='audio1' controls src=''></audio></div>
-    <video id=rtc></video>
-  </div>
 
 
+  <script id="mix_input" type="text/x-handlebars-template">
+            <div class="ProfileCard u-cf">
+              <img class="ProfileCard-avatar" src="{{thumbnail}}">
+          
+              <div class="ProfileCard-details">
+                <div class="ProfileCard-realName">{{title}}</div>
+                <div class="ProfileCard-screenName">{{channelTitle}}</div>
+                <div class="ProfileCard-description">{{description}}</div>
+              </div>
+            </div>
+          </script>
 
   <script id="result-template" type="text/x-handlebars-template">
             <div class="ProfileCard u-cf">
@@ -160,7 +164,7 @@ import BoardcastViewerClient from './twitch/BroadcastViewerClient.js'
 import { selector, slider, numeric } from "./functions.js";
 import https_rtc_client from './dsp_rtc/https_rtc_client.js';
 import DrawEQ from './draw.js'
-
+  $j(".dropdown-toggle").dropdown();
 let audioCtx, audioTag, eq;
 const overlay = document.getElementById("overlay");
 
@@ -211,10 +215,13 @@ overlay.onclick = async function (e) {
 
   var drawEQ = DrawEQ(audioCtx, group.bands);
 
+  var ctv = AnalyzerView(cursor, { fft: 1024 ,onFftGot: (dataFrame,analyzer)=>{
+     drawEQ.postFrameFromFFT(dataFrame,analyzer);
+      
+  } });
 
-  var ctv = AnalyzerView(cursor, { fft: 256 });
-  // geq.drawOverlayFrequencies(ctv.analyzer);
-  //ctv.histogram("output_freq", 700, 300); //, { fft: 256 })
+// geq.drawOverlayFrequencies(ctv.analyzer);
+  ctv.histogram("output_freq", 700, 300); //, { fft: 256 })
   ctv.timeseries("output_timeline", 128, 700, 300); //, { fft: 256 })
 
   var recorderProcessor = audioCtx.createScriptProcessor(1024, 2, 2);
@@ -289,15 +296,17 @@ overlay.onclick = async function (e) {
     bv.listChannels().then(channels => {
       for (const channel of Object.values(channels)) {
         var a = document.createElement("a");
+        a.className='dropdown-item';
         a.onclick = function () {
           bv.watchChannel(channel.name);
         }
+
+        
         a.href = "javascript://"
-        a.innerText = "watch"
-        var li = document.createElement("li");
-        li.append(a);
-        li.appendstr(" " + channel.name);
-        $("#channels").append(li);
+        a.innerText = channel.name;
+
+        $("#listenmenu").append(a);
+
       }
     });
   }

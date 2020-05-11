@@ -7,14 +7,18 @@ export default function DrawEQ(ctx, filters) {
     var knobRadius = 5;
     var centerFreqKnobs = Array(filters.length).fill(null)
     var canvas = document.querySelector('#chart .layer1');
-    var histogram = document.querySelector('#chart .layer2');
-    var vtx = canvas.getContext('2d');
+
+    var width = canvas.parentElement.clientWidth;
+    var height = canvas.parentElement.clientHeight;
 
     canvas.setAttribute('width', canvas.parentElement.clientWidth);
     canvas.setAttribute('height', canvas.parentElement.clientHeight);
 
-    var width = canvas.parentElement.clientWidth;
-    var height = canvas.parentElement.clientHeight;
+    var histogram = document.querySelector('#chart .layer2');
+    histogram.setAttribute('width', canvas.parentElement.clientWidth);
+    histogram.setAttribute('height', canvas.parentElement.clientHeight);
+    var htx = histogram.getContext('2d');
+    var vtx = canvas.getContext('2d');
 
     var filterIndexInFocus = -1;
 
@@ -67,7 +71,7 @@ export default function DrawEQ(ctx, filters) {
     var dirty = true;
     var canvas_zoomscale = 1;
     drawScalesAndFrequencyResponses();
-
+const  status =(str)=>  document.getElementById('status').textContent=str;
     function drawScalesAndFrequencyResponses() {
         centerFreqKnobs = Array(filters.length).fill(null);
         vtx.clearRect(0, 0, width, height);
@@ -82,13 +86,17 @@ export default function DrawEQ(ctx, filters) {
         vtx.moveTo(0, 0.5 * height);
         vtx.lineTo(width, 0.5 * height);
         vtx.stroke();
+        window.n_map ={};
+
         for (var octave = 0; octave <= noctaves; octave++) {
             var x = octave * width / noctaves;
+            var f = ctx.sampleRate / 2 * Math.pow(2.0, octave - noctaves);
+            window.n_map[f] = x;
+
             vtx.strokeStyle = gridColor;
             vtx.moveTo(x, 30);
             vtx.lineTo(x, height);
             vtx.stroke();
-            var f = ctx.sampleRate / 2 * Math.pow(2.0, octave - noctaves);
             vtx.textAlign = "center";
             vtx.strokeStyle = curveColor;
             vtx.strokeText(f.toFixed(0) + "Hz", x, 20);
@@ -121,8 +129,10 @@ export default function DrawEQ(ctx, filters) {
 
         for (let i in filters) {
             const filter = filters[i]
+            vtx.strokeWidth = 1;
             vtx.beginPath();
-            vtx.moveTo(0, dbToY(0));
+            vtx.moveTo(0, height/0);
+
             if (dirty == true) {
                 filter.getFrequencyResponse(freqs, magResponse, phaseResponse);
                 for (var k = 0; k < width; ++k) {
@@ -141,8 +151,7 @@ export default function DrawEQ(ctx, filters) {
                 }
             }
             vtx.stroke();
-            vtx.closePath();
-            console.log(i, 'vs', filterIndexInFocus)
+
             if (i == filterIndexInFocus) {
                 vtx.fillStyle = `rgb(133,${i * 100},${i % 2 * 31},0.8)`;
                 vtx.fill();
@@ -154,8 +163,8 @@ export default function DrawEQ(ctx, filters) {
             vtx.fillStyle = 'red';
             vtx.beginPath();
             vtx.arc(
-                centerFreqKnobs[i][0] - knobRadius,
-                centerFreqKnobs[i][1] + knobRadius,
+                centerFreqKnobs[i][0] ,
+                centerFreqKnobs[i][1] ,
                 knobRadius, 0, Math.PI * 2, false);
             vtx.closePath();
             vtx.fill();
@@ -165,7 +174,6 @@ export default function DrawEQ(ctx, filters) {
             var y = 20 * Math.log(aggregate[k]) / Math.LN10;
             vtx.lineTo(k, dbToY(aggregate[k]));
         }
-        vtx.closePath();
         vtx.stroke();
         dirty = false;
         //requestAnimationFrame(drawScalesAndFrequencyResponses);
@@ -235,30 +243,54 @@ export default function DrawEQ(ctx, filters) {
                 closest = Math.abs(centerFreqKnobs[i][0] - mousex);
             }
         }
-        if (filterIndexInFocus !== lastFocus) {
+        if (closest < 100 && filterIndexInFocus !== lastFocus) {
             dirty = true;
             drawScalesAndFrequencyResponses();
         }
     }
 
+
     function calcNyquists(width) {
         var freq = new Float32Array(width);
+        var f_to_x = {};
+
         for (var k = 0; k < width; ++k) {
             var f = k / width;
             f = Math.pow(2.0, noctaves * (f - 1.0));
-            freq[k] = f * nyquist;
+            freq[k] = Math.floor(f * nyquist);
         }
         window.allfreqs = freq;
         return freq;
     }
 
-    function postFrameFromFFT( dataArray){
+
+    function postFrameFromFFT(dataArray, analyzer){
+        var barWidth = (width / analyzer.frequencyBinCount) 
+        htx.clearRect(0,0,width,height);
+        // bin_number_to_freq = (i) => nyquist * i /fftSize;
+        var fftSize = analyzer.fftSize;
+        
+        var sum = 0;
+        var x = 0;
+        for(let i =0; i<fftSize; i++){
+            let hue = i/analyzer.frequencyBinCount * 360 ;
+            htx.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+            var barHeight = (dataArray[i] - analyzer.minDecibels);
+            htx.fillRect(x,height-barHeight,barWidth,barHeight);
+
+            sum ++;
+            x = x+barWidth;
+        }
+        htx.strokeText(dataArray[33], 10, 10, 100);
+        document.getElementById("status").contentText=sum;
+    //    log(" got from fft +"+ sum/dataArray.length)
 
 
     }
     return {
         canvas,
         histogram,
-        postFrameFromFFT
+        postFrameFromFFT,
+        init_bin_to_pixel_map:function(){}
     }
 }

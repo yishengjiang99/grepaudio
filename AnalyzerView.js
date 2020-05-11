@@ -7,9 +7,7 @@ var AnalyzerView = function(audioNode, params){
   const configs =  params || _configs
 
   var fft = audioNode.context.createAnalyser();
-  
   fft.fftSize = configs.fft || 2048;
-  fft.smoothingTimeConstant = configs.smtc || 0.9;
   const bins = fft.fftSize;
 
   const ctx = fft.context;
@@ -101,13 +99,13 @@ var AnalyzerView = function(audioNode, params){
 
          canvasCtx.beginPath();
         
-        
+        var rms = 0;
          for (var i = 0; i < bufferLength; i++) {
-            var y = dataArray[i];
-            if( Math.abs(y-127) < 1 ) continue;
-              x = t / bufferLength  % width;
+            var y = dataArray[i] - fft.minDecibels;
+
+            if( y < 1 ) continue;
+              x = t/ bufferLength  % width;
               t++;
-              
               if (t > 100 && x ==0) {
                   canvasCtx.clearRect(0,0,width,height);
                   canvasCtx.fillRect(0,0,width,height);
@@ -117,6 +115,7 @@ var AnalyzerView = function(audioNode, params){
               } else {
                   canvasCtx.lineTo(x,convertY(y));
               }
+              rms 
         
          }
          canvasCtx.stroke();
@@ -142,17 +141,21 @@ var AnalyzerView = function(audioNode, params){
       canvasCtx.strokeStyle = 'black';
       canvasCtx.fillStyle = 'white';
       canvasCtx.fillRect(0,0,width, height);
-      var dataArray = new Uint8Array(fft.fftSize);
-      if(!repeating) return dataArray;
-
-      
+      var dataArray = new Float32Array(fft.fftSize);
+      if(!repeating) return dataArray;      
       function drawBars(){
           var draw= !($("#showfft") && $("#showfft").checked == false)
           var draw_accum = false;!($("#showcummulative") && $("#showcummulative").checked == false)
           var t = requestAnimationFrame(drawBars);;
 
-          fft.getByteFrequencyData(dataArray);
 
+
+          fft.getFloatFrequencyData(dataArray);
+          
+          if(configs.onFftGot) {
+            configs.onFftGot(dataArray, fft);
+            return;
+          }
           var top, second, third;
           var count=0;
           var total =0;
