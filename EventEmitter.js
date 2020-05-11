@@ -1,4 +1,5 @@
 export default class EventEmitter {
+
     constructor() {
       this.events = {};
     }
@@ -26,4 +27,9 @@ export default class EventEmitter {
     once(eventName,fn){
         
     }
+  }
+  var k;
+  EventEmitter.prototype.getInstance = function(){
+    k = k || new EventEmitter();
+    return ;
   }

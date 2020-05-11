@@ -230,7 +230,9 @@ export function slider(container, options) {
 	}
 	contain.append(input);
 	contain.append(label);
-	container.append(contain);
+
+	if(!container) document.body.append(contain);
+else container.append(contain)
 	return input;
 }
 export function el(tag, innerHTML) {
@@ -407,7 +409,6 @@ window.timeseries_static = function (params) {
 
 		for (var i = 0; i < bufferLength; i++) {
 			var y = dataArray[i];
-			debugger;
 			if (y - 127 < 4) continue;
 			x = t / bufferLength % width;
 			t++;

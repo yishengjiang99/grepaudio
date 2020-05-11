@@ -20,12 +20,12 @@ export function split_band(ctx, hz_list) {
     for (let index = hz_list.length; index>=0; index--){
       const hz = hz_list[index];
       if(index==hz_list.length-1){
-         bands.push(new BiquadFilterNode(ctx,{type:"lowshelf", frequency:hz, gain:1, Q:3, detune:100}));
+         bands.push(new BiquadFilterNode(ctx,  {type:"highshelf", frequency:hz, gain:1, Q:1, detune:0}));
       }
       else if(index==0){
-        bands.push(new BiquadFilterNode(ctx,{type:"highshelf", frequency:hz, gain:1.2, Q:3, detune:100}));
+        bands.push(new BiquadFilterNode(ctx,{type:"lowshelf", frequency:hz, gain:0, Q:1, detune:0}));
       }else{
-        bands.push(new BiquadFilterNode(ctx,{type:"peaking", frequency:hz, gain:1, Q:5, detune:100}));
+        bands.push(new BiquadFilterNode(ctx,{type:"peaking", frequency:hz, gain:0, Q:1, detune:0}));
       } 
       
       bands[bands.length-1].connect(c);

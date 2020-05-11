@@ -175,6 +175,12 @@ export default async function (ctx, containerId) {
     panel.appendChild(apply);
     panel.appendChild(stop);
     stop.onclick = (e) => {
+      if( inputs[index] instanceof MediaStreamAudioSourceNode ){
+        inputs[index].disconnect() 
+      }else{
+        inputs[index].stop();
+      }
+  //  ]    inputs[index] instanceof MediaStreamAudioSourceNode  ?  inputs[index].disconnect() : inputs[index].stop();
       inputs[index].disconnect();
       inputs[index] = null;
       inputs[index] instanceof MediaStreamAudioSourceNode  ?  inputs[index].disconnect() : inputs[index].stop();

@@ -33,9 +33,6 @@
 
     </div>
   </div>
-
-
-
   <nav class="navbar navbar-dark bg-dark text-light flex-md-nowrap p-0 shadow">
     <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">GrepAwk DSP</a>
     <input id='ytsearch' class="type-ahead form-control form-control-dark w-100" type="text" placeholder="Search Music"
@@ -68,17 +65,17 @@
         <h4>Mix Sounds</h4>
    
         
-    <div id='chart' class='wrapper' style="position: relative; width: 70vw; height:480px">
+    <div id='chart' class='wrapper' style="position: relative; width: 70vw; height:300px">
       <span id=status></span>
     <canvas class="layer1" width="100" height="100" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
-    <canvas id='layer2' class="layer2" width="100" height="100" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
-  <canvas id='output_timeline' style='position: absolute; left: 0; width:100%; bottom:0px; height:20%; z-index: 0;'></canvas>
+    <canvas id='layer2' class="layer2" width="100" height="100" style="position: absolute; left: 0; top: 0; z-index:2;"></canvas>
+     <canvas id='output_timeline' style='position: absolute; left: 0; width:100%; top:100%; height:20%; z-index: 0;'></canvas>
 
     </div>
           <figure class='well'>
             <span id='rx0'></span>
             <span id='rx1'></span>
-\            <figcaption class="figure-caption">PCM 32bit sample</figcaption>
+           <figcaption class="figure-caption">PCM 32bit sample</figcaption>
 
           </figure>
         <div class='d-block p-2' id="eq_update_form">

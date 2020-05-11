@@ -36,7 +36,9 @@ export default function DrawEQ(ctx, filters) {
 
     var dbScale = 12;
     var pixelsPerDb = (0.5 * height) / dbScale;
-
+    var curveColor = "rgb(192,192,192)";
+    var playheadColor = "rgb(80, 100, 80)";
+    var gridColor = "rgb(100,100,100)";
     // log(freqs);
     canvas.addEventListener('wheel', function (event) {
         event.preventDefault();
@@ -72,15 +74,15 @@ export default function DrawEQ(ctx, filters) {
     var canvas_zoomscale = 1;
     drawScalesAndFrequencyResponses();
 const  status =(str)=>  document.getElementById('status').textContent=str;
+
+
     function drawScalesAndFrequencyResponses() {
-        centerFreqKnobs = Array(filters.length).fill(null);
+        //centerFreqKnobs = Array(filters.length).fill(null);
         vtx.clearRect(0, 0, width, height);
-        vtx.fillStyle = 'rgba(255,255,255,0.01)';
+        vtx.fillStyle = 'rgba(0,22,22)';
         vtx.fillRect(0, 0, width, height);
         // Draw frequency scale.
-        var curveColor = "rgb(192,192,192)";
-        var playheadColor = "rgb(80, 100, 80)";
-        var gridColor = "rgb(100,100,100)";
+ 
         // Draw 0dB line.
         vtx.beginPath();
         vtx.moveTo(0, 0.5 * height);
@@ -113,7 +115,7 @@ const  status =(str)=>  document.getElementById('status').textContent=str;
             canvasContext.stroke();
         }
 
-        var cc = ['blue', 'red', 'green'];
+        var cc = ['blue', 'red', 'green','yellow'];
 
 
         var magResponse = new Float32Array(width);
@@ -144,15 +146,20 @@ const  status =(str)=>  document.getElementById('status').textContent=str;
                     if (i == filterIndexInFocus) {
                         vtx.lineTo(k, dbToY(realdb));
                     }
-                    if (freqs[k] > filter.frequency.value && centerFreqKnobs[i] == null) {
+                    if (k>0 && freqs[k] >= filter.frequency.value && freqs[k-1] <  filter.frequency.value) {
                         centerFreqKnobs[i] = [k, y];
                         centerFreqXMap[k] = i;
                     }
                 }
             }
+            vtx.strokeWidth =0;
+      
             vtx.stroke();
 
             if (i == filterIndexInFocus) {
+                vtx.lineTo(width, dbToY(0));
+                vtx.lineTo(0, dbToY(0));
+                vtx.closePath();
                 vtx.fillStyle = `rgb(133,${i * 100},${i % 2 * 31},0.8)`;
                 vtx.fill();
             }
@@ -160,7 +167,13 @@ const  status =(str)=>  document.getElementById('status').textContent=str;
         }
 
         for (let i = 0; i < centerFreqKnobs.length; i++) {
-            vtx.fillStyle = 'red';
+            if(i == filterIndexInFocus){
+                vtx.fillStyle = 'blue';
+
+            }else{
+                vtx.fillStyle = 'green';
+
+            }
             vtx.beginPath();
             vtx.arc(
                 centerFreqKnobs[i][0] ,
@@ -170,12 +183,15 @@ const  status =(str)=>  document.getElementById('status').textContent=str;
             vtx.fill();
         }
         vtx.beginPath();
+
+        vtx.strokeStyle='yellow'
         for (var k = 0; k < width; ++k) {
             var y = 20 * Math.log(aggregate[k]) / Math.LN10;
             vtx.lineTo(k, dbToY(aggregate[k]));
         }
         vtx.stroke();
         dirty = false;
+        vtx.strokeText(_closest, 20,30)
         //requestAnimationFrame(drawScalesAndFrequencyResponses);
     }
 
@@ -194,25 +210,34 @@ const  status =(str)=>  document.getElementById('status').textContent=str;
     }
     var mousedown = false;
     canvas.onmousedown = function (e) {
+        console.log(e.shiftKey);
         mousedown = true;
     }
     canvas.onmouseup = function (e) {
         mousedown = false;
     }
     canvas.onmousemove = function (e) {
-        focusClosest(e);
+        if (mousedown === false){
+            focusClosest(e);
+        }
         if (mousedown === true && filterIndexInFocus > -1) {
+            var targetQ;
+            
+            if (e.movementY * e.movementY > 1) {
+                _closest=' movementY was '+e.movementY+" offset "+ e.offsetY ;
+          
+                if(e.shiftKey){
+                    var modifier = e.movement > 0 ? 0.95 : 1.05;
+                    filters[filterIndexInFocus].Q.setTargetAtTime(
+                        filters[filterIndexInFocus].Q.value * modifier, 
+                        ctx.currentTime + 0.001, 0.001);
+                }else{
+                    var targetGain = Math.log10(dbToY(e.offsetY));
 
-            if (e.movementY * e.movementY > 25) {
-                var currentQ = filters[filterIndexInFocus].Q.value;
-                var targetQ;
-                if (e.offSetY > 0) targetQ = currentQ * 1.02;
-                else targetQ = currentQ * 0.97;
-
-
-                filters[filterIndexInFocus].gain.setTargetAtTime(YToDb(e.offsetY), ctx.currentTime + 0.001, 0.001);
-                filters[filterIndexInFocus].Q.setTargetAtTime(targetQ, ctx.currentTime + 0.001, 0.001);
-
+                    filters[filterIndexInFocus].gain.setTargetAtTime(YToDb(e.offsetY),
+                        ctx.currentTime + 0.001, 0.001);
+                    
+                }
             }
             if (e.movementX * e.movementX > 10) {
 
@@ -231,21 +256,29 @@ const  status =(str)=>  document.getElementById('status').textContent=str;
         focusClosest(e);
 
     }
-
+    var _closest = "";
     function focusClosest(e) {
         const mousex = e.offsetX;
         var lastFocus = filterIndexInFocus;
         var closest = width;
         lastClick = ctx.currentTime;
         for (let i in centerFreqKnobs) {
+            if(centerFreqKnobs[i]===null) continue;
             if (Math.abs(centerFreqKnobs[i][0] - mousex) < closest) {
                 filterIndexInFocus = i;
                 closest = Math.abs(centerFreqKnobs[i][0] - mousex);
             }
         }
-        if (closest < 100 && filterIndexInFocus !== lastFocus) {
+
+        if (closest < 20 && filterIndexInFocus !== lastFocus) {
             dirty = true;
+
+            _closest = "closest changed at "+closest; 
             drawScalesAndFrequencyResponses();
+        }else if(closest > 20 && filterIndexInFocus > -1){
+            filterIndexInFocus = -1;
+            drawScalesAndFrequencyResponses();
+
         }
     }
 
@@ -281,9 +314,9 @@ const  status =(str)=>  document.getElementById('status').textContent=str;
             sum ++;
             x = x+barWidth;
         }
-        htx.strokeText(dataArray[33], 10, 10, 100);
+        htx.strokeText(dataArray[33], 44, 10, 100);
         document.getElementById("status").contentText=sum;
-    //    log(" got from fft +"+ sum/dataArray.length)
+   
 
 
     }
