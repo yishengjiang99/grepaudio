@@ -71,14 +71,15 @@
       </nav>
 
       <main role="main" class="col-md-8 sp-3 col-lg-8">
-        <h4>Mix Sounds</h4>
+      <div><h4 id=std1>Mix Sounds</h4> <button id=cplink  style='display:none'  onclick="copylink()">copy</button>
+
       <div id='chart' class='wrapper' style="position: relative; width: 70vw; height:300px">
       <span id=status></span>
     <canvas class="layer1" width="100" height="100" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
     <canvas id='layer2' class="layer2" width="100" height="100" style="position: absolute; left: 0; top: 0; z-index:0;"></canvas>
      <canvas id='output_timeline' style='position: absolute; left: 0; width:100%; top:100%; height:40%; z-index: 0;'></canvas>
     </div>
-          <figure class='well style='margin-top:200px'>
+          <figure class='well' style='margin-top:200px'>
             <span id='rx0'></span>
             <span id='rx1'></span>
            <figcaption class="figure-caption">PCM 32bit sample</figcaption>
@@ -97,11 +98,7 @@
             <figcaption class="figure-caption">FFT Bins</figcaption>
 
           </figure>
-<<<<<<< HEAD
           <figure class='well' style='display:none'>
-=======
-          <figure class='well'>
->>>>>>> 7dea0fb192a235b6ed0a64c0ce05554f46bbd411
             <canvas id='band_freq_out'></canvas>
             <figcaption class="figure-caption">FFT Bins</figcaption>
           </figure>
@@ -156,26 +153,7 @@
 
   <script src='polyfills.js'></script>
   <script type='module'>
-  var con = new SimpleConsole({placeholder: ">", id: "console", handleCommand: function(command) {
-      try {
-          window.index_stdin(cmd)
-      } catch (error) {
-          con.log(error);
-      }
-  }
-  , autofocus: true, // if the console is to be the primary interface of the page
-  storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
-});
 
-window.log = con.log;
-window.con = con;
-window.logErr = con.error;
-
-window.onerror = function(msg, url, lineNo, columnNo, error) {
-  con.log([msg, url, lineNo, columnNo, error].join(', '))
-
-}
-window.log = (txt) => con.log(txt);
     var $j = jQuery.noConflict();
 
 import equilizer from "./equalizer.js";
@@ -192,6 +170,7 @@ import DrawEQ from './draw.js'
 $j(".dropdown-toggle").dropdown();
 let audioCtx, audioTag, eq;
 const overlay = document.getElementById("overlay");
+const std1 = (str)=>document.getElementById("std1").innerHTML = str;
 
 overlay.onclick = async function (e) {
   overlay.style.display='none'
@@ -300,7 +279,20 @@ overlay.onclick = async function (e) {
     });
 
 
+  if(location.hash && location.hash.substr(1)){
 
+    var cmd = location.hash.substr(1).split(":")[0];
+    var arg1 =  location.hash.substr(1).split(":")[1];
+    switch(cmd){
+      case 'listen':
+        std1("connecting to "+arg1);
+        bv.watchChannel(arg1);
+
+        break;
+      default: break;
+    }
+
+  }
   $("#obs").onclick = function (e) {
     var userId = window.location.search.replace("?", "")
       || prompt("enter display name", (localStorage.getItem("displayName") || ""))
@@ -312,8 +304,10 @@ overlay.onclick = async function (e) {
     recorderProcessor.connect(peer);
     localStorage.setItem("displayName", userId)
     BroadcasterClient({
-      onEvent: log
-    }).broadcastAudio(userId, peer.stream);
+      onEvent: window.log
+    }).broadcastAudio(userId, peer.stream)
+          std1("Broadcastnig now to <input type=text id=urlinput size=80 value='http//dsp.grepawk.com/watch/"+userId+"'>")
+
 
   }
 
@@ -370,7 +364,6 @@ overlay.onclick = async function (e) {
       isRecording = false;
       $("#rdownload").innerHTML = `<a href='${e.data.audioUrl}'>Download</a>`;
     }
-    console.log(e);
   };
 
   $("#overlay").style.zIndex = -99;
@@ -402,6 +395,7 @@ $j('#ytsearch').typeahead(
     
     return item;
   });
+
 
   window.vfs = [group, audioTag, noiseGate, bandpassFilterNode, audioCtx, group];
 
@@ -436,9 +430,7 @@ $j('#ytsearch').typeahead(
     }
   }
 
-  if (location.hash) {
-    window.index_stdin(location.hash)
-  }
+
 
   con.element.style.zIndex = 99;
   con.element.addEventListener("click", function () { this.querySelector("input").focus() });
@@ -458,6 +450,12 @@ $j('#ytsearch').typeahead(
     $("#audio2").autoplay = true;
   });
 }
+function copylink(){
+  document.getElementbyId("urlinput").select();
+  document.select()
+  document.copy();
+  this.innerText='copied'
+} 
 
 
 

@@ -88,7 +88,7 @@ HTMLElement.prototype.appendstr = function (string) {
 }
 export async function chord(url, params) {
 	const { min, max, attack, decay, sustain, release } = Object.assign({
-		min: 0, max: 0.5, attack: 0.15, decay: 0.21, sustain: 0.21, release: 0.01
+		min: 0, max: 0.5, attack: 0.15, decay: 0.21, sustain: 0.21, release: 0.01, ...params
 	})
 	var str = await fetch(url).then(resp => resp.text());
 	var json = await JSON.parse(str);chord

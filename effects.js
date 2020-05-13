@@ -1,48 +1,155 @@
 import { slider } from "./functions.js";
 import Envelope from './envelope.js';
 
-function Effects(ctx,params){
-    params = {
-        min: 0, max: 0.5, attack: 0.15, decay: 0.21, sustain: 0.21, release: 0.01,
-        waveformURL: '/samples/piano',
-        impulseUrl: null,
-        ...params
+async function Effects(ctx, paraams) {
+class Effects extends AudioNode {
+    constructor(ctx, params){
+        const params = {
+            min: 0
+            , max: 0.5
+            , attack: 0.15
+            , decay: 0.21
+            , sustain: 0.21
+            , release: 0.01
+            , waveUrl: '/samples/Piano'
+            , ...paraams
+        };
+        super(ctx, params);
+        
     }
 
-    var { min, max, attack, decay, sustain, release, waveformURL ,impulseUrl} = params;
+    var str = await fetch(params.waveUrl).then(resp => resp.text());
+    var json = await JSON.parse(str);
 
-	const keys = 'asdfghj'.split("");
-	const notes = '261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88'.split(", ");
+    const keys = 'a,w,s,e,d,f,t,g,y,h,u'.split(",");
+    const notes = '261.63, 293.66 , 329.63, 349.23, 392.00, 440.00, 493.88, 277.18, 311.13, 369.99, 415.30, 466.16'.split(",").sort();
+    this.masterGain = new GainNode(ctx, { gain: 1 })
 
-	var masterGain = ctx.createGain();
-	masterGain.gain.setValueAtTime(1, ctx.currentTime)
-    var wetGain = ctx.createGain();
-    wetGain.gain.value = 1.3
-    var wetDelay = ctx.createDelay();
-    wetDelay.delayTime.value = 0.1;
-	var adsrs = {};
+    var adsrs = [];
+    var waveform = ctx.createPeriodicWave(json.real, json.imag);
+    var convolverNode = ctx.createConvolver();
 
-	var convolver = null;
-    var waveShaper =null;
-    var loaded = false;
+    var _reverbUrl = null;
+    var _reverbBuffer = null;
+    
+    function createKey(i) {
+        var osc1 = ctx.createOscillator();
+        osc1.frequency.value = notes[i];
+        osc1.type = 'sine'
+    
+        if (_reverbBuffer) {
+            
+            osc1.connect(convolver).connect(gain1)
+        }else{
+            osc1.connect(gain1)
+        }
+        var osc2 = ctx.createOscillator();
+        osc2.frequency.value = notes[i] * 2;
+        osc2.type = 'sawtooth'
+        osc2.deturn = 100;
+        var gain1 = ctx.createGain(2);
+        gain.gain.value = 0;
 
-    function connect(node){
-        this.masterGain.connect(node)
+
+        osc1.setPeriodicWave(waveform)
+        var gainEnvelope = new Envelope(min, max, attack, decay, sustain, release, gain.gain);
+        adsrs[i] = gainEnvelope
+        osc2.connect(gain);
+        osc1.connect(gain);
+        osc1.start(0);
+        osc2.start(0);
+
+
+
+        gain.connect(masterGain)
+
+        return gainEnvelope;
     }
-    function loadUI(containerId, inputNode, outputNode) {
+    window.addEventListener("keydown", function(e) {
+        var i = keys.indexOf(e.key);
+
+        if (i > -1) {
+            if (!adsrs[i]) {
+                adsrs[i] = createKey(i);
+            }
+            var env = adsrs[i];
+
+            if (e.repeat) {
+                env.hold(ctx.currentTime);
+            } else {
+                env.trigger(ctx.currentTime);
+            }
+            lastkeydown[e.key] = ctx.currentTime;
+        }
+    }),
+
+    function setImpulse(impulseUrl){
+        if (!impulseUrl) return;
+
+        fetch(impulseUrl).then(resp => resp.arrayBuffer()).then(buffer => ctx.decodeAudioData(buffer))
+            .then(audioBuffer => {
+                var impulseResponseBuffer = audioBuffer;
+                convolver = ctx.createConvolver();
+                convolver.buffer = impulseResponseBuffer;
+                convolver.loop = true;
+                convolver.start(0);
+                return convolver;
+            })
+    }
+
+    window.addEventListener("keyup", function(e) {
+        if (keys.indexOf(e.key) > -1) {
+            var env = adsrs[keys.indexOf(e.key)];
+            env.release(ctx.currentTime);
+        }
+    })
+
+
+
+    async function setWaveShaper(waveShaperUrl) {
+        if (!waveShaperUrl) return;
+        var str = await fetch(waveShaperUrl).then(resp => resp.text());
+        var json = await JSON.parse(str);
+        this.waveShaper = ctx.createPeriodicWave(json.real, json.imag)
+    }
+    return {
+        masterGain,
+
+        
+    }
+
+Effects.prototype = Object.create(null, {
+
+    /*
+     * @param reverb: url
+     */
+    reverbUrl: {
+        enumerable: true,
+        get: function() { this._reverbUrl },
+        set: function(url) { this._reverbUrl=url && this.setImpulse(url) }
+    },
+    output:{
+        get: function() {this.mastNode},
+
+        }
+
+});
+
+Effects.prototype.connect = function (node){
+    this.masterGain = node;
+}
+Effects.loadUI=function(containerId){
         var list = document.createElement("ul");
         var container  = document.getElementById(containerId);
         container.appendChild(list);
-    
-        this.inputNode = inputNode;
-        this.outputNode = outputNode;
+
     
         impulsesfff.map(filename => {
             const display = filename.split(".")[0];
             const url = '/samples/impulses/' + filename;
             var btn = document.createElement("button");
             btn.onclick = (e) => {
-                setImpulse(url);
+                this.reverbUrl = url;
             }
             btn.innerHTML = display;
     
@@ -52,105 +159,8 @@ function Effects(ctx,params){
             log(display, url)
             list.appendChild(li)
         })
-        $("#" + containerId).appendChild(list);
-        slider(container, { label: "wet gain", prop: wetGain.gain, min: "0", max: "4" });
-        slider(container, { label: "wet delay", prop: wetDelay.delayTime });
-    }
-	function setImpulse(impulseUrl){
-        if(!impulseUrl) return;
-        
-        fetch(impulseUrl).then(resp => resp.arrayBuffer()).then(buffer => ctx.decodeAudioData(buffer))
-        .then(audioBuffer=>{
-            var impulseResponseBuffer = audioBuffer;
-            convolver = ctx.createConvolver();
-            convolver.buffer = impulseResponseBuffer;
-        })
-	}
-
-	async function setWaveShaper(waveShaperUrl){
-        if(!waveShaperUrl) return;
-		var str = await fetch(waveShaperUrl).then(resp => resp.text());
-		var json = await JSON.parse(str);
-		this.waveShaper =g_audioCtx.createPeriodicWave(json.real, json.imag)
-	}
-    
-	function createEnvelope(i){
-
-        var LFO = ctx.createOscillator();
-		LFO.frequency.value = notes[i];
-		LFO.type = 'square'
-		var gain = ctx.createGain();
-		gain.gain.value = 0;
-        if(waveShaper){
-            LFO.setPeriodicWave(waveShaper);
-
-        }
-        
-		var gainEnvelope = new Envelope(min, max, attack, decay, sustain, release, gain.gain);
-		adsrs[i] = gainEnvelope;
-		LFO.connect(gain);
-		gain.connect(masterGain)
-        LFO.start(0);
-        
-        // var LFO = ctx.createOscillator();
-		// LFO.frequency.value = notes[index];
-		// LFO.type = 'sine'
-		// if(waveShaper) {
-		// 	LFO.setPeriodicWave(waveShaper);
-		// }
-
-		// var gain = ctx.createGain();
-		// gain.gain.value = 0;
-		// LFO.connect(gain).connect(masterGain)
-		// if(convolver){
-        //     LFO.connect(convolver);
-        //     convolver.connect(wetDelay).connect(wetGain).connect(gain);
-		// }
-		// var gainEnvelope = new Envelope(min, max, attack, decay, sustain, release, gain.gain);
-		// adsrs[index]= gainEnvelope;
-		// gain.connect(masterGain)
-		// LFO.start(0);
-  
-		return gainEnvelope;
-    }
-    
-	window.addEventListener("keydown", function (e) {
-		var index = keys.indexOf(e.key);
-		if (index > -1) {
-			var env = adsrs[index] || createEnvelope(index);
-			if (e.repeat) {
-				env.hold(ctx.currentTime);
-			} else {
-				env.trigger(ctx.currentTime);
-			}
-			//lastkeydown[e.key] = ctx.currentTime;
-		}
-	})
-
-	window.addEventListener("keyup", function (e) {
-        var index = keys.indexOf(e.key);
-
-		if (index > -1) {
-			var env = adsrs[index];
-            env.release(ctx.currentTime);
-            //delete adsrs[index];
-			log("keyup")
-		}
-	})
-	return{
-		masterGain,
-		setWaveShaper,
-        setImpulse,
-        loadUI,
-        connect
-	}
-
 }
-// Effects.prototype = Object.create(null, {
-//     connect: function(node){
-//         this.masterGain.connect(node);
-//     }
-// });
+export default Effects;
 
 const impulsesfff =
     `backslap1.wav
@@ -229,4 +239,3 @@ const impulsesfff =
     zing-long-stereo.wav
     zoot.wav
     `.split(/\s+/);
-export default Effects;
