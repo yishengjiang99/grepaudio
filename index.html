@@ -16,7 +16,7 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
-
+<script src='https://hammerjs.github.io/dist/hammer.min.js'></script>
   <script src='typeahead.bundle.min.js'></script>
 </head>
 
@@ -306,7 +306,8 @@ overlay.onclick = async function (e) {
     BroadcasterClient({
       onEvent: window.log
     }).broadcastAudio(userId, peer.stream)
-          std1("Broadcastnig now to <input type=text id=urlinput size=80 value='http//dsp.grepawk.com/watch/"+userId+"'>")
+          std1(`Broadcasting now to <input type=text id=urlinput size=80 value='https://dsp.grepawk.com/watch/${userId}'>`);
+          document.getElementById("cplink").style.display="inline"
 
 
   }
@@ -450,7 +451,7 @@ $j('#ytsearch').typeahead(
     $("#audio2").autoplay = true;
   });
 }
-function copylink(){
+window.copylink=function(){
   document.getElementbyId("urlinput").select();
   document.select()
   document.copy();

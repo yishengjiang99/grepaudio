@@ -411,12 +411,10 @@ window.timeseries_static = function (params) {
 		for (var i = 0; i < bufferLength; i++) {
 			var y = dataArray[i];
 			if (y - 127 < 4) continue;
-			x = t / bufferLength % width;
+			x = (t*40) / bufferLength % width;
 			t++;
 			if (t > 11 && x == 0) {
 
-				canvasCtx.clearRect(0, 0, width, height);
-				canvasCtx.fillRect(0, 0, width, height);
 				canvasCtx.stroke();
 				canvasCtx.beginPath();
 				canvasCtx.moveTo(x, convertY(y));

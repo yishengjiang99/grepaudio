@@ -66,12 +66,12 @@ var AnalyzerView = function(audioNode, params){
 
       return fftU8().reduce(d=>sum+=d, 0);
     },
-    timeseries: function(elemId, sampleSize=1024, width=320, height=255){
+    timeseries: function(elemId, sampleSize=1024, width=1222, height=255){
       fft.fftSize = sampleSize;
       this.timeseries2({elemId, sampleSize, width, height, analyzer:fft});
     },
     timeseries2: function(params){
-      var params = Object.assign({sampleSize:1024, width:320, height:255}, params);
+      var params = Object.assign({sampleSize:1024, width:1111, height:255}, params);
       const {elemId, sampleSize, width, height, analyzer} = params;
       const HEIGHT = height;
       const WIDTH = width;
@@ -90,7 +90,7 @@ var AnalyzerView = function(audioNode, params){
       canvasCtx.beginPath();
       canvasCtx.moveTo(0, convertY(0));
       var t = 0; 
-      canvasCtx.lineWidth = 2;
+      canvasCtx.lineWidth = 1;
       var x  = 0;
       var zoomScale = 1;
       canvas.onwheel = function(e) {
@@ -104,13 +104,20 @@ var AnalyzerView = function(audioNode, params){
          var bufferLength = dataArray.length;
 
          canvasCtx.beginPath();
-        
-        var rms = 0;
-         for (var i = 0; i < bufferLength; i++) {
-            var y = (dataArray[i] - fft.minDecibels)*zoomScale;
+        var sum=0;
 
-            if( y < 1 ) continue;
-              x = t/ bufferLength  % width;
+        sum = dataArray.reduce((accumulator, currentValue) => accumulator + currentValue);
+
+        canvasCtx.clearRect(10,20,10,100)
+        canvasCtx.fillRect(10,20,10,100)
+        canvasCtx.strokeStyle='white'
+        canvasCtx.strokeWidth=1;
+        canvasCtx.strokeText(`r m s : ${sum/bufferLength}`,10,20,100);
+         for (var i = 0; i < bufferLength; i++) {
+     
+            var y = dataArray[i];
+            if( y ==0 ) continue;
+              x = t/bufferLength  % width;
               t++;
               if (t > 100 && x ==0) {
                   canvasCtx.clearRect(0,0,width,height);
@@ -121,8 +128,6 @@ var AnalyzerView = function(audioNode, params){
               } else {
                   canvasCtx.lineTo(x,convertY(y));
               }
-              rms 
-        
          }
          canvasCtx.stroke();
          requestAnimationFrame(draw);

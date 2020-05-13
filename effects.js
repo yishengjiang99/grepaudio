@@ -1,68 +1,84 @@
 import { slider } from "./functions.js";
 import Envelope from './envelope.js';
 
-async function Effects(ctx, paraams) {
-class Effects extends AudioNode {
-    constructor(ctx, params){
-        const params = {
-            min: 0
-            , max: 0.5
-            , attack: 0.15
-            , decay: 0.21
-            , sustain: 0.21
-            , release: 0.01
-            , waveUrl: '/samples/Piano'
-            , ...paraams
-        };
-        super(ctx, params);
-        
-    }
+function Effects(ctx, paraams) {
+    const params = {
+        min: 0
+        , max: 4
+        , attack: 0.1
+        , decay: 0.25
+        , sustain: 0.22
+        , release: 0.21//0.01
+        , waveUrl: '/samples/Piano'
+        , ...paraams
+    };
 
-    var str = await fetch(params.waveUrl).then(resp => resp.text());
-    var json = await JSON.parse(str);
+    var octave = 4;
+    var freqmultiplierindex = [0,0.25, 0.5, 1, 2, 4];
 
+
+    const { min, max, attack, decay, sustain, release } = params;
     const keys = 'a,w,s,e,d,f,t,g,y,h,u'.split(",");
     const notes = '261.63, 293.66 , 329.63, 349.23, 392.00, 440.00, 493.88, 277.18, 311.13, 369.99, 415.30, 466.16'.split(",").sort();
-    this.masterGain = new GainNode(ctx, { gain: 1 })
+    var masterGain = new GainNode(ctx, { gain: 1 })
+    var waveform = null;
 
-    var adsrs = [];
-    var waveform = ctx.createPeriodicWave(json.real, json.imag);
-    var convolverNode = ctx.createConvolver();
+    fetch(params.waveUrl).then(resp => resp.text()).then(str=>JSON.parse(str)).then(json=>{
+        waveform = ctx.createPeriodicWave(json.real, json.imag);
+    })
+    var adsrs = {};
+    var  convolver = ctx.createConvolver();
 
-    var _reverbUrl = null;
-    var _reverbBuffer = null;
+    var impulse = ctx.createBuffer(2, 3*ctx.sampleRate, ctx.sampleRate);
+    var impulseL = impulse.getChannelData(0);
+    var impulseR = impulse.getChannelData(1);
+
+    var n, i;
+  
+    for (i = 0; i < 3*ctx.sampleRate; i++) {
+     
+      impulseL[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 3);
+      impulseR[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 3);
+    }
+debugger;
+  //  convolver.buffer = impulse;
+
     
     function createKey(i) {
+        var freq_multiplier = freqmultiplierindex[octave];
         var osc1 = ctx.createOscillator();
-        osc1.frequency.value = notes[i];
+        osc1.frequency.value = notes[i] * freq_multiplier;
         osc1.type = 'sine'
     
-        if (_reverbBuffer) {
-            
-            osc1.connect(convolver).connect(gain1)
-        }else{
-            osc1.connect(gain1)
-        }
+     
         var osc2 = ctx.createOscillator();
-        osc2.frequency.value = notes[i] * 2;
-        osc2.type = 'sawtooth'
-        osc2.deturn = 100;
-        var gain1 = ctx.createGain(2);
-        gain.gain.value = 0;
+        osc2.frequency.value = notes[i] * freq_multiplier * 2;
+        osc2.type = 'square'
+        var offfreq_attenuator = new GainNode(ctx,{gain:0.1});
 
+        var gain =new GainNode(ctx,{gain:0})
 
-        osc1.setPeriodicWave(waveform)
+        if(waveform){
+            osc1.setPeriodicWave(waveform)
+            osc1.setPeriodicWave(waveform)
+        }
+        if (convolver.buffer) {
+            osc1.connect(convolver).connect(gain)
+             osc2.connect(offfreq_attenuator).connect(convolver).connect(gain)
+        }else{
+            osc2.connect(offfreq_attenuator).connect(gain);
+            osc1.connect(gain);
+        }
+        
         var gainEnvelope = new Envelope(min, max, attack, decay, sustain, release, gain.gain);
         adsrs[i] = gainEnvelope
-        osc2.connect(gain);
-        osc1.connect(gain);
+
         osc1.start(0);
         osc2.start(0);
 
 
 
         gain.connect(masterGain)
-
         return gainEnvelope;
     }
     window.addEventListener("keydown", function(e) {
@@ -79,20 +95,27 @@ class Effects extends AudioNode {
             } else {
                 env.trigger(ctx.currentTime);
             }
-            lastkeydown[e.key] = ctx.currentTime;
         }
-    }),
+    })
 
-    function setImpulse(impulseUrl){
+    var quicksample = (buffer)=>{
+        var b = ctx.createBufferSource();
+        var g = new GainNode(ctx,{gain:2})
+        b.connect(g).connect(ctx.destination)
+        b.buffer = buffer;
+        b.start(0);
+        b.stop(1);
+    }
+
+    var setImpulse = (impulseUrl) =>{
         if (!impulseUrl) return;
 
         fetch(impulseUrl).then(resp => resp.arrayBuffer()).then(buffer => ctx.decodeAudioData(buffer))
             .then(audioBuffer => {
-                var impulseResponseBuffer = audioBuffer;
-                convolver = ctx.createConvolver();
-                convolver.buffer = impulseResponseBuffer;
+                quicksample(audioBuffer);
+      
+                convolver.buffer = audioBuffer;
                 convolver.loop = true;
-                convolver.start(0);
                 return convolver;
             })
     }
@@ -104,43 +127,11 @@ class Effects extends AudioNode {
         }
     })
 
-
-
-    async function setWaveShaper(waveShaperUrl) {
-        if (!waveShaperUrl) return;
-        var str = await fetch(waveShaperUrl).then(resp => resp.text());
-        var json = await JSON.parse(str);
-        this.waveShaper = ctx.createPeriodicWave(json.real, json.imag)
-    }
-    return {
-        masterGain,
-
-        
-    }
-
-Effects.prototype = Object.create(null, {
-
-    /*
-     * @param reverb: url
-     */
-    reverbUrl: {
-        enumerable: true,
-        get: function() { this._reverbUrl },
-        set: function(url) { this._reverbUrl=url && this.setImpulse(url) }
-    },
-    output:{
-        get: function() {this.mastNode},
-
-        }
-
-});
-
-Effects.prototype.connect = function (node){
-    this.masterGain = node;
-}
-Effects.loadUI=function(containerId){
+    function loadUI(containerId){
         var list = document.createElement("ul");
         var container  = document.getElementById(containerId);
+        container.style.height=200;
+        list.style.overflowY='scroll'
         container.appendChild(list);
 
     
@@ -149,7 +140,7 @@ Effects.loadUI=function(containerId){
             const url = '/samples/impulses/' + filename;
             var btn = document.createElement("button");
             btn.onclick = (e) => {
-                this.reverbUrl = url;
+                this.setImpulse(url)
             }
             btn.innerHTML = display;
     
@@ -159,7 +150,27 @@ Effects.loadUI=function(containerId){
             log(display, url)
             list.appendChild(li)
         })
+        
+    }
+
+    async function setWaveShaper(waveShaperUrl) {
+        if (!waveShaperUrl) return;
+        var str = await fetch(waveShaperUrl).then(resp => resp.text());
+        var json = await JSON.parse(str);
+        this.waveShaper = ctx.createPeriodicWave(json.real, json.imag)
+    }
+    return {
+        masterGain,
+        convolver,
+        setWaveShaper,
+        loadUI,
+        setImpulse
+        
+    }
 }
+
+
+
 export default Effects;
 
 const impulsesfff =
