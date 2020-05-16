@@ -40,10 +40,13 @@ import BroadcasterClient from './twitch/BroadcastClient.js'
 
   function std1 (status){ document.querySelector("#std1").contentText = status}
 
+const opt={ audio: true, video: true };
+
+navigator.getUserMedia = ( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.mediaDevices.getUserMedia);
+
 function getUserMedia(e) {
-    navigator.getUserMedia({ audio: { echoCancellation: true }, video: true }, async(stream) => {
-        var ui = await postTracks("channel", stream);
-        document.querySelector("#ui").append(ui);
+    navigator.mediaDevices.getUserMedia( opt).then( stream=>{
+    
         var userId = window.location.search.replace("?", "") ||
             prompt("enter display name", (localStorage.getItem("displayName") || "")) ||
             ("user_" + Math.floor(Math.random() * 10));
@@ -54,7 +57,7 @@ function getUserMedia(e) {
         std1(`Broadcasting now to <input type=text id=urlinput size=80 value='https://dsp.grepawk.com/watch/${userId}'>`);
           document.getElementById("cplink").style.display="inline"
 
-    }, function(e) {
+    }).catch(function(e) {
         alert('strema not got' + e.message);
     });
 
