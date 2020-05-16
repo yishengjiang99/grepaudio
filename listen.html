@@ -1,0 +1,68 @@
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1, maximum-scale=1">
+<style>
+.container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+.center {
+  margin: 0;
+  position: absolute;
+  top: 80%;
+  width: 100%;
+}
+button{
+  width: 100%;
+  height: 3em;
+  background-color:green;
+  font-size:2em;  
+}
+</style>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+<div id=std1></div>
+<div class="container">
+  <div class="center">
+<div id=ui></div>
+<button><i class="fa fa-microphone"></i>Hear</button>.
+  </div>
+</div>
+</div> 
+<script type=module>
+import BroadcasterClient from './twitch/BroadcastClient.js'
+
+  const button = document.querySelector("button");
+  button.onclick = e=> getUserMedia(e);
+
+  function std1 (status){ document.querySelector("#std1").contentText = status}
+
+function getUserMedia(e) {
+    navigator.getUserMedia({ audio: { echoCancellation: true }, video: true }, async(stream) => {
+        var ui = await postTracks("channel", stream);
+        document.querySelector("#ui").append(ui);
+        var userId = window.location.search.replace("?", "") ||
+            prompt("enter display name", (localStorage.getItem("displayName") || "")) ||
+            ("user_" + Math.floor(Math.random() * 10));
+
+        BroadcasterClient({
+            onEvent: window.log
+        }).broadcastAudio(userId, stream);
+        std1(`Broadcasting now to <input type=text id=urlinput size=80 value='https://dsp.grepawk.com/watch/${userId}'>`);
+          document.getElementById("cplink").style.display="inline"
+
+    }, function(e) {
+        alert('strema not got' + e.message);
+    });
+
+}
+
+
+
+</script>
+</body>
+
+</html>
