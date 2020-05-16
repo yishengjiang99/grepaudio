@@ -281,8 +281,8 @@ overlay.onclick = async function (e) {
 
   if(location.hash && location.hash.substr(1)){
 
-    var cmd = location.hash.substr(1).split(":")[0];
-    var arg1 =  location.hash.substr(1).split(":")[1];
+    var cmd = location.hash.substr(1).split("/")[0];
+    var arg1 =  location.hash.substr(1).split("/")[1];
     switch(cmd){
       case 'listen':
         std1("connecting to "+arg1);
@@ -306,7 +306,7 @@ overlay.onclick = async function (e) {
     BroadcasterClient({
       onEvent: window.log
     }).broadcastAudio(userId, peer.stream)
-          std1(`Broadcasting now to <input type=text id=urlinput size=80 value='https://dsp.grepawk.com/watch/${userId}'>`);
+          std1(`Broadcasting now to <input type=text id=urlinput size=80 value='https://dsp.grepawk.com#watch/${userId}'>`);
           document.getElementById("cplink").style.display="inline"
 
 
