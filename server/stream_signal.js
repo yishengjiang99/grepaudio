@@ -109,11 +109,6 @@ wss.on('connection', function (connection) {
       connection.on("close", function () {
          if (connection.uuid) {
              delete connections[connection.uuid];
-             if (connection.otheruuid) {
-                console.log("Disconnecting from ", connection.otheruuid);
-                var conn = users[connection.otheruuid];
-                conn.otheruuid = null;
-             }
              delete broadcasts[connection.channel];
          }
       });

@@ -24,9 +24,15 @@ button{
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
-<div id=std1></div>
+<div id=std1></div><span id="cplink"></span>
+
 <div class="container">
+
   <div class="center">
+
+<video playsinline id=rtv controls style='width:100vw; height:320px' muted autoplay></video>
+  <div class="center">
+
 <div id=ui></div>
 <button><i class="fa fa-microphone"></i>Hear</button>.
   </div>
@@ -39,14 +45,24 @@ import BroadcasterClient from './twitch/BroadcastClient.js'
   button.onclick = e=> getUserMedia(e);
 
   function std1 (status){ document.querySelector("#std1").contentText = status}
-
+function log (status){std1(status) };
+// std1;
+const $ = id => document.querySelector(id);
 const opt={ audio: true, video: true };
 
-navigator.getUserMedia = ( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.mediaDevices.getUserMedia);
+  const rtcViewer = document.querySelector("video#rtc")
 
-function getUserMedia(e) {
-    navigator.mediaDevices.getUserMedia( opt).then( stream=>{
-    
+
+function getUserMedia(){
+if(navigator.getUserMedia){
+	navigator.getUserMedia(opt, stream=>gotStream(stream), error=>gotError(error));
+}
+else if( navigator.mediaDevices.getUserMedia) {
+	 navigator.mediaDevices.getUserMedia(opt).then(gotStream).catch(gotError);
+}
+}
+
+function gotStream(stream){
         var userId = window.location.search.replace("?", "") ||
             prompt("enter display name", (localStorage.getItem("displayName") || "")) ||
             ("user_" + Math.floor(Math.random() * 10));
@@ -54,12 +70,15 @@ function getUserMedia(e) {
         BroadcasterClient({
             onEvent: window.log
         }).broadcastAudio(userId, stream);
-        std1(`Broadcasting now to <input type=text id=urlinput size=80 value='https://dsp.grepawk.com/watch/${userId}'>`);
-          document.getElementById("cplink").style.display="inline"
 
-    }).catch(function(e) {
+        std1(`Broadcasting now to <input type=text id=urlinput size=80 value='https://dsp.grepawk.com/watch/${userId}'>`);
+
+
+         document.querySelector('video#rtv').srcObject = new MediaStream(stream);
+
+}
+function gotError(e){
         alert('strema not got' + e.message);
-    });
 
 }
 
