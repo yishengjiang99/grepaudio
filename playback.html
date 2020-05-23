@@ -1,171 +1,93 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <title>Spotify Web Playback SDK Quick Start Tutorial</title>
+  </head>
+  <button style="display: none;" id="loginBtn">Login With Spotify</button>
+  <div id="console"></div>
+  <body>
+    <script>
+      const loginBtn = document.querySelector("#loginBtn");
+      const log = (msg) => (document.getElementById("console").innerHTML += "<br>" + msg);
+      const error = log;
+      const scope = [
+        "user-read-playback-state",
+        "user-modify-playback-state",
+        "user-read-currently-playing",
+        "streaming",
+        "app-remote-control",
+      ];
 
-<head>
-  <title>Spotify Web Playback SDK Quick Start Tutorial</title>
-</head>
+      const token =
+        location.hash &&
+        location.hash.match(/access_token\=(.*?)\&/)[0].replace("access_token=", "");
+      if (!token) {
+        loginBtn.style.display = "block";
+        loginBtn.onclick = () =>
+          (document.location =
+            "https://dsp.grepawk.com/api/spotify/login?scope=" +
+            scope.join(",") +
+            "&jshost=" +
+            document.location.origin);
+      } else {
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "https://sdk.scdn.co/spotify-player.js";
+        document.getElementsByTagName("head")[0].appendChild(script);
 
-<body>
-<section id="tracks">
-  <ul>
-    <li data-loading="true">
-      <a href="leadguitar.mp3" class="track">Lead Guitar</a>
-      <p class="loading-text">Loading...</p>
-      <button data-playing="false" aria-decribedby="guitar-play-label">
-        <span id="guitar-play-label">Play</span>
-      </button>
-    </li>
-    <li data-loading="true">
-      <a href="bassguitar.mp3" class="track">Bass Guitar</a>
-      <p class="loading-text">Loading...</p>
-      <button data-playing="false" aria-describedby="bass-play-label">
-        <span id="bass-play-label">Play</span>
-      </button>
-    </li>
-    <li data-loading="true">
-      <a href="drums.mp3" class="track">Drums</a>
-      <p class="loading-text">Loading...</p>
-      <button data-playing="false" aria-describedby="drums-play-label">
-        <span id="drums-play-label">Play</span>
-      </button>
-    </li>
-    <li data-loading="true">
-      <a href="horns.mp3" class="track">Horns</a>
-      <p class="loading-text">Loading...</p>
-      <button data-playing="false" aria-describedby="horns-play-label">
-        <span id="horns-play-label">Play</span>
-      </button>
-    </li>
-    <li data-loading="true">
-      <a href="clav.mp3" class="track">Clavi</a>
-      <p class="loading-text">Loading...</p>
-      <button data-playing="false" aria-describedby="clavi-play-label">
-        <span id="clavi-play-label">Play</span>
-      </button>
-    </li>
-  </ul>
-  <p class="sourced">All tracks sourced from <a href="http://jplayer.org/">jplayer.org</a></p>
-</section>
-  <script>
-  // for cross browser compatibility
-const AudioContext = window.AudioContext || window.webkitAudioContext;
-const audioCtx = new AudioContext();
-const trackEls = document.querySelectorAll('li');
-async function getFile(filepath) {
-  const response = await fetch(filepath);
-  const arrayBuffer = await response.arrayBuffer();
-  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-  return audioBuffer;
-}
-async function loadFile(filePath) {
-  const track = await getFile(filePath);
-  return track;
-}
-let offset = 0;
+        document.head.appendChild(
+          document.createElement("script", { src: "https://sdk.scdn.co/spotify-player.js" })
+        );
+        var player;
 
-function playTrack(audioBuffer) {
-  const trackSource = audioCtx.createBufferSource();
-  trackSource.buffer = audioBuffer;
-  trackSource.connect(audioCtx.destination)
+        window.onSpotifyWebPlaybackSDKReady = () => {
+          const player = new Spotify.Player({
+            name: "Web Playback SDK Quick Start Player",
+            getOAuthToken: (cb) => {
+              cb(token);
+            },
+          });
 
-  if (offset == 0) {
-    trackSource.start();
-    offset = audioCtx.currentTime;
-  } else {
-    trackSource.start(0, audioCtx.currentTime - offset);
-  }
+          // Error handling
+          player.addListener("initialization_error", ({ message }) => {
+            error(message);
+          });
+          player.addListener("authentication_error", ({ message }) => {
+            error(message);
+          });
+          player.addListener("account_error", ({ message }) => {
+            error(message);
+          });
+          player.addListener("playback_error", ({ message }) => {
+            error(message);
+          });
+          // Playback status updates
+          player.addListener("player_state_changed", (state) => {
+            log(state);
+          });
 
-  return trackSource;
-}
-trackEls.forEach((el, i) => {
+          // Ready
+          player.addListener("ready", ({ device_id }) => {
+            log("Ready with Device ID " + device_id);
+          });
 
-  // get children
-  const anchor = el.querySelector('a');
-  const loadText = el.querySelector('p');
-  const playButton = el.querySelector('button');
+          // Not Ready
+          player.addListener("not_ready", ({ device_id }) => {
+            log("Device ID has gone offline", device_id);
+          });
 
-  // load file
-  loadFile(anchor.href).then((track) => {
+          // Connect to the player!
+          player.connect();
 
-    // set loading to false
-    el.dataset.loading = 'false';
-
-    // hide loading text
-    loadText.style.display = 'none';
-
-    // show button
-    playButton.style.display = 'inline-block';
-
-    // allow play on click
-    playButton.addEventListener('click', function() {
-
-      // check if context is in suspended state (autoplay policy)
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-
-      playTrack(track);
-      playButton.dataset.playing = true;
-    })
-  })
-
-})
-if (offset == 0) {
-  source.start();
-  offset = context.currentTime;
-} else {
-  var relativeTime = context.currentTime - offset;
-  var beats = relativeTime / tempo;
-  var remainder = beats - Math.floor(beats);
-  var delay = tempo - (remainder*tempo);
-  source.start(context.currentTime+delay, relativeTime+delay);
-}
-    const token = getQuerystringNameValue('access_token');
-    const d = document.body;
-    const log = msg => document.getElementById("console").innerHTML += "<br>" + msg;
-    const error = log;
-    var player;
-
-    window.onSpotifyWebPlaybackSDKReady = () => {
-      const player = new Spotify.Player({
-        name: 'Web Playback SDK Quick Start Player',
-        getOAuthToken: cb => { cb(token); }
-      });
-
-      // Error handling
-      player.addListener('initialization_error', ({ message }) => { error(message); });
-      player.addListener('authentication_error', ({ message }) => { error(message); });
-      player.addListener('account_error', ({ message }) => { error(message); });
-      player.addListener('playback_error', ({ message }) => { error(message); });
-      // Playback status updates
-      player.addListener('player_state_changed', state => { log(state); });
-
-      // Ready
-      player.addListener('ready', ({ device_id }) => {
-        log('Ready with Device ID ' + device_id);
-
-      });
-
-      // Not Ready
-      player.addListener('not_ready', ({ device_id }) => {
-        log('Device ID has gone offline', device_id);
-      });
-
-      // Connect to the player!
-      player.connect();
-
-      document.getElementById("play").onclick = function () {
-
-        play({
-          playerInstance: player,
-          spotify_uri: 'spotify:playlist:1ZSGautkUpYJTOo6TfHoXi?si=Wt76vAF0S66qWfuGxTX28w',
-        });
-      }
+          document.getElementById("play").onclick = function () {
+            play({
+              playerInstance: player,
+              spotify_uri: "spotify:playlist:1ZSGautkUpYJTOo6TfHoXi?si=Wt76vAF0S66qWfuGxTX28w",
+            });
+          };
         };
-
-  </script>
-  <script src="https://sdk.scdn.co/spotify-player.js"></script>
-  <!-- We will insert our code here. -->
-</body>
-
+      }
+    </script>
+    <!-- We will insert our code here. -->
+  </body>
 </html>
