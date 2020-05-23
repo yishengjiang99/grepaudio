@@ -4,6 +4,7 @@
     <title>Spotify Web Playback SDK Quick Start Tutorial</title>
   </head>
   <button style="display: none;" id="loginBtn">Login With Spotify</button>
+<button  style="display: none;" id='play'>play</button>
   <div id="console"></div>
   <body>
     <script>
@@ -34,7 +35,7 @@
         script.type = "text/javascript";
         script.src = "https://sdk.scdn.co/spotify-player.js";
         document.getElementsByTagName("head")[0].appendChild(script);
-
+	
         document.head.appendChild(
           document.createElement("script", { src: "https://sdk.scdn.co/spotify-player.js" })
         );
@@ -43,20 +44,18 @@
         window.onSpotifyWebPlaybackSDKReady = () => {
           const player = new Spotify.Player({
             name: "Web Playback SDK Quick Start Player",
-            getOAuthToken: (cb) => {
-              cb(token);
-            },
+	     getOAuthToken: cb => cb(token)
           });
 
           // Error handling
           player.addListener("initialization_error", ({ message }) => {
-            error(message);
+            error('init '+message);
           });
           player.addListener("authentication_error", ({ message }) => {
-            error(message);
+  //          error(message);
           });
           player.addListener("account_error", ({ message }) => {
-            error(message);
+//            error(message);
           });
           player.addListener("playback_error", ({ message }) => {
             error(message);
@@ -67,8 +66,10 @@
           });
 
           // Ready
-          player.addListener("ready", ({ device_id }) => {
-            log("Ready with Device ID " + device_id);
+	  let deviceId;
+          player.addListener("ready", (e) => {
+		deviceId = e.device_id;
+		document.getElementById("play").style.display='block';
           });
 
           // Not Ready
@@ -79,12 +80,16 @@
           // Connect to the player!
           player.connect();
 
-          document.getElementById("play").onclick = function () {
-            play({
-              playerInstance: player,
-              spotify_uri: "spotify:playlist:1ZSGautkUpYJTOo6TfHoXi?si=Wt76vAF0S66qWfuGxTX28w",
-            });
-          };
+          document.getElementById("play").onclick = function () {	
+		fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+			method: 'PUT',
+      			body: JSON.stringify({ uris: ['spotify:track:7xGfFoTpQ2E7fRF5lN10tr'] }),
+	      		headers: {
+        			'Content-Type': 'application/json',
+        			'Authorization': `Bearer ${token}`
+      				},
+    			});
+    	      };
         };
       }
     </script>
