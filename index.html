@@ -40,13 +40,16 @@ ga('send', 'pageview');
       <p style="font-size:20px;" class="w3-black w3-padding w3-hide-medium w3-hide-small">
         <i>"Wake up in the AM and compose a beat" -- Dr. Dre</i>
       </p>
-
-
+    <button type="button" class="btn btn-primary btn-block">
+         <a class="btn btn-primary" href='/api/spotify/login'>Login with Spotify Premium</a></button>
       <button type="button" class="btn btn-primary btn-block">start Audio Context. </button>
-              <video width=320 id='rtc'  controls playsinline></video>
-              <audio width=320 id='audio1' controls playsinline src='/samples/song.mp3'></audio>
+
+
     </div>
+     
   </div>
+                <video width=320 id='rtc'  controls playsinline></video>
+              <audio width=320 id='audio1' controls playsinline src='/samples/song.mp3'></audio>
   <nav class="navbar navbar-dark bg-dark text-light flex-md-nowrap p-0 shadow">
     <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">GrepAwk DSP</a>
     <input id='ytsearch' class="type-ahead form-control form-control-dark w-59" type="text" placeholder="Search Music"

@@ -1,93 +1,90 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Spotify Web Playback SDK Quick Start Tutorial</title>
-  </head>
-  <button style="display: none;" id="loginBtn">Login With Spotify</button>
-  <div id="console"></div>
-  <body>
-    <script>
-      const loginBtn = document.querySelector("#loginBtn");
-      const log = (msg) => (document.getElementById("console").innerHTML += "<br>" + msg);
-      const error = log;
-      const scope = [
-        "user-read-playback-state",
-        "user-modify-playback-state",
-        "user-read-currently-playing",
-        "streaming",
-        "app-remote-control",
-      ];
+    <head>
+        <title>Spotify Premium Player</title>
 
-      const token =
-        location.hash &&
-        location.hash.match(/access_token\=(.*?)\&/)[0].replace("access_token=", "");
-      if (!token) {
-        loginBtn.style.display = "block";
-        loginBtn.onclick = () =>
-          (document.location =
-            "https://dsp.grepawk.com/api/spotify/login?scope=" +
-            scope.join(",") +
-            "&jshost=" +
-            document.location.origin);
-      } else {
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = "https://sdk.scdn.co/spotify-player.js";
-        document.getElementsByTagName("head")[0].appendChild(script);
+        <link
+            href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+            rel="stylesheet"
+            integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+            crossorigin="anonymous"
+        />
 
-        document.head.appendChild(
-          document.createElement("script", { src: "https://sdk.scdn.co/spotify-player.js" })
-        );
-        var player;
+        <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+            crossorigin="anonymous"
+        />
+        <link rel="stylesheet" href="/led.css" />
 
-        window.onSpotifyWebPlaybackSDKReady = () => {
-          const player = new Spotify.Player({
-            name: "Web Playback SDK Quick Start Player",
-            getOAuthToken: (cb) => {
-              cb(token);
-            },
-          });
+        <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
 
-          // Error handling
-          player.addListener("initialization_error", ({ message }) => {
-            error(message);
-          });
-          player.addListener("authentication_error", ({ message }) => {
-            error(message);
-          });
-          player.addListener("account_error", ({ message }) => {
-            error(message);
-          });
-          player.addListener("playback_error", ({ message }) => {
-            error(message);
-          });
-          // Playback status updates
-          player.addListener("player_state_changed", (state) => {
-            log(state);
-          });
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@16.13.1/umd/react-dom.production.min.js"
+        ></script>
+        
 
-          // Ready
-          player.addListener("ready", ({ device_id }) => {
-            log("Ready with Device ID " + device_id);
-          });
 
-          // Not Ready
-          player.addListener("not_ready", ({ device_id }) => {
-            log("Device ID has gone offline", device_id);
-          });
+    </head>
+    <body>
+    <div id="header"></div>
+    <div class="row" style="height: 400px;">
+        <section class="col-md-5" id="playlist" style="height: 100%; overflow-y: scroll;"></section>
+        <section  class="col-md-5"  id="tracklist" style="height: 100%; overflow-y: scroll;"></section>
+        <section class='col-md-2' id='debug'></section>
+    </div>    
+             
 
-          // Connect to the player!
-          player.connect();
+  <div class='footer'>
+        <div id=player class="container song-player-container">
+            <div class="row song-details">
+               <img class='song-thumbnail' height=100 width=100></img>
 
-          document.getElementById("play").onclick = function () {
-            play({
-              playerInstance: player,
-              spotify_uri: "spotify:playlist:1ZSGautkUpYJTOo6TfHoXi?si=Wt76vAF0S66qWfuGxTX28w",
-            });
-          };
-        };
-      }
-    </script>
-    <!-- We will insert our code here. -->
-  </body>
+                <p class="song-name"></p>
+                <p class="artist-name"></p>
+            </div>
+
+            <div class="row song-controls">
+                <div class="reverse">
+                    <button class="fa fa-step-backward reverse" aria-hidden="true" />
+                </div>
+                <div id=rewind class="rewind">
+                    <i class="fa fa-rewind" aria-hidden="true"> </i>
+                </div>
+                <div id="play" class="play-btn">
+                    <i class="fa fa-play"> </i>
+                </div>
+                <div id=stop class="pause-btn">
+                    <i class="fa fa-stop" aria-hidden="true"> </i>
+                </div>
+                <div id=next class="next-song">
+                    <i class="fa fa-step-forward forward" aria-hidden="true"></i>
+                </div>
+            </div>
+            <div class='row'>
+                <progress style='width:80%' id='progress' min=0 max="100"></progress>
+                <span class='position'></span>
+                <span class='duration'></span>
+            </div>
+
+        </div>
+    </div>
+        <div class="row" style="height: 400px;">
+        <section class="col-md-5" id="playlist" style="height: 100%; overflow-y: scroll;"></section>
+        <section  class="col-md-5"  id="tracklist" style="height: 100%; overflow-y: scroll;"
+        ></section>
+        <section class='col-md-5' id='debug'></section>
+    </div>    
+    
+        <script type="module">
+            import {checkAuth, getPlayList} from "./radio/spotifyClient.jsx";
+            const token = checkAuth({containerId: "header"});
+            if (token) {
+                getPlayList(token, "playlist");
+            }
+        </script>
+    </body>
 </html>
+

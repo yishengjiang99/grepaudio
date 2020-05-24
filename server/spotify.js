@@ -46,9 +46,15 @@ router.get("/login", function (req, res) {
   var state = generateRandomString(16);
   res.cookie(stateKey, state);
   res.cookie("jshost", req.query.jshost || "");
-
+  const scopes = [
+    "user-read-playback-state",
+    "user-modify-playback-state",
+    "user-read-currently-playing",
+    "streaming",
+    "app-remote-control",
+];
   // your routerlication requests authorization
-  var scope = req.query.scope || "user-read-private user-read-email";
+  var scope = req.query.scope || scopes.join(",")
 
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
