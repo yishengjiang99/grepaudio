@@ -3,47 +3,39 @@
     <head>
         <title>Spotify Premium Player</title>
 
-        <link
-            href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
-            rel="stylesheet"
-            integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
-            crossorigin="anonymous"
+        <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" crossorigin           
         />
 
-        <link
-            rel="stylesheet"
-            href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-            crossorigin="anonymous"
-        />
+
         <link rel="stylesheet" href="/led.css" />
 
         <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@16.13.1/umd/react-dom.production.min.js"></script>
+<script async src="https://cdn.ampproject.org/v0.js"></script>
 
-        <script
-            crossorigin
-            src="https://unpkg.com/react-dom@16.13.1/umd/react-dom.production.min.js"
-        ></script>
-        
-
+<script async custom-element="amp-ad" src="https://cdn.ampproject.org/v0/amp-ad-0.1.js"></script>
     </head>
     <body>
     <div id="header"></div>
-    <div class="row" style="height: 400px;">
-        <section class="col-md-5" id="playlist" style="height: 100%; overflow-y: scroll;"></section>
-        <section  class="col-md-5"  id="tracklist" style="height: 100%; overflow-y: scroll;"></section>
-        <section class='col-md-2' id='debug'></section>
-    </div>    
-             
+
+
+
+
+    <div class="d-flex justify-content-center">
+        <div class='card'>
+        <amp-img src="https://via.placeholder.com/300" class='song-thumbnail' width=300 height=300 />
+            <div class="container">
+                <h4 class='song-name'></h4>
+                <p class='artist-name'></p>
+            </div>
+        </div>
+    </div>
+</main>
+
 
   <div class='footer'>
         <div id=player class="container song-player-container">
-            <div class="row song-details">
-               <img class='song-thumbnail' height=100 width=100></img>
 
-                <p class="song-name"></p>
-                <p class="artist-name"></p>
-            </div>
 
             <div class="row song-controls">
                 <div class="reverse">
@@ -58,13 +50,13 @@
                 <div id=stop class="pause-btn">
                     <i class="fa fa-stop" aria-hidden="true"> </i>
                 </div>
-                <div id=next class="next-song">
+                <div id=forward class="next-song">
                     <i class="fa fa-step-forward forward" aria-hidden="true"></i>
                 </div>
             </div>
             <div class='row'>
-                <progress style='width:80%' id='progress' min=0 max="100"></progress>
-                <span class='position'></span>
+                <input type=range style='width:80%' id='progress' min=0 max="100"></progress>
+                <span class='position'></span> /
                 <span class='duration'></span>
             </div>
 

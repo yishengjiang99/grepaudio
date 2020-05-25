@@ -1,27 +1,44 @@
+
 const scope = [
     "user-read-playback-state",
     "user-modify-playback-state",
-    "user-read-currently-playing",
+    "user-read-currently-playing",  
     "streaming",
     "app-remote-control",
+    "user-library-read",
+    "playlist-modify-private",
+
 ];
 const AUTH_URL = "https://dsp.grepawk.com/api/spotify/login";
 const API_DIR = "https://api.spotify.com/v1";
+const el = React.createElement;
+let authToken;
 
-const fetchAPI = (uri, token, method = 'GET') => fetch(API_DIR + uri, {
-    method: "GET", headers: {"Content-Type": "application/json", "Authorization": "Bearer " + token}
+const fetchAPI = (uri,method="GET") => fetch(API_DIR + uri, {
+    method: method, headers: {"Content-Type": "application/json", "Authorization": "Bearer " + authToken}
+}).catch(err=>{ log(err) });
+
+const fetchAPIPut = (uri, body) =>  fetch(API_DIR+uri,{
+    method:"PUT",
+    body: JSON.stringify(body),
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+    }
 });
+
 const $=(s)=>document.querySelector(s);
 export const checkAuth = function ({containerId}) {
     let element;
     const token = location.hash && location.hash.match(/access_token\=(.*?)\&/)[0].replace("access_token=", "");
+    authToken = token;
     if (!token) {
-        element = React.createElement("button", {
+        element = el("button", {
             onClick: () => document.location = AUTH_URL + "?scope=" + scope.join(",") + "&jshost=" + document.location.hostname
         }, "Login With Spotify")
         ReactDOM.render(element, document.getElementById(containerId));
     } else {
-        element = React.createElement("span", {
+        element = el("span", {
             className: "welcome"
         }, "Welcome ");
         ReactDOM.render(element, document.getElementById(containerId));
@@ -32,12 +49,12 @@ export const checkAuth = function ({containerId}) {
 
 export const getPlayList = async (token, containerId) => {
 
-    const playlistJson = await fetchAPI("/me/playlists", token).then(res => res.json());
+    const playlistJson = await fetchAPI("/me/playlists").then(res => res.json());
     const playlist = playlistJson.items;
-    ReactDOM.render(React.createElement("ul",
+    ReactDOM.render(el("ul",
         {list: playlist},
         playlist.map(item => {
-            return React.createElement("li", {
+            return el("li", {
                 key: item.id,
                 onClick: () => getTracks(token, item.id, 'tracklist'),
                 onTouchMove: () => getTracks(token, item.id, 'tracklist')
@@ -45,25 +62,32 @@ export const getPlayList = async (token, containerId) => {
         })
     ), document.getElementById(containerId));
 
+
     if(playlist.length>0) getTracks(token, playlist[0].id, 'tracklist')
 }
 
 
 /*
 "*/
-const sampleTrck = {"album": {"album_type": "album", "artists": [{"external_urls": {"spotify": "https://open.spotify.com/artist/00FQb4jTyendYWaN8pK0wa"}, "href": "https://api.spotify.com/v1/artists/00FQb4jTyendYWaN8pK0wa", "id": "00FQb4jTyendYWaN8pK0wa", "name": "Lana Del Rey", "type": "artist", "uri": "spotify:artist:00FQb4jTyendYWaN8pK0wa"}], "available_markets": ["CA", "CR", "MX", "US"], "external_urls": {"spotify": "https://open.spotify.com/album/5PW8nAtvf2HV8RYZFd4IrX"}, "href": "https://api.spotify.com/v1/albums/5PW8nAtvf2HV8RYZFd4IrX", "id": "5PW8nAtvf2HV8RYZFd4IrX", "images": [{"height": 640, "url": "https://i.scdn.co/image/ab67616d0000b273cb76604d9c5963544cf5be64", "width": 640}, {"height": 300, "url": "https://i.scdn.co/image/ab67616d00001e02cb76604d9c5963544cf5be64", "width": 300}, {"height": 64, "url": "https://i.scdn.co/image/ab67616d00004851cb76604d9c5963544cf5be64", "width": 64}], "name": "Born To Die - The Paradise Edition", "release_date": "2012-11-12", "release_date_precision": "day", "total_tracks": 23, "type": "album", "uri": "spotify:album:5PW8nAtvf2HV8RYZFd4IrX"}, "artists": [{"external_urls": {"spotify": "https://open.spotify.com/artist/00FQb4jTyendYWaN8pK0wa"}, "href": "https://api.spotify.com/v1/artists/00FQb4jTyendYWaN8pK0wa", "id": "00FQb4jTyendYWaN8pK0wa", "name": "Lana Del Rey", "type": "artist", "uri": "spotify:artist:00FQb4jTyendYWaN8pK0wa"}], "available_markets": ["CA", "CR", "MX", "US"], "disc_number": 1, "duration_ms": 230520, "episode": false, "explicit": false, "external_ids": {"isrc": "GBUM71111567"}, "external_urls": {"spotify": "https://open.spotify.com/track/1M0g1beKC4H9gbrOiSayHW"}, "href": "https://api.spotify.com/v1/tracks/1M0g1beKC4H9gbrOiSayHW", "id": "1M0g1beKC4H9gbrOiSayHW", "is_local": false, "name": "National Anthem", "popularity": 59, "preview_url": "https://p.scdn.co/mp3-preview/4d18f55dbbd684757dcd4b4064ba63b36c3ba040?cid=3993d63f6507434d9ec90cc704b435d9", "track": true, "track_number": 6, "type": "track", "uri": "spotify:track:1M0g1beKC4H9gbrOiSayHW"}
+
+
+const trackRow = (item) =>{
+    return el('li', {}, [
+        el('span',null, item.track.name),
+        el('button', {
+            onClick: ()=>playTrack(item.track.id)
+        }, 'play'),
+        el('button', {
+            onClick: ()=>queueTrack(item.track.id)
+        }, 'queue')
+    ])
+}
 export const getTracks = async function (token, playlistId, containerId) {
-    const trackListJson = await fetchAPI("/playlists/" + playlistId + "/tracks", token).then(res => res.json());
+    const trackListJson = await fetchAPI("/playlists/" + playlistId + "/tracks").then(res => res.json());
     const trackList = trackListJson.items;
-    ReactDOM.render(React.createElement("ul",
+    ReactDOM.render(el("ul",
         {list: trackList},
-        trackList.map(item => {
-            return React.createElement("li", {
-                onClick: function () {
-                    playTrack(token, item.track.id, 'player-panel');
-                }
-            },item.track.name);
-        })
+        trackList.map(item => trackRow(item))
     ), document.getElementById(containerId));
 }
 
@@ -93,70 +117,21 @@ function loadSpotifyPremium(token){
                     play: $("#play"),
                     stop: $("#stop"),
                     rewind: $("#rewind"),
-                    ff: $("#rewind")
+                    ff: $("#forward")
                 }
+            
                 window.webplayer.addListener("initialization_error", e=> reject(e));
                 window.webplayer.addListener("account_error", (e)=>log('account not prenium') && reject(e));
                 window.webplayer.connect();
-    
                 controls.play.onclick = () =>window.webplayer.resume();
                 controls.stop.onclick = () =>window.webplayer.pause();
+                controls.ff.onclick = () =>window.webplayer.nextTrack();
+                controls.rewind.onclick = () =>window.webplayer.previousTrack()
+
                 resolve();
             });
             window.webplayer.addListener("player_state_changed", e=>{
- const s = {
-     context: {uri: null, metadata: {}},
-     bitrate: 0,
-     position: 0,
-     duration: 229087,
-     paused: false,
-     shuffle: false,
-     repeat_mode: 0,
-     track_window: {
-         current_track: {
-             id: "1gewemPOUilb21s7CfMS55",
-             uri: "spotify:track:1gewemPOUilb21s7CfMS55",
-             type: "track",
-             linked_from_uri: null,
-             linked_from: {uri: null, id: null},
-             media_type: "audio",
-             name: "Bartender Song (Sittin' At A Bar) - Alt/Rock Mix",
-             duration_ms: 229087,
-             artists: [{name: "Rehab", uri: "spotify:artist:1qh1aHXy7LRcb7eyriuJTS"}],
-             album: {
-                 uri: "spotify:album:39GmYuRp42zXVjzCLffcOC",
-                 name: "Graffiti The World",
-                 images: [
-                     {
-                         url: "https://i.scdn.co/image/ab67616d00001e02849e5870ecd098e9996688a0",
-                         height: 300,
-                         width: 300,
-                     },
-                     {
-                         url: "https://i.scdn.co/image/ab67616d00004851849e5870ecd098e9996688a0",
-                         height: 64,
-                         width: 64,
-                     },
-                     {
-                         url: "https://i.scdn.co/image/ab67616d0000b273849e5870ecd098e9996688a0",
-                         height: 640,
-                         width: 640,
-                     },
-                 ],
-             },
-             is_playable: true,
-         },
-         next_tracks: [],
-         previous_tracks: [],
-     },
-     timestamp: 1590335791631,
-     restrictions: {
-         disallow_resuming_reasons: ["not_paused"],
-         disallow_skipping_prev_reasons: ["no_prev_track"],
-     },
-     disallows: {resuming: true, skipping_prev: true},
- };
-
+                console.log(e)
                 if(e.track_window.current_track){
                     $(".song-name").innerHTML = e.track_window.current_track.name;
                     $(".song-thumbnail").src = e.track_window.current_track.album.images[0].url;
@@ -187,40 +162,50 @@ function loadSpotifyPremium(token){
                 }
             })
             window.webplayer.connect();
-
-
         }
 
         var script = document.createElement("script");
         script.type = "text/javascript";
         script.src = "https://sdk.scdn.co/spotify-player.js";
         document.getElementsByTagName("head")[0].appendChild(script);
-
-
-       
     });
 }
 
-export const playTrack = async function (token, trackId, containerId){
-    await loadSpotifyPremium(token);
-    fetch(API_DIR+"/me/player/play?device_id="+window.spotifyDeviceId,{
-        method:"PUT",
-        body: JSON.stringify({ uris: ['spotify:track:'+trackId] }),
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        }
-    });
+export const playTrack = async function (trackId){
     
+    await loadSpotifyPremium(authToken);
+    fetchAPIPut("/me/player/play?device_id="+window.spotifyDeviceId, {uris: ['spotify:track:'+trackId]})
+    .then(resp=>{
+        log(resp) //"loaded")
+    }).catch(e=>{
+        log(e);
+    });    
+}
+export const queueTrack = async function (trackId){
+    await loadSpotifyPremium(authToken);
+    fetchAPI("/me/player/queue?uri=spotify:track:"+trackId,"POST")
+
+}
+Number.prototype.lpad = function (n,str) {
+    return (this < 0 ? '-' : '') + 
+            Array(n-String(Math.abs(this)).length+1)
+             .join(str||'0') + 
+           (Math.abs(this));
 }
 function ms_to_mm_ss(ms){
-  return `${ ~~(ms / 60000)}:${~~(ms / 1000)}`; //  ~~(elapsed / 60000) "+" ~~(elapsed) / 1000;
+    const secondst = ms/1000;
+    const minutes = ~~(secondst / 60);
+    const seconds = Math.floor(secondst - minutes*60);
+    
+    return `${minutes<10? '0'+minutes : minutes} : ${seconds<10? '0'+seconds : seconds}`;
 }
 function log(msg){
     if(typeof msg ==='object'){
         log( JSON.stringify(msg, null, '\t'));
         return; 
     }
+
+
     document.getElementById("debug").innerHTML = msg;
 }
 
