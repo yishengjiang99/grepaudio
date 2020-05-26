@@ -2,79 +2,126 @@
 <html>
     <head>
         <title>Spotify Premium Player</title>
-
-        <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" crossorigin           
-        />
-
-
-        <link rel="stylesheet" href="/led.css" />
-
-        <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
-        <script crossorigin src="https://unpkg.com/react-dom@16.13.1/umd/react-dom.production.min.js"></script>
-<script async src="https://cdn.ampproject.org/v0.js"></script>
-
-<script async custom-element="amp-ad" src="https://cdn.ampproject.org/v0/amp-ad-0.1.js"></script>
+        
+        <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" crossorigin/>
     </head>
     <body>
-    <div id="header"></div>
+<style> 
+body{
+    width:100vw;
+    height:100vh;
+    overflow: hidden;
+    background-color:black;
+    color: white;
+}
+#container{
+    display: grid;
+    width: 100vw;
+    height:100vh;
+    grid-gap: 10px;
+    color: white;
+}
 
 
+.header {
+    grid-row: 1/2;
+    grid-column: 2 / 5;
+    background-color: #222222;
+}
+.sidenav {
+    grid-column: 1;
+    grid-row: 1 / 10;
+    background-color: #333333;
+}
 
+.main{
+    grid-column: 2 / 5;
+    grid-row: 2 / 6;
+    background-color:#555555;
+}
+.nowplaying{
+    grid-column: 2 / 5;
+    grid-row: 6 / 8;
+    background-color:#555555;  
+}
+.footer{
+    grid-row: 8/10;
+    grid-column: 1 / 5;
+    background-color: #333333;
+}
+button{
+        display: inline-block;
+        color: white;
+        background-color: blueviolet;
+        padding: 0 2rem;
+        font-size: 1rem;
+        border-radius: 2px;
+        letter-spacing: .5px;
+        text-align: center;
+        text-decoration: none;
+        height: 36px;
+        line-height: 36px;
+        cursor: pointer;
+        box-shadow: 
+          0 2px 2px 0 rgba(0,0,0,0.14), 
+          0 1px 5px 0 rgba(0,0,0,0.12), 
+          0 3px 1px -2px rgba(0,0,0,0.2)   
+}
+</style>
+<div id=container>
+    <div class=header id='header'>
+        <span id='welcome'></span>
+        <span id='debug'></span>
+    </div>
+    <div class=sidenav id='playlist'>
+    </div>
 
-    <div class="d-flex justify-content-center">
+    <div class=main id='tracklist'>
+
+    </div>
+    <div class='nowplaying' class="d-flex justify-content-center">
         <div class='card'>
-        <amp-img src="https://via.placeholder.com/300" class='song-thumbnail' width=300 height=300 />
+        <img src="https://via.placeholder.com/300" class='song-thumbnail' width=300 height=300 >
             <div class="container">
                 <h4 class='song-name'></h4>
                 <p class='artist-name'></p>
             </div>
         </div>
-    </div>
-</main>
-
-
-  <div class='footer'>
-        <div id=player class="container song-player-container">
-
-
-            <div class="row song-controls">
-                <div class="reverse">
-                    <button class="fa fa-step-backward reverse" aria-hidden="true" />
+    </div>    
+    <div class=footer>  
+         <div id=player class="container song-player-container" style='position:relative; width:100%; height:100%'>
+            <div class="song-controls" style='position: absolute; left: 400px; display:grid; width: 300px; grid-gap:10px'>
+                <div id=rewind class="rewind" style="grid-column:1/2">
+                    <i class="fa fa-backward"> </i>
                 </div>
-                <div id=rewind class="rewind">
-                    <i class="fa fa-rewind" aria-hidden="true"> </i>
-                </div>
-                <div id="play" class="play-btn">
+                <div id="play" class="play-btn" style="grid-column:2/3">
                     <i class="fa fa-play"> </i>
                 </div>
-                <div id=stop class="pause-btn">
+                <div id=stop class="pause-btn"  style="grid-column:2/3; display:none">
                     <i class="fa fa-stop" aria-hidden="true"> </i>
                 </div>
-                <div id=forward class="next-song">
+                <div id=forward class="next-song"  style="grid-column:3/4">
                     <i class="fa fa-step-forward forward" aria-hidden="true"></i>
                 </div>
             </div>
-            <div class='row'>
-                <input type=range style='width:80%' id='progress' min=0 max="100"></progress>
-                <span class='position'></span> /
-                <span class='duration'></span>
+            <div class="sliderr" style='position: absolute; left: 400px; display:grid; width: 300px; grid-gap:10px; top: 10px;'>
+                 <span class='position'></span> <input type=range style='width:80%' id='progress' min=0 max="100"></progress>
+                   <span class='duration'></span>
             </div>
 
         </div>
     </div>
-        <div class="row" style="height: 400px;">
-        <section class="col-md-5" id="playlist" style="height: 100%; overflow-y: scroll;"></section>
-        <section  class="col-md-5"  id="tracklist" style="height: 100%; overflow-y: scroll;"
-        ></section>
-        <section class='col-md-5' id='debug'></section>
-    </div>    
-    
+    </div>
+</div>
         <script type="module">
+        
             import {checkAuth, getPlayList} from "./radio/spotifyClient.jsx";
-            const token = checkAuth({containerId: "header"});
+            const token = checkAuth({containerId: "welcome"});
             if (token) {
                 getPlayList(token, "playlist");
-            }
+ 
+           }
+
         </script>
     </body>
 </html>

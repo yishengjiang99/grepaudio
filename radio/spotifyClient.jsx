@@ -1,3 +1,4 @@
+import { h, Component, render } from 'https://unpkg.com/preact?module';
 
 const scope = [
     "user-read-playback-state",
@@ -11,9 +12,14 @@ const scope = [
 ];
 const AUTH_URL = "https://dsp.grepawk.com/api/spotify/login";
 const API_DIR = "https://api.spotify.com/v1";
-const el = React.createElement;
-let authToken;
+const el = Component;
 
+class Player extends Component{
+    
+}
+
+let authToken;
+let analyser;
 const fetchAPI = (uri,method="GET") => fetch(API_DIR + uri, {
     method: method, headers: {"Content-Type": "application/json", "Authorization": "Bearer " + authToken}
 }).catch(err=>{ log(err) });
@@ -33,15 +39,15 @@ export const checkAuth = function ({containerId}) {
     const token = location.hash && location.hash.match(/access_token\=(.*?)\&/)[0].replace("access_token=", "");
     authToken = token;
     if (!token) {
-        element = el("button", {
+        element = h("button", {
             onClick: () => document.location = AUTH_URL + "?scope=" + scope.join(",") + "&jshost=" + document.location.hostname
         }, "Login With Spotify")
-        ReactDOM.render(element, document.getElementById(containerId));
+        render(element, document.getElementById(containerId));
     } else {
-        element = el("span", {
+        element = h("span", {
             className: "welcome"
         }, "Welcome ");
-        ReactDOM.render(element, document.getElementById(containerId));
+        render(element, document.getElementById(containerId));
         loadSpotifyPremium(token);
         return token;
     }
@@ -51,14 +57,15 @@ export const getPlayList = async (token, containerId) => {
 
     const playlistJson = await fetchAPI("/me/playlists").then(res => res.json());
     const playlist = playlistJson.items;
-    ReactDOM.render(el("ul",
+
+    render(h("ul",
         {list: playlist},
-        playlist.map(item => {
-            return el("li", {
+        playlist && playlist.map(item => {
+            return h("li", {
                 key: item.id,
                 onClick: () => getTracks(token, item.id, 'tracklist'),
                 onTouchMove: () => getTracks(token, item.id, 'tracklist')
-            }, item.name + " | " + item.id);
+            }, item.name);
         })
     ), document.getElementById(containerId));
 
@@ -72,12 +79,12 @@ export const getPlayList = async (token, containerId) => {
 
 
 const trackRow = (item) =>{
-    return el('li', {}, [
-        el('span',null, item.track.name),
-        el('button', {
+    return h('li', {}, [
+        h('span',null, item.track.name),
+        h('button', {
             onClick: ()=>playTrack(item.track.id)
         }, 'play'),
-        el('button', {
+        h('button', {
             onClick: ()=>queueTrack(item.track.id)
         }, 'queue')
     ])
@@ -85,7 +92,7 @@ const trackRow = (item) =>{
 export const getTracks = async function (token, playlistId, containerId) {
     const trackListJson = await fetchAPI("/playlists/" + playlistId + "/tracks").then(res => res.json());
     const trackList = trackListJson.items;
-    ReactDOM.render(el("ul",
+    render(h("ul",
         {list: trackList},
         trackList.map(item => trackRow(item))
     ), document.getElementById(containerId));
@@ -99,7 +106,7 @@ function loadSpotifyPremium(token){
         window.onSpotifyWebPlaybackSDKReady = () => {
             log("loading")
             window.webplayer = new Spotify.Player({
-                name: "Web Playback SDK Quick Start Player",
+                name: "Wgr",
                 getOAuthToken: cb => cb(token)
             });
             window.webplayer.addListener("initialization_error", ({message}) => {
@@ -127,13 +134,13 @@ function loadSpotifyPremium(token){
                 controls.stop.onclick = () =>window.webplayer.pause();
                 controls.ff.onclick = () =>window.webplayer.nextTrack();
                 controls.rewind.onclick = () =>window.webplayer.previousTrack()
-
                 resolve();
             });
             window.webplayer.addListener("player_state_changed", e=>{
                 console.log(e)
                 if(e.track_window.current_track){
                     $(".song-name").innerHTML = e.track_window.current_track.name;
+                    
                     $(".song-thumbnail").src = e.track_window.current_track.album.images[0].url;
                     $(".artist-name").innerHTML = e.track_window.current_track.artists.map(a=>a.name).join(", ")
                 }
