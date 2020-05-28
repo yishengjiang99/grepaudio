@@ -42,7 +42,7 @@ ga('send', 'pageview');
       </p>
     <button type="button" class="btn btn-primary btn-block">
          <a class="btn btn-primary" href='/api/spotify/login'>Login with Spotify Premium</a></button>
-      <button type="button" class="btn btn-primary btn-block">start Audio Context. </button>
+      <button type="button" id='dre' class="btn btn-primary btn-block">start Audio Context. </button>
 
 
     </div>
@@ -185,7 +185,7 @@ let audioCtx, audioTag, eq;
 const overlay = document.getElementById("overlay");
 const std1 = (str)=>document.getElementById("std1").innerHTML = str;
 
-overlay.onclick = async function (e) {
+document.getElementById("dre").onclick = async function (e) {
   overlay.style.display='none'
 
   audioCtx = new AudioContext();
@@ -283,10 +283,11 @@ overlay.onclick = async function (e) {
   const rtcViewer = $("video#rtc")
 
   const playbackGainSlider = slider(outputdiv, { wrap: "inline", prop: playbackGain.gain, min: "0", max: "4", step: "0.05", label: "Local Playback gain" });
-  var bv = BoardcastViewerClient({
+ 
+ var bv = BoardcastViewerClient({
       onEvent: log,
       mediaObjectReady: function (stream) {
-	var streamsource= audioCtx.createMediaStreamSource(stream);
+	        var streamsource= audioCtx.createMediaStreamSource(stream);
          streamsource.connect(ctv.analyzer);
          rtcViewer.srcObject = stream;
          rtcViewer.autoplay = true;
@@ -303,7 +304,7 @@ overlay.onclick = async function (e) {
       case 'listen':
         std1("connecting to "+arg1);
        
-	 bv.watchChannel(arg1);
+	      bv.watchChannel(arg1);
 
         break;
       default:

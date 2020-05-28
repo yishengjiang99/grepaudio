@@ -78,14 +78,10 @@ function BroadcastViewerClient(config) {
     function watchChannel(channelName) {
         signalConnection = new WebSocket(hostname);
         signalConnection.onopen = function (e) {
-            signalConnection.send(JSON.stringify({
-                type: "watch_stream",
-                channel: channelName
-            }))
 
+debugger;
             signalConnection.onmessage = function (event) {
                 let data = JSON.parse(event.data);
-                onEvent("Signal Server msg type " + data.type);
                 switch (data.type) {
                     case 'offer':
                         onEvent("got offer: host_uuid=", data.host_uuid);
@@ -98,6 +94,12 @@ function BroadcastViewerClient(config) {
 
                     case 'error':
                         onEvent("Error: " + data.message);
+                        break;
+                    case 'connected':
+                        signalConnection.send(JSON.stringify({
+                            type: "watch_stream",
+                            channel: channelName
+                        }))
                         break;
                     default:
                         break;

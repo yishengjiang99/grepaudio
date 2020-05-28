@@ -1,38 +1,41 @@
 <html>
+<script type='module' src='https://npmcdn.com/preact@10.4.4/dist/preact.js'></script>
+
   <body>
-    <!-- Add a placeholder for the Twitch embed -->
-    <div id="twitch-embed"></div>
 
-    <!-- Load the Twitch embed script -->
-    <script src="https://embed.twitch.tv/embed/v1.js"></script>
+<div id=radio>
+</div>
 
-    <!-- Create a Twitch.Embed object that will render within the "twitch-embed" root element. -->
-    <script type="text/javascript">
-      const embed = new Twitch.Embed("twitch-embed", {
-        width: 854,
-        height: 480,
-        channel: "monstercat",
-        // only needed if your site is also embedded on embed.example.com and othersite.example.com 
-        parent: ["embed.example.com", "othersite.example.com"]
-      });
+<script type='module'>
+/** @jsx h */
+const { h, render, Component } = preact;    // normally this would be an import statement.
 
+class Clock extends Component {
+    constructor() {
+        super();
+        // set initial time:
+        this.state.time = Date.now();
+    }
 
-      embed.addEventListener(Twitch.Embed.VIDEO_READY, () => {
-        var player = embed.getPlayer();
-        player.play();
-      });
+    componentDidMount() {
+        // update time every second
+        this.timer = setInterval(() => {
+            this.setState({ time: Date.now() });
+        }, 1000);
+    }
 
-      var xhr =new XMLHttpRequest();
-      xhr.withCredentials=true;
-      xhr.setRequestHeader("Accept", "application/vnd.twitchtv.v5+json");
-      xhr.setRequestHeader("Client-ID", "e8e2av260ltgocmm62aw6zkojeems3");
-      xhr.open("https://api.twitch.tv/kraken/clips/top?limit=100&game=Hearthstone&trending=true");
-      xhr.onload = e=>{ parseList(xhr.response) }
+    componentWillUnmount() {
+        // stop when not renderable
+        clearInterval(this.timer);
+    }
 
-      function parseList(listJSON){
-      debugger;
-      }
+    render(props, state) {
+        let time = new Date(state.time).toLocaleTimeString();
+        return <span>{ time }</span>;
+    }
+}
 
-    </script>
-  </body>
+// render an instance of Clock into <body>:
+render(<Clock />, document.getElementById("radio"));
+</script>
 </html>
