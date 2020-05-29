@@ -1,4 +1,5 @@
 import resolve from "rollup-plugin-node-resolve";
+import commonjs from 'rollup-plugin-commonjs';
 
 export default {
     input: "index.js",
@@ -8,6 +9,7 @@ export default {
         name: "grepawk_audio",
     },
     plugins: [
+        commonjs(),
         resolve({
             // the fields to scan in a package.json to determine the entry point
             // if this list contains "browser", overrides specified in "pkg.browser"

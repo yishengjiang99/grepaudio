@@ -2,6 +2,7 @@ import {h, Component, render} from "https://unpkg.com/preact?module";
 import "../functions.js";
 
 const scope = [
+    "user-read-email",
     "user-read-playback-state",
     "user-modify-playback-state",
     "user-read-currently-playing",
@@ -22,6 +23,8 @@ let controls = {
     rewind: $("#rewind"),
     ff: $("#forward"),
 };
+let currentTrackId;
+
 const fetchAPI = (uri, method = "GET") =>
     fetch(API_DIR + uri, {
         method: method,
@@ -41,36 +44,43 @@ const fetchAPIPut = (uri, body) =>
     });
 
 export const checkAuth = async function ({containerId}) {
-    let element;
+    const loginBtn = h(
+        "button",
+        {
+            onClick: () =>
+                (document.location =
+                    AUTH_URL +
+                    "?scope=" +
+                    scope.join(",") +
+                    "&jshost=" +
+                    document.location.hostname),
+        },
+        "Login With Spotify"
+    );
     const {access_token, refresh_token, expiry} = hashParams();
     authToken = access_token;
 
     if (!access_token || new Date().getTime() > expiry) {
-        element = h(
-            "button",
-            {
-                onClick: () =>
-                    (document.location =
-                        AUTH_URL +
-                        "?scope=" +
-                        scope.join(",") +
-                        "&jshost=" +
-                        document.location.hostname),
-            },
-            "Login With Spotify"
-        );
-        render(element, document.getElementById(containerId));
-    } else {
-        element = h(
-            "span",
-            {
-                className: "welcome",
-            },
-            "Welcome "
-        );
-        render(element, document.getElementById(containerId));
-        loadSpotifyPremium(authToken);
+
+        render(loginBtn, document.getElementById(containerId));
     }
+    try{
+        await loadSpotifyPremium(authToken);
+    }catch(e){
+        alert(e.message);
+        render(loginBtn, document.getElementById(containerId));
+        return ;
+
+    }
+
+    render(h(
+        "span",
+        {
+            className: "welcome",
+        },
+        "Welcome "
+    ), document.getElementById(containerId));
+
     return access_token;
 };
 async function tokenValid(token) {
@@ -78,29 +88,27 @@ async function tokenValid(token) {
 }
 export const getPlayList = async (token, containerId) => {
     const playlistJson = await fetchAPI("/me/playlists").then((res) => res.json());
-    const playlist = playlistJson.items;
+    const playlists = playlistJson.items;
 
     render(
-        h(
-            "ul",
-            {list: playlist},
-            playlist &&
-                playlist.map((item) => {
+        h("ul",
+            {style:{maxHeight:300,'overscroll-y':'scroll'}},
+            playlists.map((playlist) => {
                     return h(
                         "li",
                         {
-                            key: item.id,
-                            onClick: () => getTracks(token, item.id, "tracklist"),
-                            onTouchMove: () => getTracks(token, item.id, "tracklist"),
+                            key: playlist.id,
+                            onClick: () => getTracks(token, playlist, "tracklist"),
+                            onTouchMove: () => getTracks(token, playlist, "tracklist"),
                         },
-                        item.name
+                        playlist.name
                     );
                 })
         ),
         document.getElementById(containerId)
     );
 
-    if (playlist.length > 0) getTracks(token, playlist[0].id, "tracklist");
+    if (playlists.length > 0) getTracks(token, playlists[0], "tracklist");
 };
 
 /*
@@ -126,21 +134,40 @@ const trackRow = (item) => {
         ),
     ]);
 };
-export const getTracks = async function (token, playlistId, containerId) {
-    const trackListJson = await fetchAPI("/playlists/" + playlistId + "/tracks").then((res) =>
+
+export const getTracks = async function (token, playlist, containerId) {
+    const trackListJson = await fetchAPI("/playlists/" + playlist.id + "/tracks").then((res) =>
         res.json()
     );
     const trackList = trackListJson.items;
     render(
-        h(
-            "ul",
-            {list: trackList},
-            trackList.map((item) => trackRow(item))
-        ),
+        h("div",null,[
+            h('div',null,[
+                playlist.name,
+                h('button',{ onClick: ()=> queueTracks(trackList)}, 'queue tracks')
+            ]),
+            h(
+                "ul",
+                {style:{maxHeight:300,'overscroll-y':'scroll'}},
+                trackList.map((item) => trackRow(item))
+            ),
+        ]),
         document.getElementById(containerId)
     );
+    renderNowPlaying(playlist.images[0].url, 
+        [trackList.map(item=>item.track.id)], 
+        playlist.name,
+        playlist.owner);
 };
 
+
+function renderNowPlaying(imgSrc, trackIds, title, artists){
+    $(".song-name").innerHTML = title;
+
+    $(".song-thumbnail").src = imgSrc;
+    $(".artist-name").innerHTML =artists;
+
+}
 function loadSpotifyPremium(token) {
     if (window.webplayer && window.spotifyDeviceId) return window.webplayer;
 
@@ -153,14 +180,14 @@ function loadSpotifyPremium(token) {
             });
             window.webplayer.addListener("initialization_error", ({message}) => {
                 log(message);
+                reject(new Error("initialization_error "+message));
             });
             window.webplayer.addListener("not_ready", (e) => {
                 log("not read");
             });
 
             window.webplayer.addListener("ready", (e) => {
-                log("ready");
-                window.spotifyDeviceId = e.device_id;
+              window.spotifyDeviceId = e.device_id;
                 document.getElementById("play").style.display = "block";
 
                 window.webplayer.addListener("initialization_error", (e) => reject(e));
@@ -179,12 +206,17 @@ function loadSpotifyPremium(token) {
             window.webplayer.addListener("player_state_changed", (e) => {
                 console.log(e);
                 if (e.track_window.current_track) {
-                    $(".song-name").innerHTML = e.track_window.current_track.name;
-
-                    $(".song-thumbnail").src = e.track_window.current_track.album.images[0].url;
-                    $(".artist-name").innerHTML = e.track_window.current_track.artists
+                    currentTrackId = e.track_window.current_track.id;
+                    renderNowPlaying(e.track_window.current_track.album.images[0].url,[],e.track_window.current_track.name,
+                        artists
                         .map((a) => a.name)
-                        .join(", ");
+                        .join(", "));
+  
+                }
+                if(e.track_window.next_tracks){
+                    $("#nexttracks").innerHTML = e.track_window.next_tracks.map(
+                        track=> "<li>"+track.name+"</li>"
+                    ).join("");
                 }
                 let timer;
 
@@ -211,7 +243,7 @@ function loadSpotifyPremium(token) {
 
                     updateTimer();
                 } else {
-                    if (timer) {
+                    if (timer!==null) {
                         cancelAnimationFrame(timer);
                         timer = null;
                     }
@@ -227,6 +259,17 @@ function loadSpotifyPremium(token) {
         script.src = "https://sdk.scdn.co/spotify-player.js";
         document.getElementsByTagName("head")[0].appendChild(script);
     });
+}
+function queueTracks(tracks){
+    fetchAPIPut("/me/player/play?device_id=" + window.spotifyDeviceId, {
+        uris: tracks.map(item=>"spotify:track:" + item.track.id),
+    })
+        .then((resp) => {
+            log(resp); //"loaded")
+        })
+        .catch((e) => {
+            log(e);
+        });
 }
 
 export const playTrack = async function (trackId) {
