@@ -46,15 +46,14 @@ body{
 }
 .localchannel{
     grid-column: 1;
-    grid-row: 4/ 5;
+    grid-row: 4; 
     background-color: #333333;
     
 }
 .band_freq_out{
     grid-column: 1;
-    grid-row: 6/7;
+    grid-row: 5/6;
     background-color: #333333;
-    
 }
 
 
@@ -175,17 +174,40 @@ button{
                 ctx = ctx || new AudioContext();
                 const stream =  await navigator.mediaDevices.getDisplayMedia({audio:true, video:true});  
                 localChannel.srcObject= stream;
-                localChannel.muted = true;
-                var source = ctx.createMediaStreamSource(stream);
-                var av =  AnalyzerView(source, { fft: 1024});
-                av.histogram("band_freq_out");
-                av.connect(new GainNode(ctx, {gain:0})).connect(ctx.destination);
+               localChannel.muted = true;
+
+                const source = ctx.createMediaStreamSource(stream);
+                var av =  AnalyzerView(source, { fft: 256});
+                av.histogram("band_freq_out"); //"{ fft: 256 }));
+
+                var passthrough =  ctx.createScriptProcessor(16384, 2, 2);
+                passthrough.onaudioprocess = (e) => {
+
+                    // The input buffer is the song we loaded earlier
+                    var inputBuffer = e.inputBuffer;
+
+                    // The output buffer contains the samples that will be modified and played
+                    var outputBuffer = e.outputBuffer;
+                    var buffer = [];
+                    for (var channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
+                        var inputData = inputBuffer.getChannelData(channel);
+                        var outputData = outputBuffer.getChannelData(channel);
+                    // Loop through the 4096 samples
+                        for (var sample = 0; sample < inputBuffer.length; sample++) {
+                            // make output equal to the same as the input
+                            outputData[sample] = inputData[sample];
+                        }
+                    }
+                };
+                const postGain = ctx.createGain(1);
+                av.analyzer.connect(passthrough);
+                passthrough.connect(postGain).connect(ctx.destination);
+                const peer = ctx.createMediaStreamDestination();
+                postGain.gain.setValueAtTime(0,ctx.currentTime);
       
-                BroadcasterClient({
-                    onEvent: window.log
-              }).broadcastAudio(userId, stream);
+                BroadcasterClient().broadcastAudio(userId, peer);
             }catch(e){
-                
+                console.log(e);
             }
 
 

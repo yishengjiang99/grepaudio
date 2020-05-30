@@ -155,6 +155,7 @@ var AnalyzerView = function(audioNode, params){
       var dataArray = new Float32Array(fft.fftSize);
       if(!repeating) return dataArray;      
       function drawBars(){
+        
           var draw= !($("#showfft") && $("#showfft").checked == false)
           var draw_accum = false;!($("#showcummulative") && $("#showcummulative").checked == false)
           var t = requestAnimationFrame(drawBars);;
