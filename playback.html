@@ -29,7 +29,7 @@ body{
 }
 .sidenav {
     grid-column: 1;
-    grid-row: 1 / 10;
+    grid-row: 1 / 4;
     background-color: #333333;
     
 }
@@ -44,6 +44,19 @@ body{
     grid-row: 2 / 8;
     background-color:#555555;  
 }
+.localchannel{
+    grid-column: 1;
+    grid-row: 4/ 5;
+    background-color: #333333;
+    
+}
+.band_freq_out{
+    grid-column: 1;
+    grid-row: 6/7;
+    background-color: #333333;
+    
+}
+
 
 .footer{
     padding:20px;
@@ -77,13 +90,18 @@ button{
 <div id=container>
     <div class=header id='header'>
         <span id='welcome'></span>
-        <span id='debug'></span>
-        <div data-userid="1" id='spotifyplayer'></div>
-
+    
+    
     </div>
     <div class=sidenav id='playlist'>
-    </div>
 
+    </div>
+    <div class='band_freq_out'>
+        <canvas id='band_freq_out'></canvas>
+    </div>
+    <div class='localchannel'>
+        <audio controls autoplay id=localstream></audio>
+    </div>
     <div class=main id='tracklist'>
 
     </div>
@@ -95,6 +113,8 @@ button{
                 <p class='artist-name'></p>
             </div>
         </div>
+        <button id=shareAudio>Share Audio</button>
+        <div id='debug'></div>
     </div>
    
     <div class=footer>  
@@ -105,7 +125,7 @@ button{
                  <span class='position'></span> 
                  <span><input type=range style='width:80%' id='progress' min=0 max="100"></input></span>
                    <span class='duration'></span>
-                </div>
+            </div>
    
             <div class="song-controls" style='display:grid; height:50px; width: 300px; grid-gap:10px'>
                 <button id=rewind class="rewind" style="grid-column:1/2">
@@ -126,24 +146,51 @@ button{
             </div>
             <div id='nexttracks'  style='position:absolute; right:3em; width:200px; height:100%; overflow-y:scroll'>
             </div>
-
-
-
         </div>
     </div>
-    </div>
+
+
+
 </div>
 
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script> -->
     <script type="module">
     
         import {checkAuth, getPlayList} from "./radio/spotifyClient.jsx";
+        import BroadcasterClient from './twitch/BroadcastClient.js'
+        import AnalyzerView from "./AnalyzerView.js"
         const token = checkAuth({containerId: "welcome"});
+        const localChannel = document.getElementById("localstream");
+        let ctx;
         if (token) {
             getPlayList(token, "playlist");
 
         }
+        document.querySelector("#shareAudio").onclick=async ()=>{
+            var userId = window.location.search.replace("?", "")
+            || prompt("enter display name", (localStorage.getItem("displayName") || ""))
+            || ("user_" + Math.floor(Math.random() * 10));
 
+            try{
+                ctx = ctx || new AudioContext();
+                const stream =  await navigator.mediaDevices.getDisplayMedia({audio:true, video:true});  
+                localChannel.srcObject= stream;
+                localChannel.muted = true;
+                var source = ctx.createMediaStreamSource(stream);
+                var av =  AnalyzerView(source, { fft: 1024});
+                av.histogram("band_freq_out");
+                av.connect(new GainNode(ctx, {gain:0})).connect(ctx.destination);
+      
+                BroadcasterClient({
+                    onEvent: window.log
+              }).broadcastAudio(userId, stream);
+            }catch(e){
+                
+            }
+
+
+
+        }
     </script>
     </body>
 </html>

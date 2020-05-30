@@ -253,6 +253,3 @@ const bindAudioTag = function (tagId, output) {
   const source = output.context.createMediaElementSource(myAudio);
   return source;
 }
-
-
-

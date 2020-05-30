@@ -1,15 +1,4 @@
 import Envelope from "./envelope.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyAV4Q9le3SmcMVzogttnJSSxd4zikhBixw",
-    authDomain: "dsp-over-rtc.firebaseapp.com",
-    databaseURL: "https://dsp-over-rtc.firebaseio.com",
-    projectId: "dsp-over-rtc",
-    storageBucket: "dsp-over-rtc.appspot.com",
-    messagingSenderId: "731533454193",
-    appId: "1:731533454193:web:d62fcaf297e1fe5cf624d0",
-    measurementId: "G-8RCQ4PX008",
-};
 window.loadBuffer = function (url) {
     return new Promise((resolve, reject) => {
         var ctx = window.g_audioCtx;

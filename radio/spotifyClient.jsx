@@ -207,8 +207,10 @@ function loadSpotifyPremium(token) {
                 console.log(e);
                 if (e.track_window.current_track) {
                     currentTrackId = e.track_window.current_track.id;
-                    renderNowPlaying(e.track_window.current_track.album.images[0].url,[],e.track_window.current_track.name,
-                        artists
+                    renderNowPlaying(e.track_window.current_track.album.images[0].url,
+                        [],
+                        e.track_window.current_track.name,
+                        e.track_window.current_track.artists
                         .map((a) => a.name)
                         .join(", "));
   
