@@ -3,6 +3,9 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const FFmpeg = require('fluent-ffmpeg');
 const { PassThrough } = require('stream')
 const { exec } = require('child_process')
+const fs = require('fs');
+const path = require("path");
+
 
 const express = require('express')
 const app = express()
@@ -17,7 +20,23 @@ app.use(function (req, res, next) {
   next();
 });
 
-
+app.get("/lib", (req,res)=>{
+  exec("ls -l *.js", {cwd:'..'}, (err, stdout,stderr)=>{
+    if(err) res.end(err.message);
+    else{
+      res.send("<pre>"+stdout+"</pre>");
+    }
+  });});
+app.get("/lib/(:file).js", (req,res)=>{
+        const filename = req.params.file+".js";
+        const fs = require('fs');
+        if( fs.existsSync(path.resolve("..",filename))){
+               res.sendFile(path.resolve("..", filename));
+        }
+        else{
+                res.status(404);
+        }
+});
 
 const rtc_routes = require("./dsp_rtc.js");
 app.use("/api/rtc", rtc_routes);
