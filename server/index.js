@@ -21,6 +21,9 @@ app.use(function (req, res, next) {
 });
 
 app.get("/lib", (req,res)=>{
+  res.header("Access-Control-Allow-Origin","*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
+
   exec("ls -l *.js", {cwd:'..'}, (err, stdout,stderr)=>{
     if(err) res.end(err.message);
     else{
@@ -34,7 +37,8 @@ app.get("/lib/(:file).js", (req,res)=>{
                res.sendFile(path.resolve("..", filename));
         }
         else{
-                res.status(404);
+                res.sendStatus(404);
+                res.end();
         }
 });
 
