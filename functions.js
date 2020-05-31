@@ -21,6 +21,15 @@ window.loadBuffer = function (url) {
         };
     });
 };
+
+window.parseString = function(str){
+   return  (str.substring(1)||"").split("&").map(arg=>arg.split("=")).reduce((params, kv) => {
+        params[kv[0]]=kv[1];
+        return params;
+    }, {});
+}
+
+
 window.get_db = function (ref) {
     if (!window.db) {
         firebase.initializeApp(firebaseConfig);
@@ -101,7 +110,6 @@ export async function chord(url, params) {
     });
     var str = await fetch(url).then((resp) => resp.text());
     var json = await JSON.parse(str);
-    chord;
     var osc = g_audioCtx.createOscillator();
     osc.setPeriodicWave(g_audioCtx.createPeriodicWave(json.real, json.imag));
     const keys = "asdfghj".split("");
