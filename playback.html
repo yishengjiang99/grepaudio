@@ -1,7 +1,8 @@
 <html>
     <head>
         <title>Spotify Premium Player</title>
-
+<link href="//cdn.muicss.com/mui-0.10.2/css/mui.min.css" rel="stylesheet" type="text/css" />
+<script src="//cdn.muicss.com/mui-0.10.2/js/mui.min.js"></script>
         <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" crossorigin/>
     </head>
     <body>
@@ -63,32 +64,17 @@ body{
     grid-column: 1 / 5;
     background-color: #333333;
 }
-button{
-        display: inline-block;
-        color: white;
-        background-color: blueviolet;
-        padding: 0 2rem;
-        font-size: 1rem;
-        border-radius: 2px;
-        letter-spacing: .5px;
-        text-align: center;
-        text-decoration: none;
-        height: 36px;
-        line-height: 36px;
-        cursor: pointer;
-        box-shadow: 
-          0 2px 2px 0 rgba(0,0,0,0.14), 
-          0 1px 5px 0 rgba(0,0,0,0.12), 
-          0 3px 1px -2px rgba(0,0,0,0.2)   
-}
 
 .song-controls button{
     cursor:pointer;
 }
 </style>
+<div class="mui-appbar">
+            <span id='welcome'></span>
+
+</div>
 <div id=container>
     <div class=header id='header'>
-        <span id='welcome'></span>
     
     
     </div>
@@ -109,6 +95,8 @@ button{
           <img class='song-thumbnail' width=300 height=300 >
             <div class="container">
                 <h4 class='song-name'></h4>
+                <div class="mui-divider"></div>
+
                 <p class='artist-name'></p>
             </div>
         </div>
@@ -169,11 +157,18 @@ button{
             var userId = window.location.search.replace("?", "")
             || prompt("enter display name", (localStorage.getItem("displayName") || ""))
             || ("user_" + Math.floor(Math.random() * 10));
-
+            var stream
             try{
                 ctx = ctx || new AudioContext();
-                const stream =  await navigator.mediaDevices.getDisplayMedia({audio:true, video:true});  
-                localChannel.srcObject= stream;
+                debugger;
+                stream =  await navigator.mediaDevices.getDisplayMedia({audio:true, video:true});  
+            }catch(e){
+                debugger;
+                console.log(e);
+            }
+        debugger;
+        localChannel.srcObject= stream;
+            try{
                localChannel.muted = true;
 
                 const source = ctx.createMediaStreamSource(stream);
@@ -205,7 +200,7 @@ button{
                 const peer = ctx.createMediaStreamDestination();
                 postGain.gain.setValueAtTime(0,ctx.currentTime);
       
-                BroadcasterClient().broadcastAudio(userId, peer);
+                BroadcasterClient().broadcastAudio(userId, source.stream);
             }catch(e){
                 console.log(e);
             }

@@ -24,7 +24,7 @@ export default class BandPassFilterNode extends AudioWorkletNode{
         }
         this.inputs=[];
     }
-    setGainAtFreq=(gain, freq)=>{
+    setGainAtFreq(gain, freq){
         var index = HZ_LIST.indexOf(freq);
         if(index<0) throw new Error("freq "+freq+" not mapped");
         this.postMessage({

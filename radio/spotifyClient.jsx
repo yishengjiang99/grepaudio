@@ -76,7 +76,7 @@ export const checkAuth = async function ({containerId}) {
     render(h(
         "span",
         {
-            className: "welcome",
+            className: "mui-appbar",
         },
         "Welcome "
     ), document.getElementById(containerId));

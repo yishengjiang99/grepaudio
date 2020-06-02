@@ -19,7 +19,7 @@ document.getElementById("dre").onclick = async function (e) {
   overlay.style.display='none'
 
   audioCtx = new AudioContext();
-  await audioCtx.audioWorklet.addModule('../band_pass_lfc/processor.js');
+   await audioCtx.audioWorklet.addModule('../band_pass_lfc/processor.js');
 
   window.g_audioCtx = audioCtx;
 

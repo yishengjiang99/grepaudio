@@ -181,7 +181,12 @@ export default function DrawEQ(ctx, filters) {
       var y = (20 * Math.log(aggregate[k])) / Math.LN10;
       vtx.lineTo(k, dbToY(aggregate[k]));
     }
+    vtx.fillStyle='gray';
+
     vtx.stroke();
+    vtx.closePath();
+
+    vtx.fill();
     dirty = false;
     vtx.strokeText(_closest, 20, 30);
     //requestAnimationFrame(drawScalesAndFrequencyResponses);
@@ -243,6 +248,8 @@ export default function DrawEQ(ctx, filters) {
       }
       dirty = true;
       drawScalesAndFrequencyResponses();
+    }else{
+      
     }
     //  e.offsetX;
   };

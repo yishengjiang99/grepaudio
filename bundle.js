@@ -184,6 +184,15 @@
           };
       });
   };
+
+  window.parseString = function(str){
+     return  (str.substring(1)||"").split("&").map(arg=>arg.split("=")).reduce((params, kv) => {
+          params[kv[0]]=kv[1];
+          return params;
+      }, {});
+  };
+
+
   window.get_db = function (ref) {
       if (!window.db) {
           firebase.initializeApp(firebaseConfig);
@@ -1355,6 +1364,7 @@
         var dataArray = new Float32Array(fft.fftSize);
         if(!repeating) return dataArray;      
         function drawBars(){
+          
             var draw= !($("#showfft") && $("#showfft").checked == false);
   !($("#showcummulative") && $("#showcummulative").checked == false);
             var t = requestAnimationFrame(drawBars);
@@ -1462,7 +1472,7 @@
           };
           this.inputs=[];
       }
-      setGainAtFreq=(gain, freq)=>{
+      setGainAtFreq(gain, freq){
           var index = HZ_LIST.indexOf(freq);
           if(index<0) throw new Error("freq "+freq+" not mapped");
           this.postMessage({
@@ -2173,7 +2183,12 @@
         var y = (20 * Math.log(aggregate[k])) / Math.LN10;
         vtx.lineTo(k, dbToY(aggregate[k]));
       }
+      vtx.fillStyle='gray';
+
       vtx.stroke();
+      vtx.closePath();
+
+      vtx.fill();
       dirty = false;
       vtx.strokeText(_closest, 20, 30);
       //requestAnimationFrame(drawScalesAndFrequencyResponses);
@@ -2316,7 +2331,7 @@
     overlay.style.display='none';
 
     audioCtx = new AudioContext();
-    await audioCtx.audioWorklet.addModule('../band_pass_lfc/processor.js');
+     await audioCtx.audioWorklet.addModule('../band_pass_lfc/processor.js');
 
     window.g_audioCtx = audioCtx;
 
