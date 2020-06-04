@@ -6,6 +6,7 @@ const { exec } = require('child_process')
 const fs = require('fs');
 const path = require("path");
 
+const youtubedl = require('youtube-dl')
 
 const express = require('express')
 const app = express()
@@ -30,6 +31,7 @@ app.get("/lib", (req,res)=>{
       res.send("<pre>"+stdout+"</pre>");
     }
   });});
+
 app.get("/lib/(:file).js", (req,res)=>{
         const filename = req.params.file+".js";
         const fs = require('fs');
@@ -41,6 +43,21 @@ app.get("/lib/(:file).js", (req,res)=>{
                 res.end();
         }
 });
+app.use("/api/(:vid).mp3", async (req, res, next) => {
+  try {
+    const vid = req.params.vid;
+    FFmpeg.setFfmpegPath(ffmpegPath);
+    const pipe = new PassThrough();
+    console.log(vid, 'ssss');
+    var audio = youtubedl("https://youtube.com/watch?v="+vid,['-x']).pipe(pipe);
+    process.nextTick(() => FFmpeg().addInput(pipe).format('mp3').pipe(new PassThrough()).pipe(res));
+    return;
+  } catch (e) {
+    res.status = 500;
+    res.end(e.message);
+  }
+});
+
 
 const rtc_routes = require("./dsp_rtc.js");
 app.use("/api/rtc", rtc_routes);
@@ -194,21 +211,6 @@ app.use("/api/sudo/(:q).mp3", async (req, res, next) => {
       console.log(e);
       res.end(e.message + " ..");
     })
-});
-
-
-
-app.use("/api/(:vid).mp3", async (req, res, next) => {
-  try {
-    const vid = req.params.vid;
-    FFmpeg.setFfmpegPath(ffmpegPath);
-    const pipe = new PassThrough();
-    ytdl(vid,{audioFormat:'mp3'}).pipe(pipe);
-    process.nextTick(() => FFmpeg().addInput(pipe).format('mp3').pipe(new PassThrough()).pipe(res))
-  } catch (e) {
-    res.status = 500;
-    res.end(e.message);
-  }
 });
 
 
