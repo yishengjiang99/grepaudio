@@ -1,6 +1,5 @@
-'use strict'
-import {PianoKeyboard} from './piano.js';
+"use strict";
+import { PianoKeyboard } from "./piano.js";
+import { StartContext } from "./startContext.js";
 
-export default {
-  PianoKeyboard
-}
+export { StartContext, PianoKeyboard };
