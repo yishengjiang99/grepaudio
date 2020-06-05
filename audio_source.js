@@ -25,8 +25,9 @@ function PlayableAudioSource(ctx) {
 
       var audio = document.createElement("audio")
       audio.srcObject = stream;
+      
       audio.onloadedmetadata = function (e) {
-        audio.muted = false;
+        audio.muted = true;
         audio.control = true;
         audio.play();
       };

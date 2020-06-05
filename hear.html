@@ -1,77 +1,72 @@
 <html>
 <head>
 <meta name="viewport" content="initial-scale=1, maximum-scale=1">
-<style>
-.container {
-  width: 100vw;
-  height: 100vh;
-  position: relative;
-}
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
 
-.center {
-  margin: 0;
-  position: absolute;
-  top: 80%;
-  width: 100%;
-}
-button{
-  width: 100%;
-  height: 3em;
-  background-color:green;
-  font-size:2em;  
-}
-</style>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
-<div id=std1></div><span id="cplink"></span>
+<span id="cplink"></span>
+<video playsinline id=rtv controls muted autoplay></video>
+<br>
+<select id=devices>
+</select>
+<select id=cam>
+</select>
+<br>
+<button class='btn btn-primary'><i class="fa fa-microphone"></i>LARGE BUTTON            </button>.
+<div id=std1></div>
+<div id='console'>
 
-<div class="container">
-
-  <div class="center">
-
-<video playsinline id=rtv controls style='width:100vw; height:320px' muted autoplay></video>
-  <div class="center">
-
-<div id=ui></div>
-<button><i class="fa fa-microphone"></i>Hear</button>.
-  </div>
 </div>
-</div> 
 <script type=module>
 import BroadcasterClient from './twitch/BroadcastClient.js'
+import _console from './_console.js';
 
   const button = document.querySelector("button");
   button.onclick = e=> getUserMedia(e);
 
-  function std1 (status){ document.querySelector("#std1").contentText = status}
-function log (status){std1(status) };
+_console.log('init')
+
 // std1;
 const $ = id => document.querySelector(id);
-const opt={ audio: true, video: true };
+var cams = document.getElementById("cam");
+var select = document.getElementById("devices");
+select.setAttribute("data-userMedia", "audio");
+navigator.mediaDevices && navigator.mediaDevices.enumerateDevices().then(function (devices) {
+  select.innerHTML = devices.filter(device => device.kind == 'audioinput').map(function (device) {
+    return `<option value='${device.deviceId}'>${device.label}</option>`
+  }).join("");
+
+  cams.innerHTML = devices.filter(device => device.kind.includes('video')).map(function (device) {
+    return `<option value='${device.deviceId}'>${device.label}</option>`
+  }).join("");
+}).catch(function (err) { alert(select.innerHTML = err.message) });
 
   const rtcViewer = document.querySelector("video#rtc")
 
 
 function getUserMedia(){
-if(navigator.getUserMedia){
-	navigator.getUserMedia(opt, stream=>gotStream(stream), error=>gotError(error));
-}
-else if( navigator.mediaDevices.getUserMedia) {
-	 navigator.mediaDevices.getUserMedia(opt).then(gotStream).catch(gotError);
-}
+  const opt={ audio: {deviceId: select.value}, video:{ deviceId: cam.value} };
+  if(navigator.getUserMedia){
+    navigator.getUserMedia(opt, stream=>gotStream(stream), error=>gotError(error));
+  }
+  else if( navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia(opt).then(gotStream).catch(gotError);
+  }
 }
 
-function gotStream(stream){
+async function gotStream(stream){
         var userId = window.location.search.replace("?", "") ||
             prompt("enter display name", (localStorage.getItem("displayName") || "")) ||
             ("user_" + Math.floor(Math.random() * 10));
 
-        BroadcasterClient({
-            onEvent: window.log
-        }).broadcastAudio(userId, stream);
+      const bv=  await BroadcasterClient({
+            onEvent:_console.log // window.log
+        });
+        
+       bv.broadcastAudio(userId, stream);
 
-        std1(`Broadcasting now to <input type=text id=urlinput size=80 value='https://dsp.grepawk.com/watch/${userId}'>`);
 
 
          document.querySelector('video#rtv').srcObject = new MediaStream(stream);

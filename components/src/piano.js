@@ -1,7 +1,7 @@
 /* eslint-disable no-debugger */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-import Envelope from "//dsp.grepawk.com/lib/envelope.js";
+import Envelope from "../lib/envelope.js";
 import { Piano } from "./waves.js";
 const keys = ["a", "w", "s", "e", "d", "f", "t", "g", "y", "h", "u", "j"];
 
@@ -39,17 +39,30 @@ ul .white.pressed{border-top:1px solid #777;border-left:1px solid #999;border-bo
 const waveShaper = JSON.parse(Piano);
 
 export class PianoKeyboard extends HTMLElement {
+  static get attack(){
+    return this.getAttribute('attack')
+  }
+  static set attack(val){
+    this.setAttribute('attack',val)
+  }
+
+  static get observedAttributes() {
+    return ['asdr', 'params','waveshaper'];
+  }
+   
   constructor() {
     super();
-    this.params = {
-      min: 0,
-      max: 4,
-      attack: 0.01,
+    this.attack=0.01;
+    this.asdr = {
       decay: 0.05,
       sustain: 0.1,
       release: 0.01, //0.01
-      octave: 2,
     };
+    this.params={
+      min: 0,
+      max: 4,
+      octave: 2
+    }
     this.waveshaper = waveShaper;
     this.keyDomelements = {};
     this.adsrs = {};
@@ -69,6 +82,9 @@ export class PianoKeyboard extends HTMLElement {
       });
     });
     this.shadowRoot.appendChild(list); // += "</ul>";
+    
+    this.shadowRoot.innerHTML+=`<div id='rx'>${JSON.stringify(this.asdr)}</div>`
+    this.rx = this.shadowRoot.getElementById("rx");
   }
 
   connectedCallback() {
@@ -111,7 +127,15 @@ export class PianoKeyboard extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldval, newval) {
-    super.attributeChangedCallback(name, oldval, newval);
+    debugger;
+    if(oldval === newval) return;
+    switch(name){
+      case 'attack':
+        this.attack = newval;
+        this.rx.innerHTML = this.attack;
+        break;
+
+    }
   }
 
   render() {
@@ -130,7 +154,9 @@ export class PianoKeyboard extends HTMLElement {
     let ctx = this.ctx;
     this.masterGain = this.masterGain || new GainNode(this.ctx);
     this.masterGain.connect(ctx.destination);
-    const { min, max, attack, decay, sustain, release } = this.params;
+    const { decay, sustain, release } = this.asdr;
+    const attack = this.attack;
+    const {min,max } = this.params;
     var freq_multiplier = freqmultiplierindex[this.params.octave];
 
     var offfreq_attenuator = new GainNode(ctx, { gain: 1 });
@@ -167,14 +193,6 @@ export class PianoKeyboard extends HTMLElement {
     gain.connect(this.masterGain);
     // gainEnvelope.trigger(ctx.currentTime);
     return gainEnvelope;
-  }
-
-  _onTouchEnd(e) {
-    const note = parseFloat(e.target.dataset.note);
-    // if( this.asdrs[note]){
-    //   this.asdrs[note] = this._getNote(note);
-    // }
-    taht.asdrs[note] && taht.asdrs[note].release();
   }
 }
 
