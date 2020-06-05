@@ -26,7 +26,7 @@ export function split_band(ctx, hz_list) {
       else if(index==0){
         bands.push(new BiquadFilterNode(ctx,{type:"lowshelf", frequency:hz, gain:0, Q:1, detune:0}));
       }else{
-        bands.push(new BiquadFilterNode(ctx,{type:"peaking", frequency:hz, gain:0, Q:1, detune:0}));
+        bands.push(new BiquadFilterNode(ctx,{type:"peaking", frequency:hz, gain:0, Q:4.2, detune:0}));
       } 
       
       bands[bands.length-1].connect(c);
