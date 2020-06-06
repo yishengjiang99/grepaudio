@@ -10,6 +10,8 @@ import BoardcastViewerClient from './twitch/BroadcastViewerClient.js'
 import { selector, slider, numeric } from "./functions.js";
 import https_rtc_client from './dsp_rtc/https_rtc_client.js';
 import DrawEQ from './draw.js'
+
+
 $j(".dropdown-toggle").dropdown();
 let audioCtx, audioTag, eq;
 const overlay = document.getElementById("overlay");
@@ -118,9 +120,9 @@ document.getElementById("dre").onclick = async function (e) {
       onEvent: log,
       mediaObjectReady: function (stream) {
 	        var streamsource= audioCtx.createMediaStreamSource(stream);
-         streamsource.connect(ctv.analyzer);
-         rtcViewer.srcObject = stream;
-         rtcViewer.autoplay = true;
+        	 streamsource.connect(ctv.analyzer);
+	         rtcViewer.srcObject = stream;
+        	 rtcViewer.autoplay = true;
       }
     });
 
