@@ -12,8 +12,9 @@
 
         var audio = document.createElement("audio");
         audio.srcObject = stream;
+        
         audio.onloadedmetadata = function (e) {
-          audio.muted = false;
+          audio.muted = true;
           audio.control = true;
           audio.play();
         };
@@ -58,382 +59,334 @@
 
   }
 
-  function Envelope(min, max, attack, decay, sustain, release, param) {
-      this.min = min; //
-      this.max = max;
-      this.attack = attack;
-      this.releaseTimeConstant = release;
-      this.sustain = sustain;
-      this.decay = decay;
-      this.param = param;
+  function Envelope(
+    min,
+    max,
+    attack,
+    decay,
+    sustain,
+    release,
+    param
+  ) {
+    this.min = min; //
+    this.max = max;
+    this.attack = attack;
+    this.releaseTimeConstant = release;
+    this.sustain = sustain;
+    this.decay = decay;
+    this.param = param;
   }
 
   Envelope.prototype.trigger = function (time) {
-      this.attackTime = null;
-      this.attackTime = time+this.attack;
-      this.sustainTime =time+this.attack+this.sustain;
-      this.param.linearRampToValueAtTime(this.max, this.attackTime);
-      this.param.exponentialRampToValueAtTime(this.sustain, this.sustainTime);
+    this.attackTime = time + this.attack; //reach attach val at attackTime
+    this.decayTime = time + this.attack + this.decay; //reach decay val at decayTime
+    this.sustainTime = time + this.attack + this.decay + this.sustain;
+    this.rt = time + this.attack + this.decay + this.sustain + this.release;
+
+    this.param.linearRampToValueAtTime(this.max, this.attackTime);
+    this.param.linearRampToValueAtTime(this.max * 0.5, this.decayTime);
+    this.param.linearRampToValueAtTime(0, this.rt);
   };
 
-
-  Envelope.prototype.hold = function (time) {
-     if(this.attackTime > time){
-         return;
-     }else {
-      this.attackTime = time+this.attack;
-      this.sustainTime =time+this.attack+this.sustain;
-      this.param.linearRampToValueAtTime(this.max, this.attackTime);
-      this.param.exponentialRampToValueAtTime(this.sustain, this.sustainTime);
-     }
-  };
   Envelope.prototype.release = function (time) {
-
-      this.sustainTime = Math.max(time, this.sustainTime);
-
-      this.param.setTargetAtTime(this.min, this.sustainTime+this.decay, this.releaseTimeConstant);
-      
-      this.attackTime = null;
+    this.param.exponentialRampToValueAtTime(0, time + this.release);
   };
-
-
-  Envelope.defaultPackage=function(context) {
-      var buffer = context.createBuffer(1, 128, context.sampleRate);
-      var p = buffer.getChannelData(0);
-
-      for (var i = 0; i < 128; ++i)
-          p[i] = 1;
-
-      var source = context.createBufferSource();
-      source.buffer = buffer;
-      source.loop = true;
-      source.start(0);
-
-      return source;
-  };
-  Envelope.ControlSignal = function (context, unitySource, initialValue) {
-      this.output = context.createGain();
-      this.output.gain.value = initialValue;
-      unitySource.connect(this.output);
-  };
-
-
-  // function etst() {
-  //     var gain = ctx.createGain(1);
-
-  //     var note = new Envelope(2, 5, 2, 3, 4, 2, gain.gain);
-
-  //     var context = ctx;
-  //     var ampEnvelopeGain = context.createGain();
-
-  //     var ampAttack = 0.020;
-  //     var ampDecay = 0.300;
-  //     var ampSustain = 85;
-  //     var ampRelease = 0.250;
-
-  //     var amplop = new Envelope(ampAttack, ampDecay, ampSustain, ampRelease, ampEnvelopeGain);
-
-  //     var gainNode = context.createGain();
-  //     gainNode.gain.value = 0.25 * 1;
-
-  //     var filter = context.createBiquadFilter();
-  //     filter.Q.value = 0;
-  //     filter.frequency.value = 0;
-  //     filter.connect(gainNode);
-
-  //     gainNode.connect(amplop);
-
-  //     var lfo = context.createOscillator();
-  //     lfo.frequency.value = 30;
-  //     lfo.type = "triangle";
-
-  //     var lfoDepth = context.createGain();
-  //     lfoDepth.gain.value = LFODEPTH;
-
-
-  //     var velEnvAttack = Math.pow(gain, 0.75);
-  //     var filterSustainCents = velEnvAttack * filterEnvAmount * 0.01 * filterSustain;
-  //     var minFilterFrequency = 40;
-  //     var maxFilterFrequency = minFilterFrequency * Math.pow(2, velEnvAttack * filterEnvAmount / 1200);
-  //     var sustainFrequency = minFilterFrequency * Math.pow(2, filterSustainCents / 1200);
-
-
-  //     var filterEnvelope1 = new Envelope(filterAttack, filterDecay, sustainFrequency, filterRelease, minFilterFrequency, maxFilterFrequency, filter.frequency);
-
-
-  // }
 
   window.loadBuffer = function (url) {
-      return new Promise((resolve, reject) => {
-          var ctx = window.g_audioCtx;
-          const xhr = new XMLHttpRequest();
-          xhr.open("get", url, true);
-          xhr.responseType = "arraybuffer";
-          xhr.setRequestHeader("Range", "Bytes:0-");
+    return new Promise((resolve, reject) => {
+      var ctx = window.g_audioCtx;
+      const xhr = new XMLHttpRequest();
+      xhr.open("get", url, true);
+      xhr.responseType = "arraybuffer";
+      xhr.setRequestHeader("Range", "Bytes:0-");
 
-          xhr.onreadystatechange = function () {
-              if (xhr.readyState > 2) {
-                  // process newData
-                  if (xhr.response !== null) {
-                      ctx.decodeAudioData(xhr.response, function (processed) {
-                          var source = ctx.createBufferSourceNode();
-                          source.buffer = processed;
-                      });
-                  }
-              }
-          };
-      });
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState > 2) {
+          // process newData
+          if (xhr.response !== null) {
+            ctx.decodeAudioData(xhr.response, function (processed) {
+              var source = ctx.createBufferSourceNode();
+              source.buffer = processed;
+              loadBuffer(source);
+            });
+          }
+        }
+      };
+    });
   };
 
-  window.parseString = function(str){
-     return  (str.substring(1)||"").split("&").map(arg=>arg.split("=")).reduce((params, kv) => {
-          params[kv[0]]=kv[1];
-          return params;
+  window.parseString = function (str) {
+    return (str.substring(1) || "")
+      .split("&")
+      .map((arg) => arg.split("="))
+      .reduce((params, kv) => {
+        params[kv[0]] = kv[1];
+        return params;
       }, {});
   };
 
-
   window.get_db = function (ref) {
-      if (!window.db) {
-          firebase.initializeApp(firebaseConfig);
-          window.db = firebase.database();
-      }
-      if (ref) return window.db.ref(ref);
-      else return window.db;
+    if (!window.db) {
+      firebase.initializeApp(firebaseConfig);
+      window.db = firebase.database();
+    }
+    if (ref) return window.db.ref(ref);
+    else return window.db;
   };
   window.db_presense = function (userId) {
-      get_db("channel/" + userId).set({
-          id: userId,
-          online: true,
-          liveSince: new Date().toDateString(),
+    get_db("channel/" + userId).set({
+      id: userId,
+      online: true,
+      liveSince: new Date().toDateString(),
+    });
+    window.onunload = function () {
+      get_db("channel/" + userId).update({
+        online: false,
+        offlineAt: new Date(),
       });
-      window.onunload = function () {
-          get_db("channel/" + userId).update({
-              online: false,
-              offlineAt: new Date(),
-          });
-      };
+    };
   };
   window.hashParams = function () {
-      var hash = window.location.hash.substring(1);
-      var params = {};
-      hash.split("&").map((hk) => {
-          let temp = hk.split("=");
-          params[temp[0]] = temp[1];
-      });
-      return params;
+    var hash = window.location.hash.substring(1);
+    var params = {};
+    hash.split("&").map((hk) => {
+      let temp = hk.split("=");
+      params[temp[0]] = temp[1];
+    });
+    return params;
   };
   window.toDecibel = function (powerLevel) {
-      return 10 * Math.log10(powerLevel);
+    return 10 * Math.log10(powerLevel);
   };
   window.$ = function (str) {
-      var t = document.getElementById(str);
-      if (t !== null && typeof t !== "undefined") return document.getElementById(str);
-      return document.querySelector(str);
+    var t = document.getElementById(str);
+    if (t !== null && typeof t !== "undefined")
+      return document.getElementById(str);
+    return document.querySelector(str);
   };
   HTMLElement.prototype.appendstr = function (string) {
-      let node = document.createRange().createContextualFragment(string);
+    let node = document.createRange().createContextualFragment(string);
 
-      this.appendChild(node);
+    this.appendChild(node);
   };
   async function chord(url, params) {
-      const {min, max, attack, decay, sustain, release} = Object.assign({
-          min: 0,
-          max: 0.5,
-          attack: 0.15,
-          decay: 0.21,
-          sustain: 0.21,
-          release: 0.01,
-          ...params,
-      });
-      var str = await fetch(url).then((resp) => resp.text());
-      var json = await JSON.parse(str);
-      var osc = g_audioCtx.createOscillator();
-      osc.setPeriodicWave(g_audioCtx.createPeriodicWave(json.real, json.imag));
-      const keys = "asdfghj".split("");
-      const notes = "261.63, 293.66 , 329.63, 349.23, 392.00, 440.00, 493.88".split(", ");
-      var masterGain = g_audioCtx.createGain();
-      masterGain.gain.setValueAtTime(1, g_audioCtx.currentTime);
+    const { min, max, attack, decay, sustain, release } = Object.assign({
+      min: 0,
+      max: 0.5,
+      attack: 0.15,
+      decay: 0.21,
+      sustain: 0.21,
+      release: 0.01,
+      ...params,
+    });
+    var str = await fetch(url).then((resp) => resp.text());
+    var json = await JSON.parse(str);
+    var osc = g_audioCtx.createOscillator();
+    osc.setPeriodicWave(g_audioCtx.createPeriodicWave(json.real, json.imag));
+    const keys = "asdfghj".split("");
+    const notes = "261.63, 293.66 , 329.63, 349.23, 392.00, 440.00, 493.88".split(
+      ", "
+    );
+    var masterGain = g_audioCtx.createGain();
+    masterGain.gain.setValueAtTime(1, g_audioCtx.currentTime);
 
-      var adsrs = [];
-      var ctx = g_audioCtx;
-      var waveform = g_audioCtx.createPeriodicWave(json.real, json.imag);
+    var adsrs = [];
+    var ctx = g_audioCtx;
+    var waveform = g_audioCtx.createPeriodicWave(json.real, json.imag);
 
-      function createKey(i) {
-          var osc1 = ctx.createOscillator();
-          osc1.frequency.value = notes[i];
-          osc1.type = "sine";
+    function createKey(i) {
+      var osc1 = ctx.createOscillator();
+      osc1.frequency.value = notes[i];
+      osc1.type = "sine";
 
-          var osc2 = ctx.createOscillator();
-          osc2.frequency.value = notes[i] * 2;
-          osc2.type = "sawtooth";
+      var osc2 = ctx.createOscillator();
+      osc2.frequency.value = notes[i] * 2;
+      osc2.type = "sawtooth";
 
-          var gain = ctx.createGain();
-          gain.gain.value = 0;
+      var gain = ctx.createGain();
+      gain.gain.value = 0;
 
-          osc1.setPeriodicWave(waveform);
-          var gainEnvelope = new Envelope(min, max, attack, decay, sustain, release, gain.gain);
-          adsrs[i] = gainEnvelope;
-          osc1.connect(gain);
-          gain.connect(masterGain);
-          osc1.start(0);
-          return gainEnvelope;
+      osc1.setPeriodicWave(waveform);
+      var gainEnvelope = new Envelope(
+        min,
+        max,
+        attack,
+        decay,
+        sustain,
+        release,
+        gain.gain
+      );
+      adsrs[i] = gainEnvelope;
+      osc1.connect(gain);
+      gain.connect(masterGain);
+      osc1.start(0);
+      return gainEnvelope;
+    }
+
+    var lastkeydown = {};
+
+    window.addEventListener("keydown", function (e) {
+      var i = keys.indexOf(e.key);
+
+      if (i > -1) {
+        if (!adsrs[i]) {
+          adsrs[i] = createKey(i);
+        }
+        var env = adsrs[i];
+
+        if (e.repeat) {
+          env.hold(ctx.currentTime);
+        } else {
+          env.trigger(ctx.currentTime);
+        }
+        lastkeydown[e.key] = ctx.currentTime;
       }
+    });
 
-      var lastkeydown = {};
+    window.addEventListener("keyup", function (e) {
+      if (keys.indexOf(e.key) > -1) {
+        var env = adsrs[keys.indexOf(e.key)];
+        env.release(ctx.currentTime);
+      }
+    });
 
-      window.addEventListener("keydown", function (e) {
-          var i = keys.indexOf(e.key);
-
-          if (i > -1) {
-              if (!adsrs[i]) {
-                  adsrs[i] = createKey(i);
-              }
-              var env = adsrs[i];
-
-              if (e.repeat) {
-                  env.hold(ctx.currentTime);
-              } else {
-                  env.trigger(ctx.currentTime);
-              }
-              lastkeydown[e.key] = ctx.currentTime;
-          }
-      });
-
-      window.addEventListener("keyup", function (e) {
-          if (keys.indexOf(e.key) > -1) {
-              var env = adsrs[keys.indexOf(e.key)];
-              env.release(ctx.currentTime);
-          }
-      });
-
-      return masterGain;
+    return masterGain;
   }
 
   HTMLElement.prototype.wrap = function (parent_tag) {
-      let p = document.createElement(parent_tag);
-      p.appendChild(this);
-      return p;
+    let p = document.createElement(parent_tag);
+    p.appendChild(this);
+    return p;
   };
 
   function slider(container, options) {
-      var params = options || {};
-      var input = document.createElement("input");
-      input.min =
-          (params.min !== null && params.min) || (params.prop && params.prop.minValue) || "-12";
-      input.max =
-          (params.max !== null && params.max) || (params.prop && params.prop.maxValue) || "12";
-      input.type = params.type || "range";
-      input.defaultValue = (params.prop && params.prop.value.toString()) || params.value;
-      input.step = params.step || "0.1";
-      var label = document.createElement("span");
+    var params = options || {};
+    var input = document.createElement("input");
+    input.min =
+      (params.min !== null && params.min) ||
+      (params.prop && params.prop.minValue) ||
+      "-12";
+    input.max =
+      (params.max !== null && params.max) ||
+      (params.prop && params.prop.maxValue) ||
+      "12";
+    input.type = params.type || "range";
+    input.defaultValue =
+      (params.prop && params.prop.value.toString()) || params.value;
+    input.step = params.step || "0.1";
+    var label = document.createElement("span");
 
-      if (input.type == "range") {
-          label.innerHTML =
-              params.label || (params.prop && params.prop.value.toString()) || params.value;
-      } else {
-          input.size = "10";
-      }
-      if (options.oninput) {
-          input.oninput = options.oninput;
-      } else {
-          input.oninput = (e) => {
-              params.prop.setValueAtTime(e.target.value, 0);
-              label.innerHTML = e.target.value;
-          };
-      }
-      if (options.eventEmitter) {
-          options.eventEmitter();
-      }
-      var contain = document.createElement(params.wrapper || "td");
-      contain.style.position = "relative";
-      label.style.minWidth = "4em";
-      if (params.name) {
-          contain.append(el("span", params.name));
-      }
-      if (params.className) {
-          input.className = params.className;
-      }
-      contain.append(input);
-      contain.append(label);
+    if (input.type == "range") {
+      label.innerHTML =
+        params.label ||
+        (params.prop && params.prop.value.toString()) ||
+        params.value;
+    } else {
+      input.size = "10";
+    }
+    if (options.oninput) {
+      input.oninput = options.oninput;
+    } else {
+      input.oninput = (e) => {
+        params.prop.setValueAtTime(e.target.value, 0);
+        label.innerHTML = e.target.value;
+      };
+    }
+    if (options.eventEmitter) {
+      options.eventEmitter();
+    }
+    var contain = document.createElement(params.wrapper || "td");
+    contain.style.position = "relative";
+    label.style.minWidth = "4em";
+    if (params.name) {
+      contain.append(el("span", params.name));
+    }
+    if (params.className) {
+      input.className = params.className;
+    }
+    contain.append(input);
+    contain.append(label);
 
-      if (!container) {
-          return contain;
-      } else container.append(contain);
-      return input;
+    if (!container) {
+      return contain;
+    } else container.append(contain);
+    return input;
   }
   function el(tag, innerHTML) {
-      var t = document.createElement(tag);
-      t.innerHTML = innerHTML;
-      return t;
+    var t = document.createElement(tag);
+    t.innerHTML = innerHTML;
+    return t;
   }
 
   function selector(container, params) {
-      var input = document.createElement("select");
+    var input = document.createElement("select");
 
-      input.value = params.prop;
+    input.value = params.prop;
 
-      for (const option of params.options) {
-          var elem = document.createElement("option");
-          elem.innerHTML = option;
-          elem.value = option;
-          if (params.prop && params.prop === option) {
-              elem.selected = "selected";
-          }
-          input.appendChild(elem);
+    for (const option of params.options) {
+      var elem = document.createElement("option");
+      elem.innerHTML = option;
+      elem.value = option;
+      if (params.prop && params.prop === option) {
+        elem.selected = "selected";
       }
-      container.append(input.wrap("td"));
+      input.appendChild(elem);
+    }
+    container.append(input.wrap("td"));
   }
 
   window.timeseries_static = function (params) {
-      var params = Object.assign({sampleSize: 1024, width: 1222, height: 255}, params);
-      const {elemId, sampleSize, width, height, analyzer} = params;
-      const HEIGHT = height;
-      const WIDTH = width;
-      var canvas = document.getElementById(elemId);
-      const canvasCtx = canvas.getContext("2d");
-      canvas.setAttribute("width", width);
-      canvas.setAttribute("height", height);
+    var params = Object.assign(
+      { sampleSize: 1024, width: 1222, height: 255 },
+      params
+    );
+    const { elemId, sampleSize, width, height, analyzer } = params;
+    const HEIGHT = height;
+    const WIDTH = width;
+    var canvas = document.getElementById(elemId);
+    const canvasCtx = canvas.getContext("2d");
+    canvas.setAttribute("width", width);
+    canvas.setAttribute("height", height);
 
-      canvasCtx.lineWidth = 1;
-      canvasCtx.strokeStyle = "rgb(122, 122, 122)";
-      var dataArray = new Uint8Array(analyzer.fftSize);
-      var convertY = (y) => height / 2 - (y - 127) / 2;
+    canvasCtx.lineWidth = 1;
+    canvasCtx.strokeStyle = "rgb(122, 122, 122)";
+    var dataArray = new Uint8Array(analyzer.fftSize);
+    var convertY = (y) => height / 2 - (y - 127) / 2;
 
-      canvasCtx.fillStyle = "gray";
-      canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+    canvasCtx.fillStyle = "gray";
+    canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+
+    canvasCtx.beginPath();
+    canvasCtx.moveTo(0, convertY(0));
+    var t = 0;
+    canvasCtx.lineWidth = 2;
+    canvasCtx.strokeStyle = "rgb(0, 0, 0)";
+    var x = 0;
+    function draw() {
+      analyzer.getByteTimeDomainData(dataArray);
+      var bufferLength = dataArray.length;
 
       canvasCtx.beginPath();
-      canvasCtx.moveTo(0, convertY(0));
-      var t = 0;
-      canvasCtx.lineWidth = 2;
-      canvasCtx.strokeStyle = "rgb(0, 0, 0)";
-      var x = 0;
-      function draw() {
-          analyzer.getByteTimeDomainData(dataArray);
-          var bufferLength = dataArray.length;
 
-          canvasCtx.beginPath();
+      // console.log(dataArray);
 
-          // console.log(dataArray);
-
-          for (var i = 0; i < bufferLength; i++) {
-              var y = dataArray[i];
-              if (y - 127 < 4) continue;
-              x = ((t * 40) / bufferLength) % width;
-              t++;
-              if (t > 11 && x == 0) {
-                  canvasCtx.stroke();
-                  canvasCtx.beginPath();
-                  canvasCtx.moveTo(x, convertY(y));
-              } else {
-                  canvasCtx.lineTo(x, convertY(y));
-              }
-          }
+      for (var i = 0; i < bufferLength; i++) {
+        var y = dataArray[i];
+        if (y - 127 < 4) continue;
+        x = ((t * 40) / bufferLength) % width;
+        t++;
+        if (t > 11 && x == 0) {
           canvasCtx.stroke();
-          requestAnimationFrame(draw);
+          canvasCtx.beginPath();
+          canvasCtx.moveTo(x, convertY(y));
+        } else {
+          canvasCtx.lineTo(x, convertY(y));
+        }
       }
-      draw();
+      canvasCtx.stroke();
+      requestAnimationFrame(draw);
+    }
+    draw();
   };
 
   async function Mixer (ctx, containerId) {
@@ -991,7 +944,7 @@
         else if(index==0){
           bands.push(new BiquadFilterNode(ctx,{type:"lowshelf", frequency:hz, gain:0, Q:1, detune:0}));
         }else {
-          bands.push(new BiquadFilterNode(ctx,{type:"peaking", frequency:hz, gain:0, Q:1, detune:0}));
+          bands.push(new BiquadFilterNode(ctx,{type:"peaking", frequency:hz, gain:0, Q:4.2, detune:0}));
         } 
         
         bands[bands.length-1].connect(c);
@@ -2322,6 +2275,8 @@
   }
 
   var $j = jQuery.noConflict();
+
+
   $j(".dropdown-toggle").dropdown();
   let audioCtx;
   const overlay = document.getElementById("overlay");
@@ -2429,9 +2384,9 @@
         onEvent: log,
         mediaObjectReady: function (stream) {
   	        var streamsource= audioCtx.createMediaStreamSource(stream);
-           streamsource.connect(ctv.analyzer);
-           rtcViewer.srcObject = stream;
-           rtcViewer.autoplay = true;
+          	 streamsource.connect(ctv.analyzer);
+  	         rtcViewer.srcObject = stream;
+          	 rtcViewer.autoplay = true;
         }
       });
 
