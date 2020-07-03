@@ -1,34 +1,6 @@
 import * as gg from "../constants.js";
 
-class SubbandEQProcessor extends ScriptProcessorNode {
-  constructor(ctx, opt) {
-    this.ctx = ctx;
-    this.processor = ctx.createScriptProcessor(ctx, 4096, 2, 1);
-    this.process.onaudioprocess = _onaudioprocess(event);
-  }
-  _onaudioprocess(audioProcessingEvent) {
-    var inputBuffer = audioProcessingEvent.inputBuffer;
-
-    // The output buffer contains the samples that will be modified and played
-    var outputBuffer = audioProcessingEvent.outputBuffer;
-
-    // Loop through the output channels (in this case there is only one)
-    for (var channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
-      var inputData = inputBuffer.getChannelData(channel);
-      var outputData = outputBuffer.getChannelData(channel);
-
-      // Loop through the 4096 samples
-      for (var sample = 0; sample < inputBuffer.length; sample++) {
-        // make output equal to the same as the input
-        outputData[sample] = inputData[sample];
-
-        // add noise to each output sample
-        outputData[sample] += (Math.random() * 2 - 1) * 0.2;
-      }
-    }
-  }
-}
-class BandPassLRCProcessor extends ScriptProcessorNode {
+class BandPassLRCProcessor extends AudioWorkletNode {
   constructor() {
     super();
     this.ring_buffer = [new Float32Array(), new Float32Array()];

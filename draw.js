@@ -170,7 +170,14 @@ export default function DrawEQ(ctx, filters) {
         vtx.fillStyle = "green";
       }
       vtx.beginPath();
-      vtx.arc(centerFreqKnobs[i][0], centerFreqKnobs[i][1], knobRadius, 0, Math.PI * 2, false);
+      vtx.arc(
+        centerFreqKnobs[i][0],
+        centerFreqKnobs[i][1],
+        knobRadius,
+        0,
+        Math.PI * 2,
+        false
+      );
       vtx.closePath();
       vtx.fill();
     }
@@ -181,7 +188,7 @@ export default function DrawEQ(ctx, filters) {
       var y = (20 * Math.log(aggregate[k])) / Math.LN10;
       vtx.lineTo(k, dbToY(aggregate[k]));
     }
-    vtx.fillStyle='gray';
+    vtx.fillStyle = "gray";
 
     vtx.stroke();
     vtx.closePath();
@@ -198,7 +205,10 @@ export default function DrawEQ(ctx, filters) {
     log(" time sinze last click " + (ctx.currentTime - lastClick));
     if (filterIndexInFocus > -1) {
       let cval = filters[filterIndexInFocus].gain.value;
-      filters[filterIndexInFocus].gain.setValueAtTime(YToDb(e.offsetY), ctx.currentTime);
+      filters[filterIndexInFocus].gain.setValueAtTime(
+        YToDb(e.offsetY),
+        ctx.currentTime
+      );
 
       dirty = true;
       drawScalesAndFrequencyResponses();
@@ -248,8 +258,7 @@ export default function DrawEQ(ctx, filters) {
       }
       dirty = true;
       drawScalesAndFrequencyResponses();
-    }else{
-      
+    } else {
     }
     //  e.offsetX;
   };
