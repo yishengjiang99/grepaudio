@@ -1,5 +1,4 @@
-import * as gg from "../constants.js";
-
+import {Q,HZ_LIST, DEFAULT_PRESET_GAINS} from '../constants.js';
 class BandPassLRCProcessor extends AudioWorkletNode {
   constructor() {
     super();
@@ -30,86 +29,47 @@ class BandPassLRCProcessor extends AudioWorkletNode {
     };
   }
 
-  updateGain(index, value) {
-    this.gains[index] = value;
-  }
+	process(inputs, outputs, params) {
 
-  static get parameterDescriptor() {
-    {
-      return [
-        {
-          name: "presetGains",
-          default: [0.375, 0.375, 0.375, 0.375, 0.375, 0.375, 0, 0, 0, 0],
-        },
-        {
-          name: "bands",
-          default: [31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000],
-        },
-      ];
-    }
-  }
+		const bands = params.bands || HZ_LIST;
+		const input = inputs[0];
+		const output = outputs[0];
+		var z_params =this.zparams;
 
-  paramtersForCenterFrequency(fc) {
-    var th = 2 * Math.PI * fc;
-    var C = 1 - Math.tan((th * Q) / 2) / (1 + Math.tan(th * Q) / 2);
-    var a0 = (1 + C) * Math.cos(th);
-    var a1 = -C;
-    var b0 = (1 - C) / 2;
-    var b1 = -1.005;
-    return { a0, a1, b0, b1 };
-  }
 
-  last_two_frames() {
-    switch (this.n % 2) {
-      case 0:
-        return { i0: 1, i1: 0 };
-      case 1:
-        return { i0: 0, i1: 1 };
-    }
-  }
+		const {i0, i1} = this.last_two_frames();
+		var sum = 0; var ns =0; var sumin = 0;
 
-  process(inputs, outputs, params) {
-    const bands = params.bands || HZ_LIST;
-    const input = inputs[0];
-    const output = outputs[0];
-    var z_params = this.zparams;
+		var convert_val=(k=>31.5-k*31.5/12);
+		for (let channel = 0; channel < input.length; ++channel) {
+			const inputChannel = input[channel];
+			const outputChannel = output[channel];	
+			for (let i = 0; i < outputChannel.length; ++i) {
+				var v = inputChannel[i];
+				sumin += (v*v);
+				for (let k = 0; k < bands.length; k++) {
+					var v0 = this.ring_buffer[i0][channel*k] || 0;  //FOR firs t2 frames. assume previosu 2 aws  samem value
+					var v1 = this.ring_buffer[i1][channel*k] || 0;
+					var coef = z_params[k];
+ var wq = coef.b0 * v + coef.a0 * v0 + v1 * coef.a1;
+v += (wq + v1 * coef.b1) * ( Math.pow(10, this.gains[k]/20) -1 )
+					this.ring_buffer[this.n % 2][channel*k] = wq;
+				}
+				sum += v * v; ns++;
+				outputChannel[i] = v;
+			}
+			
+		}
 
-    const { i0, i1 } = this.last_two_frames();
-    var sum = 0;
-    var ns = 0;
-    var sumin = 0;
+		this.n++;
 
-    var convert_val = (k) => 31.5 - (k * 31.5) / 12;
-    for (let channel = 0; channel < input.length; ++channel) {
-      const inputChannel = input[channel];
-      const outputChannel = output[channel];
-      for (let i = 0; i < outputChannel.length; ++i) {
-        var v = inputChannel[i];
-        sumin += v * v;
-        for (let k = 0; k < bands.length; k++) {
-          var v0 = this.ring_buffer[i0][channel * k] || 0; //FOR firs t2 frames. assume previosu 2 aws  samem value
-          var v1 = this.ring_buffer[i1][channel * k] || 0;
-          var coef = z_params[k];
-          var wq = coef.b0 * v + coef.a0 * v0 + v1 * coef.a1;
-          v += (wq + v1 * coef.b1) * (Math.pow(10, this.gains[k] / 20) - 1);
-          this.ring_buffer[this.n % 2][channel * k] = wq;
-        }
-        sum += v * v;
-        ns++;
-        outputChannel[i] = v;
-      }
-    }
+		if(this.n % 22 == 1 && sumin > 0){
+			this.port.postMessage({spl_in: 10* Math.log10(Math.sqrt(sumin/ns)), spl_out: 10* Math.log10(Math.sqrt(sum/ns)) });
+		}
+		return true;
 
-    this.n++;
+	}
 
-    if (this.n % 22 == 1 && sumin > 0) {
-      this.port.postMessage({
-        spl_in: 10 * Math.log10(Math.sqrt(sumin / ns)),
-        spl_out: 10 * Math.log10(Math.sqrt(sum / ns)),
-      });
-    }
-    return true;
-  }
 }
 
-registerProcessor("band_pass_lfc_processor", BandPassLRCProcessor);
+registerProcessor('band_pass_lfc_processor', BandPassLRCProcessor);
