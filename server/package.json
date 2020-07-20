@@ -23,6 +23,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-react-views": "^0.11.0",
+    "fake-mediastreamtrack": "^1.1.6",
     "ffmpeg": "0.0.4",
     "fluent-ffmpeg": "^2.1.2",
     "fluent-ffmpeg-multistream": "^1.0.0",

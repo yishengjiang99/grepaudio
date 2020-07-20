@@ -9,6 +9,13 @@ const ytdl = require("ytdl-core");
 const ffmpeg = require("fluent-ffmpeg");
 const { get } = require("request");
 const PassThrough = require("stream").PassThrough;
+const {
+  RTCAudioSink,
+  RTCVideoSink,
+  RTCAudioSource,
+} = require("wrtc").nonstandard;
+const wrtc = require("wrtc");
+const { render } = require("react-dom");
 
 app.set("views", __dirname + "/views");
 app.set("view engine", "jsx");
@@ -21,18 +28,25 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.get("/", (req, res) => {
-  res.render("index", { name: "John" });
+const api = express.Router();
+api.get("/", async (req, res) => {
+  try {
+    var pc = new wrtc.RTCPeerConnection(peerRTCConfig);
+    const { FakeMediaStreamTrack } = require("fake-mediastreamtrack");
+    const track = new FakeMediaStreamTrack({ kind: "audio" });
+    track.enabled = false;
+    app.render("index");
+  } catch (e) {}
 });
 
-app.get("/lib", (req, res) =>
+api.get("/lib", (req, res) =>
   exec(
     "ls -l ..",
     (err, stdout) => (err && res.end(err.message)) || res.end(stdout)
   )
 );
 
-app.get("/lib/(:file).js", (req, res) => {
+api.get("/lib/(:file).js", (req, res) => {
   const filename = req.params.file + ".js";
   const fs = require("fs");
   if (fs.existsSync(path.resolve("..", filename))) {
@@ -43,7 +57,7 @@ app.get("/lib/(:file).js", (req, res) => {
   }
 });
 
-app.get("/rap(:format?)", (req, res) => {
+api.get("/rap(:format?)", (req, res) => {
   const format = req.params.format || ".json";
   switch (format) {
     case ".json":
@@ -59,9 +73,9 @@ app.get("/rap(:format?)", (req, res) => {
   }
 });
 
-app.get("/eilish", autocorrectHandler);
-app.get("/erish", autocorrectHandler);
-app.get("/ellish", autocorrectHandler);
+api.get("/eilish", autocorrectHandler);
+api.get("/erish", autocorrectHandler);
+api.get("/ellish", autocorrectHandler);
 
 function autocorrectHandler(request, res) {
   try {
@@ -72,24 +86,17 @@ function autocorrectHandler(request, res) {
     }).on("error", console.error);
 
     const ffm = ffmpeg(stream).addOption("-ss 00:08");
-    ffm.getAvailableFilters((err, filters) => {
-      console.log(filters);
-      res.end(filters);
-    });
 
-    // res.writeHead(200, {
-    //   "Content-Type": "audio/mp3",
-    // });
-    // ffm.audioBitrate(320).format("mp3").pipe(new PassThrough()).pipe(res);
+    res.writeHead(200, {
+      "Content-Type": "audio/mp3",
+    });
+    ffm.audioBitrate(320).format("mp3").pipe(new PassThrough()).pipe(res);
   } catch (e) {
     console.log(e);
   }
 }
 
-app.get("/ff", (req, res) => {
-  res;
-});
-app.get("/(:query).mp3", (req, res) => {
+api.get("/yt/(:query).mp3", (req, res) => {
   let stream = ytdl(`https://www.youtube.com/watch?v=${req.params.vid}`);
   let start = Date.now();
   res.writeHead(200, {
@@ -102,11 +109,12 @@ app.get("/(:query).mp3", (req, res) => {
     .pipe(new PassThrough())
     .pipe(res);
 });
-app.use("/api/spotify", require("./spotify.js"));
+api.use("/spotify", require("./spotify.js"));
 
-app.use(function (req, res) {
+api.use(function (req, res) {
   res.end(req.path);
 });
+app.use("/api", api);
 
 app.listen(httpport);
 
