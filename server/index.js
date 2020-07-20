@@ -95,20 +95,26 @@ function autocorrectHandler(request, res) {
     console.log(e);
   }
 }
+api.get("/yt/(:vid).mp3", callyt);
+api.get("/(:vid).mp3", callyt);
 
-api.get("/yt/(:query).mp3", (req, res) => {
-  let stream = ytdl(`https://www.youtube.com/watch?v=${req.params.vid}`);
-  let start = Date.now();
+function callyt(req, res) {
   res.writeHead(200, {
     "Content-Type": "audio/mp3",
   });
+  let stream = ytdl(`https://www.youtube.com/watch?v=${req.params.vid}`, {
+    quality: "highestaudio",
+    filter: "audio",
+  }).on("error", console.error);
+
+  let start = Date.now();
+
   ffmpeg(stream)
-    .audioFilter("volune=1.5")
     .audioBitrate(320)
     .format("mp3")
     .pipe(new PassThrough())
     .pipe(res);
-});
+}
 api.use("/spotify", require("./spotify.js"));
 
 api.use(function (req, res) {
