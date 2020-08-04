@@ -1,155 +1,127 @@
-const ytdl = require('ytdl-core')
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-const FFmpeg = require('fluent-ffmpeg');
-const { PassThrough } = require('stream')
-const { exec } = require('child_process')
-const fs = require('fs');
+const { exec } = require("child_process");
+const fs = require("fs");
 const path = require("path");
+const express = require("express");
+const app = express();
+const httpport = process.env.PORT || 3333;
+const axios = require("axios");
+const ytdl = require("ytdl-core");
+const ffmpeg = require("fluent-ffmpeg");
+const { get } = require("request");
+const PassThrough = require("stream").PassThrough;
+const {
+  RTCAudioSink,
+  RTCVideoSink,
+  RTCAudioSource,
+} = require("wrtc").nonstandard;
+const wrtc = require("wrtc");
+const { render } = require("react-dom");
 
-const youtubedl = require('youtube-dl')
-
-const express = require('express')
-const app = express()
-const httpport = process.env.PORT || 3333
-const https = require('https'); 
-const fetch = require('node-fetch');
+app.set("views", __dirname + "/views");
+app.set("view engine", "jsx");
+app.engine("jsx", require("express-react-views").createEngine());
 
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
-  res.header("Transfer-Encoding","chunked");
+  res.header("Transfer-Encoding", "chunked");
   next();
 });
 
-app.get("/lib", (req,res)=>{
-  res.header("Access-Control-Allow-Origin","*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
-
-  exec("ls -l *.js", {cwd:'..'}, (err, stdout,stderr)=>{
-    if(err) res.end(err.message);
-    else{
-      res.send("<pre>"+stdout+"</pre>");
-    }
-  });});
-
-app.get("/lib/(:file).js", (req,res)=>{
-        const filename = req.params.file+".js";
-        const fs = require('fs');
-        if( fs.existsSync(path.resolve("..",filename))){
-               res.sendFile(path.resolve("..", filename));
-        }
-        else{
-                res.sendStatus(404);
-                res.end();
-        }
-});
-app.use("/api/(:vid).mp3", async (req, res, next) => {
+const api = express.Router();
+api.get("/", async (req, res) => {
   try {
-    const vid = req.params.vid;
-    FFmpeg.setFfmpegPath(ffmpegPath);
-    const pipe = new PassThrough();
-    console.log(vid, 'ssss');
-    var audio = youtubedl("https://youtube.com/watch?v="+vid,['-x']).pipe(pipe);
-    process.nextTick(() => FFmpeg().addInput(pipe).format('mp3').pipe(new PassThrough()).pipe(res));
-    return;
-  } catch (e) {
-    res.status = 500;
-    res.end(e.message);
+    var pc = new wrtc.RTCPeerConnection(peerRTCConfig);
+    const { FakeMediaStreamTrack } = require("fake-mediastreamtrack");
+    const track = new FakeMediaStreamTrack({ kind: "audio" });
+    track.enabled = false;
+    app.render("index");
+  } catch (e) {}
+});
+
+api.get("/lib", (req, res) =>
+  exec(
+    "ls -l ..",
+    (err, stdout) => (err && res.end(err.message)) || res.end(stdout)
+  )
+);
+
+api.get("/lib/(:file).js", (req, res) => {
+  const filename = req.params.file + ".js";
+  const fs = require("fs");
+  if (fs.existsSync(path.resolve("..", filename))) {
+    res.sendFile(path.resolve("..", filename));
+  } else {
+    res.sendStatus(404);
+    res.end();
   }
 });
-//const rtc_routes = require("./dsp_rtc.js");
 
-// app.use("/api/rtc", rtc_routes);
+api.get("/rap(:format?)", (req, res) => {
+  const format = req.params.format || ".json";
+  switch (format) {
+    case ".json":
+      res.header("Content-Type: appliction/json");
+      fs.readFile("../samples/yt.json", "json", (err, output) => {
+        (err && res.end(err.message)) || res.end(outout);
+      });
+      break;
+    case ".csv":
+      res.header("Content-Type: text/csv");
+      res.end("coming soon");
+      break;
+  }
+});
 
-const spotify_routes = require("./spotify.js");
-app.use("/api/spotify", spotify_routes);
+api.get("/eilish", autocorrectHandler);
+api.get("/erish", autocorrectHandler);
+api.get("/ellish", autocorrectHandler);
 
-app.get("/api/list", function(req,res){
-  
-  var list = [
-    {
-      name:"spotlight",
-      list:[
-        {type:"youtube", url:"https://www.youtube.com/watch?v=QpgOyWllqmc", display:"Forgot about Dre Instrumental"},
-        {type:"chord", display:"I–V–vi–IV progression", notes:"C–G–Am–F"}
-      ]
-    }
-  ]
+function autocorrectHandler(request, res) {
+  try {
+    request.start = new Date();
+    const stream = ytdl(`https://www.youtube.com/watch?v=DyDfgMOUjCI`, {
+      quality: "highestaudio",
+      filter: "audio",
+    }).on("error", console.error);
 
-  res.json(list)
+    const ffm = ffmpeg(stream).addOption("-ss 00:08");
 
-})
-
-
-
-
-
-function parseYt(body){
-    return body.items.map(item => {
-
-      return {
-        vid: item.id.videoId,
-        thumbnail: item.snippet.thumbnails.default.url,
-        title: item.snippet.title,
-        channelTitle: item.snippet.channelTitle,
-        value: `<li><img src='${item.snippet.thumbnails.default.url}'> ${item.snippet.title}</li>`
-      };
+    res.writeHead(200, {
+      "Content-Type": "audio/mp3",
     });
-}
-
-app.get("/api/yt/:query", function(req,res){
-  const youtube_api_key = process.env.google_key
-  const url = `https://www.googleapis.com/youtube/v3/search?type=video&part=snippet&maxResults=10&q=${req.params.query}&key=${youtube_api_key}`
-  fetch(url).then(resp=>resp.json()).then(json=>{
-    if(!json.items){
-      res.statusMessage='not found';
-      console.log(json);
-      res.end();
-    }else{
-      res.json(parseYt(json));
-    }
- 
-
-  }).catch(e=>res.end(e.message));
-});
-
-app.use("/samples", express.static("/samples"));
-
-
-
-async function yt_search(query) {
-  var rp = require('request-promise');
-  const youtube_api_key = 'AIzaSyBCXMcymaqef8RmYskmdVOJcQA5e06Zvyg';
-  const url = `https://www.googleapis.com/youtube/v3/search?type=video&part=snippet&maxResults=1&q=${query}&key=${youtube_api_key}`
-  try {
-    return await rp({ url: url, json: true });
+    ffm.audioBitrate(320).format("mp3").pipe(new PassThrough()).pipe(res);
   } catch (e) {
-    return false;
+    console.log(e);
   }
 }
+api.get("/yt/(:vid).mp3", callyt);
+api.get("/(:vid).mp3", callyt);
 
-app.use("/api/sudo/(:q).mp3", async (req, res, next) => {
-  yt_search(req.params.q).then(resp => {
-    if (resp.items[0]) {
-      const vid = resp.items[0].id.videoId;
-      FFmpeg.setFfmpegPath(ffmpegPath);
-      const video = ytdl(vid, { audioFormat: 'mp3' });
-      const ffmpeg = new FFmpeg(video);
-      process.nextTick(() => ffmpeg.format('mp3').pipe(new PassThrough()).pipe(res))
-    }
-  })
-    .catch(e => {
-      res.status = 500;
-      console.log(e);
-      res.end(e.message + " ..");
-    })
-});
+function callyt(req, res) {
+  res.writeHead(200, {
+    "Content-Type": "audio/mp3",
+  });
+  let stream = ytdl(`https://www.youtube.com/watch?v=${req.params.vid}`, {
+    quality: "highestaudio",
+    filter: "audio",
+  }).on("error", console.error);
 
+  let start = Date.now();
 
-app.use(function (req, res) {
+  ffmpeg(stream)
+    .audioBitrate(320)
+    .format("mp3")
+    .pipe(new PassThrough())
+    .pipe(res);
+}
+api.use("/spotify", require("./spotify.js"));
+
+api.use(function (req, res) {
   res.end(req.path);
-})
-console.log("listening on httpport "+httpport);
+});
+app.use("/api", api);
+
 app.listen(httpport);
 
 require("./stream_signal.js");

@@ -113,7 +113,7 @@ function BroadcasterClient(config) {
         }
         signalConnection.onopen = (e) => {
             sendJson({
-                type: "register_stream",
+                cmd: "register_stream",
                 channel: channelName
             });
             onEvent("Stream registered " + channelName);
