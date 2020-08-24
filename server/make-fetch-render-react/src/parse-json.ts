@@ -4,7 +4,8 @@ const listStart = "[";
 const listEnd = "]";
 const objectStart = "{";
 const objectEnd = "}";
-class ListXForm extends Transform {
+
+export class ParseJson extends Transform {
   private stack: string[];
   private list: string[];
   constructor() {
@@ -68,7 +69,3 @@ class ListXForm extends Transform {
     callback();
   }
 }
-
-module.exports = {
-  ListXForm,
-};
