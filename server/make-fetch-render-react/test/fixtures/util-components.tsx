@@ -1,4 +1,4 @@
-import{Fragment} from "react";
+import { Fragment } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 
 import Card from "@material-ui/core/Card";
@@ -11,30 +11,28 @@ import Typography from "@material-ui/core/Typography";
 import { IconButton } from "@material-ui/core";
 import { SkipNext, PlayArrowRounded, SkipPrevious } from "@material-ui/icons";
 
-export const ColGridOneThree = function (props) {
-  //don't judge me
-  return ColGrids({ colwidths: "1fr, 3fr", children: props.children });
-};
 export interface InlineTextProp {
   text: string;
   subText: string;
   children?: string;
 }
 export const InlineText = (props: InlineTextProp) => {
-  const {text,subText, children}=props;
+  const { text, subText, children } = props;
   return (
-  <Fragment>
-    <Typography
-      component="span"
-      variant="body2"
-      style={{ display: "inline" }}
-      color="textPrimary"
-    >
-      {text}
-    </Typography>
-    {subText || ""}
-  </Fragment>);
-);
+    <Fragment>
+      <Typography
+        component="span"
+        variant="body2"
+        style={{ display: "inline" }}
+        color="textPrimary"
+      >
+        {text}
+      </Typography>
+      {subText || ""}
+    </Fragment>
+  );
+};
+
 export function MediaListGrid({ children }) {
   return ColGrids({
     colwidth: "1fr 1fr 1fr",

@@ -9,7 +9,8 @@ export class RenderReact extends Transform {
     this.mapJson = mapJson;
   }
 
-  transform(chunk, encoding, callback) {
+  _transform(chunk, encoding, callback) {
+    debugger;
     const json = JSON.parse(chunk);
     const component = this.mapJson(json);
     if (component) {

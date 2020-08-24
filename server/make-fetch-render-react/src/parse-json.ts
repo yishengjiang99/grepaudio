@@ -56,7 +56,7 @@ export class ParseJson extends Transform {
           var completeStr = this.stack.pop();
           this.emit("data", completeStr);
           this.pushJsonToParent(completeStr);
-          this.list.push(completeStr);
+          this.list && this.list.push(completeStr);
           break;
         case ",":
           this.pushJsonToParent(",");
