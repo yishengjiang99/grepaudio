@@ -1,0 +1,14 @@
+<html>
+  <body>
+    <div id="console"></div>
+    <button>start</button>
+    <script type="module">
+      import { test } from "__script__";
+      const consolediv = document.querySelector("#console");
+      const output = (str) => (consolediv.innerHTML += "<br>" + str);
+      document.querySelector("button").onclick = function () {
+        test();
+      };
+    </script>
+  </body>
+</html>
