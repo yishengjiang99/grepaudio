@@ -1,0 +1,20 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "test.js",
+  "scripts": {
+    "test": "ts-node ./test/loadTest.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.11.6",
+    "@babel/preset-env": "^7.11.5",
+    "@types/mocha": "^8.0.3",
+    "babel": "^6.23.0",
+    "chai": "^4.2.0",
+    "puppeteer": "^5.3.0"
+  }
+}
