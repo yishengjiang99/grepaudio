@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "dist",
+    "moduleResolution": "classic",
+    "lib": ["es6", "dom"],
+    "esModuleInterop": false,
+    "target": "ES2018",
+    "sourceMap": false,
+    "allowJs": true,
+    "jsx": "react"
+  },
+  "include": ["src", "test"],
+  "exclude": [
+    "node_modules",
+    "build",
+    "scripts",
+    "acceptance-tests",
+    "webpack",
+    "jest",
+    "src/setupTests.ts"
+  ]
+}
