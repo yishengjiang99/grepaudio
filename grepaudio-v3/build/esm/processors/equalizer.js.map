@@ -1,0 +1,1 @@
+{"version":3,"file":"equalizer.js","sourceRoot":"","sources":["../../../src/processors/equalizer.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,qBAAqB,EAAE,iBAAiB,EAAE,MAAM,UAAU,CAAC;AAEpE,MAAM,EAAG,SAAQ,qBAAqB;IACrC,OAAO,CAAC,MAAsB,EAAE,OAAuB,EAAE,UAAe;QACvE,OAAO,IAAI,CAAC;IACb,CAAC;CACD;AAED,iBAAiB,CAAC,cAAc,EAAE,EAAE,CAAC,CAAC"}
