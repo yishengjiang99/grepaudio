@@ -1,13 +1,16 @@
 /*
-  typedef struct{
-    uint8_t rPtr;
-		uint8_t wPtr;
-		uint16_t lastUpdate;
-    float32_t data[];
-  }SharedRingBuffer
+#define SIXTEEN_PAGES 16 * 4096
+typedef struct
+{
+    uint16_t rPtr;
+    uint16_t wPtr;
+    uint32_t lastUpdate;
+    uint32_t data[SIXTEEN_PAGES];
+} SharedRingBuffer;
 */
 export const metaSection = Uint16Array.BYTES_PER_ELEMENT * 2;
 export const timeSection = Uint32Array.BYTES_PER_ELEMENT * 1;
+
 export class SharedRingBuffer {
 	dataBuffer: Float32Array;
 	stateBuffer: Uint16Array;
@@ -21,13 +24,14 @@ export class SharedRingBuffer {
 			sharedBuffer,
 			metaSection + timeSection
 		);
-		this.bufferSize = sharedBuffer.byteLength - metaSection;
+		this.bufferSize = sharedBuffer.byteLength - metaSection - timeSection;
 	}
 
 	write(data: Float32Array) {
 		let wptr = this.wPtr;
 		for (let i = 0; i < data.length; i++) {
-			this.dataBuffer[wptr++] = data[i];
+			this.dataBuffer[wptr % this.bufferSize] = data[i];
+			wptr++;
 		}
 		this.wPtr = wptr;
 	}
