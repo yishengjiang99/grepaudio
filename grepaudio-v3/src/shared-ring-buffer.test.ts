@@ -1,10 +1,14 @@
 import { expect } from "chai";
-import { SharedRingBuffer } from "./shared-ring-buffer";
+import {
+	metaSection,
+	SharedRingBuffer,
+	timeSection,
+} from "./shared-ring-buffer";
 
 describe("shared-ring-buffer", () => {
 	it("pretends that it runs on an 80kb ram MCU", () => {
 		const srb = new SharedRingBuffer(new SharedArrayBuffer(104));
-		expect(srb.buffer.byteLength).to.equal(100);
+		expect(srb.buffer.byteLength).to.equal(104 - metaSection - timeSection);
 	});
 	it("tracks write ptr", () => {
 		const srb = new SharedRingBuffer(new SharedArrayBuffer(104));

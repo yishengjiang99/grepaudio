@@ -6,12 +6,14 @@ export interface OutputBufferOptions {
 	output?: Float32Array;
 	transform?: (number) => number;
 	outlet?: AudioNode | AudioDestinationNode;
+	onData?: () => void;
 }
 export const defaultProps = {
 	length: 1000,
 	output: new Float32Array((length * getCtx().sampleRate) / 1000),
 	transform: (x) => x,
 	outlet: getCtx().destination,
+	onData: () => {},
 };
 
 export function outputBuffer(
@@ -28,6 +30,7 @@ export function outputBuffer(
 	if (outlet) {
 		proc.connect(outlet);
 	}
+
 	const sampleGot = new Promise<Float32Array>((resolve) => {
 		proc.onaudioprocess = (e: AudioProcessingEvent) => {
 			for (
@@ -40,6 +43,9 @@ export function outputBuffer(
 					e.outputBuffer[channel] = inputData[i];
 					output[ptr++] = transform(inputData[i]);
 					if (ptr >= output.length) {
+						if (props.onData) {
+							props.onData();
+						}
 						resolve(output);
 					}
 				}

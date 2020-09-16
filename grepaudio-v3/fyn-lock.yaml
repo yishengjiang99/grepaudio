@@ -1081,10 +1081,10 @@ babel-helper-call-delegate:
   $: sha1-7Oaqzdx25Bw0YfiL/Fdb0Nqi340=
   _: 'https://registry.npmjs.org/babel-helper-call-delegate/-/babel-helper-call-delegate-6.24.1.tgz'
   dependencies:
-   babel-helper-hoist-variables: ^6.24.1
-   babel-runtime: ^6.22.0
    babel-traverse: ^6.24.1
+   babel-runtime: ^6.22.0
    babel-types: ^6.24.1
+   babel-helper-hoist-variables: ^6.24.1
 babel-helper-define-map:
  _latest: 6.26.0
  _:
@@ -1105,8 +1105,8 @@ babel-helper-explode-assignable-expression:
   $: sha1-8luCz33BBDPFX3BZLVdGQArCLKo=
   _: 'https://registry.npmjs.org/babel-helper-explode-assignable-expression/-/babel-helper-explode-assignable-expression-6.24.1.tgz'
   dependencies:
-   babel-runtime: ^6.22.0
    babel-traverse: ^6.24.1
+   babel-runtime: ^6.22.0
    babel-types: ^6.24.1
 babel-helper-explode-class:
  _latest: 6.24.1
@@ -1116,10 +1116,10 @@ babel-helper-explode-class:
   $: sha1-fcKjkQ3uAHBW4eMdZAztPVTqqes=
   _: 'https://registry.npmjs.org/babel-helper-explode-class/-/babel-helper-explode-class-6.24.1.tgz'
   dependencies:
-   babel-helper-bindify-decorators: ^6.24.1
    babel-runtime: ^6.22.0
    babel-traverse: ^6.24.1
    babel-types: ^6.24.1
+   babel-helper-bindify-decorators: ^6.24.1
 babel-helper-function-name:
  _latest: 6.24.1
  _:
@@ -1128,11 +1128,11 @@ babel-helper-function-name:
   $: sha1-00dbjAPtmCQqJbSDUasYOZ01gKk=
   _: 'https://registry.npmjs.org/babel-helper-function-name/-/babel-helper-function-name-6.24.1.tgz'
   dependencies:
-   babel-helper-get-function-arity: ^6.24.1
    babel-runtime: ^6.22.0
-   babel-template: ^6.24.1
-   babel-traverse: ^6.24.1
    babel-types: ^6.24.1
+   babel-traverse: ^6.24.1
+   babel-helper-get-function-arity: ^6.24.1
+   babel-template: ^6.24.1
 babel-helper-get-function-arity:
  _latest: 6.24.1
  _:
@@ -1182,11 +1182,11 @@ babel-helper-remap-async-to-generator:
   $: sha1-XsWBgnrXI/7N04HxySg5BnbkVRs=
   _: 'https://registry.npmjs.org/babel-helper-remap-async-to-generator/-/babel-helper-remap-async-to-generator-6.24.1.tgz'
   dependencies:
-   babel-helper-function-name: ^6.24.1
    babel-runtime: ^6.22.0
    babel-template: ^6.24.1
-   babel-traverse: ^6.24.1
    babel-types: ^6.24.1
+   babel-traverse: ^6.24.1
+   babel-helper-function-name: ^6.24.1
 babel-helper-replace-supers:
  _latest: 6.24.1
  _:
@@ -1196,10 +1196,10 @@ babel-helper-replace-supers:
   _: 'https://registry.npmjs.org/babel-helper-replace-supers/-/babel-helper-replace-supers-6.24.1.tgz'
   dependencies:
    babel-helper-optimise-call-expression: ^6.24.1
-   babel-messages: ^6.23.0
    babel-runtime: ^6.22.0
-   babel-template: ^6.24.1
    babel-traverse: ^6.24.1
+   babel-messages: ^6.23.0
+   babel-template: ^6.24.1
    babel-types: ^6.24.1
 babel-helpers:
  _latest: 6.24.1
@@ -1343,9 +1343,9 @@ babel-plugin-transform-class-constructor-call:
   $: sha1-gNwoVQWsBn3LjWxl4vbxGrd2Xvk=
   _: 'https://registry.npmjs.org/babel-plugin-transform-class-constructor-call/-/babel-plugin-transform-class-constructor-call-6.24.1.tgz'
   dependencies:
+   babel-template: ^6.24.1
    babel-plugin-syntax-class-constructor-call: ^6.18.0
    babel-runtime: ^6.22.0
-   babel-template: ^6.24.1
 babel-plugin-transform-class-properties:
  _latest: 6.24.1
  _:
@@ -1366,11 +1366,11 @@ babel-plugin-transform-decorators:
   $: sha1-eIAT2PjGtSIr33s0Q5Df13Vp4k0=
   _: 'https://registry.npmjs.org/babel-plugin-transform-decorators/-/babel-plugin-transform-decorators-6.24.1.tgz'
   dependencies:
-   babel-helper-explode-class: ^6.24.1
-   babel-plugin-syntax-decorators: ^6.13.0
-   babel-runtime: ^6.22.0
-   babel-template: ^6.24.1
    babel-types: ^6.24.1
+   babel-plugin-syntax-decorators: ^6.13.0
+   babel-helper-explode-class: ^6.24.1
+   babel-template: ^6.24.1
+   babel-runtime: ^6.22.0
 babel-plugin-transform-do-expressions:
  _latest: 6.22.0
  _:
@@ -1420,14 +1420,14 @@ babel-plugin-transform-es2015-classes:
   $: sha1-WkxYpQyclGHlZLSyo7+ryXolhNs=
   _: 'https://registry.npmjs.org/babel-plugin-transform-es2015-classes/-/babel-plugin-transform-es2015-classes-6.24.1.tgz'
   dependencies:
-   babel-helper-define-map: ^6.24.1
-   babel-helper-function-name: ^6.24.1
    babel-helper-optimise-call-expression: ^6.24.1
+   babel-helper-function-name: ^6.24.1
    babel-helper-replace-supers: ^6.24.1
-   babel-messages: ^6.23.0
-   babel-runtime: ^6.22.0
    babel-template: ^6.24.1
    babel-traverse: ^6.24.1
+   babel-helper-define-map: ^6.24.1
+   babel-messages: ^6.23.0
+   babel-runtime: ^6.22.0
    babel-types: ^6.24.1
 babel-plugin-transform-es2015-computed-properties:
  _latest: 6.24.1
@@ -1437,8 +1437,8 @@ babel-plugin-transform-es2015-computed-properties:
   $: sha1-b+Ko0WiV1WNPTNmZttNICjCBWbM=
   _: 'https://registry.npmjs.org/babel-plugin-transform-es2015-computed-properties/-/babel-plugin-transform-es2015-computed-properties-6.24.1.tgz'
   dependencies:
-   babel-runtime: ^6.22.0
    babel-template: ^6.24.1
+   babel-runtime: ^6.22.0
 babel-plugin-transform-es2015-destructuring:
  _latest: 6.23.0
  _:
@@ -1476,8 +1476,8 @@ babel-plugin-transform-es2015-function-name:
   _: 'https://registry.npmjs.org/babel-plugin-transform-es2015-function-name/-/babel-plugin-transform-es2015-function-name-6.24.1.tgz'
   dependencies:
    babel-helper-function-name: ^6.24.1
-   babel-runtime: ^6.22.0
    babel-types: ^6.24.1
+   babel-runtime: ^6.22.0
 babel-plugin-transform-es2015-literals:
  _latest: 6.22.0
  _:
@@ -1496,8 +1496,8 @@ babel-plugin-transform-es2015-modules-amd:
   _: 'https://registry.npmjs.org/babel-plugin-transform-es2015-modules-amd/-/babel-plugin-transform-es2015-modules-amd-6.24.1.tgz'
   dependencies:
    babel-plugin-transform-es2015-modules-commonjs: ^6.24.1
-   babel-runtime: ^6.22.0
    babel-template: ^6.24.1
+   babel-runtime: ^6.22.0
 babel-plugin-transform-es2015-modules-commonjs:
  _latest: 6.26.2
  _:
@@ -1518,9 +1518,9 @@ babel-plugin-transform-es2015-modules-systemjs:
   $: sha1-/4mhQrkRmpBhlfXxBuzzBdlAfSM=
   _: 'https://registry.npmjs.org/babel-plugin-transform-es2015-modules-systemjs/-/babel-plugin-transform-es2015-modules-systemjs-6.24.1.tgz'
   dependencies:
+   babel-template: ^6.24.1
    babel-helper-hoist-variables: ^6.24.1
    babel-runtime: ^6.22.0
-   babel-template: ^6.24.1
 babel-plugin-transform-es2015-modules-umd:
  _latest: 6.24.1
  _:
@@ -1530,8 +1530,8 @@ babel-plugin-transform-es2015-modules-umd:
   _: 'https://registry.npmjs.org/babel-plugin-transform-es2015-modules-umd/-/babel-plugin-transform-es2015-modules-umd-6.24.1.tgz'
   dependencies:
    babel-plugin-transform-es2015-modules-amd: ^6.24.1
-   babel-runtime: ^6.22.0
    babel-template: ^6.24.1
+   babel-runtime: ^6.22.0
 babel-plugin-transform-es2015-object-super:
  _latest: 6.24.1
  _:
@@ -1550,12 +1550,12 @@ babel-plugin-transform-es2015-parameters:
   $: sha1-V6w1GrScrxSpfNE7CfZv3wpiXys=
   _: 'https://registry.npmjs.org/babel-plugin-transform-es2015-parameters/-/babel-plugin-transform-es2015-parameters-6.24.1.tgz'
   dependencies:
+   babel-traverse: ^6.24.1
    babel-helper-call-delegate: ^6.24.1
    babel-helper-get-function-arity: ^6.24.1
-   babel-runtime: ^6.22.0
    babel-template: ^6.24.1
-   babel-traverse: ^6.24.1
    babel-types: ^6.24.1
+   babel-runtime: ^6.22.0
 babel-plugin-transform-es2015-shorthand-properties:
  _latest: 6.24.1
  _:
@@ -1564,8 +1564,8 @@ babel-plugin-transform-es2015-shorthand-properties:
   $: sha1-JPh11nIch2YbvZmkYi5R8U3jiqA=
   _: 'https://registry.npmjs.org/babel-plugin-transform-es2015-shorthand-properties/-/babel-plugin-transform-es2015-shorthand-properties-6.24.1.tgz'
   dependencies:
-   babel-runtime: ^6.22.0
    babel-types: ^6.24.1
+   babel-runtime: ^6.22.0
 babel-plugin-transform-es2015-spread:
  _latest: 6.22.0
  _:
@@ -1584,8 +1584,8 @@ babel-plugin-transform-es2015-sticky-regex:
   _: 'https://registry.npmjs.org/babel-plugin-transform-es2015-sticky-regex/-/babel-plugin-transform-es2015-sticky-regex-6.24.1.tgz'
   dependencies:
    babel-helper-regex: ^6.24.1
-   babel-runtime: ^6.22.0
    babel-types: ^6.24.1
+   babel-runtime: ^6.22.0
 babel-plugin-transform-es2015-template-literals:
  _latest: 6.22.0
  _:
@@ -1623,8 +1623,8 @@ babel-plugin-transform-exponentiation-operator:
   $: sha1-KrDJx/MJj6SJB3cruBP+QejeOg4=
   _: 'https://registry.npmjs.org/babel-plugin-transform-exponentiation-operator/-/babel-plugin-transform-exponentiation-operator-6.24.1.tgz'
   dependencies:
-   babel-helper-builder-binary-assignment-operator-visitor: ^6.24.1
    babel-plugin-syntax-exponentiation-operator: ^6.8.0
+   babel-helper-builder-binary-assignment-operator-visitor: ^6.24.1
    babel-runtime: ^6.22.0
 babel-plugin-transform-export-extensions:
  _latest: 6.22.0
@@ -1738,9 +1738,9 @@ babel-preset-stage-2:
   $: sha1-2eKWD7PXEYfw5k7sYrwHdnIZvcE=
   _: 'https://registry.npmjs.org/babel-preset-stage-2/-/babel-preset-stage-2-6.24.1.tgz'
   dependencies:
-   babel-plugin-syntax-dynamic-import: ^6.18.0
    babel-plugin-transform-class-properties: ^6.24.1
    babel-plugin-transform-decorators: ^6.24.1
+   babel-plugin-syntax-dynamic-import: ^6.18.0
    babel-preset-stage-3: ^6.24.1
 babel-preset-stage-3:
  _latest: 6.24.1
@@ -2304,7 +2304,6 @@ chokidar:
   dependencies:
    anymatch: ~3.1.1
    braces: ~3.0.2
-   fsevents: ~2.1.2
    glob-parent: ~5.1.0
    is-binary-path: ~2.1.0
    is-glob: ~4.0.1
@@ -2786,9 +2785,9 @@ css-select:
   $: sha1-KzoRBTnFNV8c2NMUYj6HCxIeyFg=
   _: 'https://registry.npmjs.org/css-select/-/css-select-1.2.0.tgz'
   dependencies:
-   boolbase: ~1.0.0
    css-what: '2.1'
    domutils: 1.5.1
+   boolbase: ~1.0.0
    nth-check: ~1.0.1
 css-what:
  _latest: 3.3.0
@@ -3408,11 +3407,10 @@ escodegen:
   $: sha512-qFcX0XJkdg+PB3xjZZG/wKSuT1PnQWx57+TVSjIMmILd2yC/6ByYElPwJnslDsuWuSAp4AwJGumarAAmJch5Kw==
   _: 'https://registry.npmjs.org/escodegen/-/escodegen-1.14.3.tgz'
   dependencies:
-   esprima: ^4.0.1
    estraverse: ^4.2.0
    esutils: ^2.0.2
+   esprima: ^4.0.1
    optionator: ^0.8.1
-   source-map: ~0.6.1
   optionalDependencies:
    source-map: ~0.6.1
 eslint:
@@ -4144,7 +4142,6 @@ handlebars:
    minimist: ^1.2.5
    neo-async: ^2.6.0
    source-map: ^0.6.1
-   uglify-js: ^3.1.4
    wordwrap: ^1.0.0
   optionalDependencies:
    uglify-js: ^3.1.4
@@ -4420,8 +4417,8 @@ http-proxy:
   _: 'https://registry.npmjs.org/http-proxy/-/http-proxy-1.18.1.tgz'
   dependencies:
    eventemitter3: ^4.0.0
-   follow-redirects: ^1.0.0
    requires-port: ^1.0.0
+   follow-redirects: ^1.0.0
 http-proxy-agent:
  _latest: 4.0.1
  _:
@@ -5196,8 +5193,6 @@ jsonfile:
  4.0.0:
   $: sha1-h3Gq4HmbZAdrdmQPygWPnBDjPss=
   _: 'https://registry.npmjs.org/jsonfile/-/jsonfile-4.0.0.tgz'
-  dependencies:
-   graceful-fs: ^4.1.6
   optionalDependencies:
    graceful-fs: ^4.1.6
 jsprim:
@@ -5796,8 +5791,8 @@ move-concurrently:
   $: sha1-viwAX9oy4LKa8fBdfEszIUxwH5I=
   _: 'https://registry.npmjs.org/move-concurrently/-/move-concurrently-1.0.1.tgz'
   dependencies:
-   aproba: ^1.1.1
    copy-concurrently: ^1.0.0
+   aproba: ^1.1.1
    fs-write-stream-atomic: ^1.0.8
    mkdirp: ^0.5.1
    rimraf: ^2.5.4
@@ -6132,12 +6127,12 @@ optionator:
   $: sha512-+IW9pACdk3XWmmTXG8m3upGUJst5XRGzxMRjXzAuJ1XnIFNvfhjjIuYkDvysnPQ7qzqVzLt78BCruntqRhWQbA==
   _: 'https://registry.npmjs.org/optionator/-/optionator-0.8.3.tgz'
   dependencies:
-   deep-is: ~0.1.3
-   fast-levenshtein: ~2.0.6
-   levn: ~0.3.0
    prelude-ls: ~1.1.2
-   type-check: ~0.3.2
+   deep-is: ~0.1.3
    word-wrap: ~1.2.3
+   type-check: ~0.3.2
+   levn: ~0.3.0
+   fast-levenshtein: ~2.0.6
 os-browserify:
  _latest: 0.3.0
  _:
@@ -6427,8 +6422,8 @@ pretty-error:
   $: sha1-X0+HyPkeWuPzuoerTPXgOxoX8aM=
   _: 'https://registry.npmjs.org/pretty-error/-/pretty-error-2.1.1.tgz'
   dependencies:
-   renderkid: ^2.0.1
    utila: ~0.4
+   renderkid: ^2.0.1
 private:
  _latest: 0.1.8
  _:
@@ -7289,8 +7284,8 @@ socket.io-parser:
   $: sha512-11hMgzL+WCLWf1uFtHSNvliI++tcRUWdoeYuwIl+Axvwy9z2gQM+7nJyN3STj1tLj5JyIUH8/gpDGxzAlDdi0A==
   _: 'https://registry.npmjs.org/socket.io-parser/-/socket.io-parser-3.4.1.tgz'
   dependencies:
-   component-emitter: 1.2.1
    debug: ~4.1.0
+   component-emitter: 1.2.1
    isarray: 2.0.1
  3.3.0:
   $: sha512-hczmV6bDgdaEbVqhAeVMM/jfUfzuEZHsQg6eOmLgJht6G3mPKMxYm75w2+qhAQZ+4X+1+ATZ+QFKeOZD5riHng==
@@ -7383,13 +7378,13 @@ sshpk:
   dependencies:
    asn1: ~0.2.3
    assert-plus: ^1.0.0
-   bcrypt-pbkdf: ^1.0.0
    dashdash: ^1.12.0
-   ecc-jsbn: ~0.1.1
    getpass: ^0.1.1
-   jsbn: ~0.1.0
    safer-buffer: ^2.0.2
+   jsbn: ~0.1.0
    tweetnacl: ~0.14.0
+   ecc-jsbn: ~0.1.1
+   bcrypt-pbkdf: ^1.0.0
 ssri:
  _latest: 8.0.0
  _:
@@ -8338,10 +8333,8 @@ watchpack:
   $: sha512-aWAgTW4MoSJzZPAicljkO1hsi1oKj/RRq/OJQh2PKI2UKL04c2Bs+MBOB+BBABHTXJpf9mCwHN7ANCvYsvY2sg==
   _: 'https://registry.npmjs.org/watchpack/-/watchpack-1.7.4.tgz'
   dependencies:
-   chokidar: ^3.4.1
    graceful-fs: ^4.1.2
    neo-async: ^2.5.0
-   watchpack-chokidar2: ^2.0.0
   optionalDependencies:
    chokidar: ^3.4.1
    watchpack-chokidar2: ^2.0.0
