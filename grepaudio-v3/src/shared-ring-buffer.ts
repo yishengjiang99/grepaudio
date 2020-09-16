@@ -33,15 +33,17 @@ export class SharedRingBuffer {
 	}
 
 	read(n: number) {
-		const ptr = this.readPtr;
-
-		if (this.readPtr + n < this.bufferSize) {
-			this.readPtr += n;
-			return this.dataBuffer.subarray(ptr, ptr + n);
-		} else {
-			this.readPtr = 0;
-			return this.dataBuffer.subarray(ptr, this.bufferSize);
+		let ptr = this.readPtr;
+		const output = new Float32Array(n);
+		for (let i = 0; i < n && ptr <= this.wPtr; i++) {
+			output[i] = this.dataBuffer[ptr++ % this.bufferSize];
 		}
+		this.readPtr = ptr;
+		return output;
+	}
+
+	get buffer() {
+		return this.dataBuffer;
 	}
 
 	get wPtr() {

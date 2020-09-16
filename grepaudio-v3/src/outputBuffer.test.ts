@@ -2,10 +2,7 @@
 import { outputBuffer } from "./outputBuffer";
 import { osc3 } from "./osc3";
 import { getCtx } from "./ctx";
-
-import { timeseries } from "./timeseries";
 import { expect } from "chai";
-import { asyncVerify } from "run-async";
 
 describe("getOutputBuffer", () => {
 	it("it is an script processor", async () => {
