@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>website</title>
+		<style>
+			* {
+				padding: 0;
+				margin: 0;
+				scrollbar-width: 0;
+			}
+			body {
+				background-color: gray;
+			}
+			#container {
+				width: 80em;
+				height: 50%;
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				color: white;
+				padding: 1em 1.5em 1em 1em;
+
+				transform: translate(-50%, -50%);
+				background-color: black;
+			}
+			#container {
+				padding: 1em 1.5em 1em 1em;
+			}
+			#container output {
+				clear: both;
+				width: 100%;
+			}
+			#container output h3 {
+				margin: 0;
+			}
+			#container output pre {
+				margin: 0;
+			}
+			#container output {
+				clear: both;
+				width: 100%;
+			}
+			#cmdline {
+				float: left;
+				margin: 0;
+				width: 96%;
+				font: inherit;
+				border: none;
+				background-color: transparent;
+				outline: none;
+				color: inherit;
+			}
+			#prompt {
+				float: left;
+				color: green;
+				margin-right: 7px;
+			}
+			#output .cmd-output .filesystem-ls span {
+				margin-right: 2%;
+			}
+			#output .cmd-output .filesystem-ls-l span {
+				display: block;
+			}
+			#output .cmd-output div .is-dir {
+				color: rgb(0, 82, 255);
+			}
+		</style>
+	</head>
+	<body>
+		<div id="container">
+			<div id="output"></div>
+			<div>
+				<div id="prompt">$></div>
+				<input id="cmdline" autofocus="" />
+			</div>
+		</div>
+		<script type="module" src="build/Main.js"></script>
+	</body>
+</html>

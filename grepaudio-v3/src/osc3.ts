@@ -21,10 +21,10 @@ export enum NodeLength {
 }
 export interface Note {
 	freq: Frequency;
+	start?: number;
 	length: NodeLength;
 }
 export const defaultOsc3Props: OSC3Props = {
-	hpf: -1,
 	adsr: [0.01, 0.2, 0.3, 0.1],
 	detune: [0, 15, 100],
 	overtoneAttunuate: [1.2, 0.7, 0.5],
@@ -75,7 +75,7 @@ export const osc3run = (baseFrequency: Frequency, when?: number, duration?: numb
 	const { postAmp, controller } = osc3(baseFrequency, {
 		duration: duration || 0.25,
 	});
-	postAmp.connect(getCtx().destination);
+	getInputMixer().push(postAmp, duration);
 	setTimeout(() => {
 		controller.triggerAttackRelease();
 	}, when * 1000);
@@ -96,8 +96,8 @@ export const sequence = (notes: Note[]) => {
 	let start = 0;
 
 	for (let i = 0; i < notes.length; i++) {
-		osc3run(notes[i].freq, start, notes.length * 0.125);
-		start += notes.length * 0.25;
+		osc3run(notes[i].freq, notes[i].start || start, notes.length * 0.075);
+		start += notes.length * 0.075;
 	}
 };
 

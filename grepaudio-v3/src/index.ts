@@ -39,4 +39,6 @@ export const App = () => {
 	return h("div", {}, [row1, row2]);
 };
 
-render(App(), document.querySelector("#output"));
+document.onload = () => {
+	render(App(), document.querySelector("#output"));
+};

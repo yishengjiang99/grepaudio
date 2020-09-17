@@ -36,6 +36,7 @@ export class CrossFade {
 		this._inputs = [new GainNode(ctx, { gain: 1 }), new GainNode(ctx, { gain: 0 })];
 		this._inputs[0].connect(ctx.destination);
 		this._inputs[1].connect(ctx.destination);
+		this._occupants = [null, null];
 		this._lease = 0;
 		this._entryIndex = 0;
 	}
