@@ -36,6 +36,7 @@ export class CrossFade {
 		this._inputs = [new GainNode(ctx, { gain: 1 }), new GainNode(ctx, { gain: 0 })];
 		this._inputs[0].connect(ctx.destination);
 		this._inputs[1].connect(ctx.destination);
+		this._occupants = [null, null];
 		this._lease = 0;
 		this._entryIndex = 0;
 	}
@@ -63,3 +64,18 @@ export const getInputMixer = () => {
 	}
 	return inputMixer[3]; //customer always right..
 };
+
+export function ensureDiv(selector) {
+	let div = document.querySelector(selector);
+	if (!div) {
+		const div = document.createElement(selector.split("#")[0]);
+		div.id = selector.split("#")[1];
+		document.body.appendChild(div);
+	}
+	return div;
+}
+export function createDiv(tag) {
+	const div = document.createElement(tag);
+	document.body.appendChild(div);
+	return div;
+}

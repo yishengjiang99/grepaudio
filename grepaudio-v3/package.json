@@ -26,6 +26,10 @@
 	"license": "ISC",
 	"dependencies": {
 		"@babel/core": "^7.11.6",
+		"@babel/preset-env": "^7.11.5",
+		"@babel/preset-react": "^7.10.4",
+		"react": "^16.13.1",
+		"react-dom": "^16.13.1",
 		"run-async": "^2.4.1",
 		"standardized-audio-context": "^24.1.5",
 		"tslib": "^1.10.0"
@@ -79,6 +83,11 @@
 		"tabWidth": 4,
 		"semi": true,
 		"useTabs": true,
-		"singleQuote": false
-	}
+		"singleQuote": false,
+		"printWidth": 120
+	},
+	"eslintIgnore": [
+		"public/lib/*.js",
+		"public/*html"
+	]
 }

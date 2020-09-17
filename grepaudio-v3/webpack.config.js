@@ -7,7 +7,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 // /////////////////////////////////////
 
 const defaults = {
-    mode: "development",
+    mode: "production",
     context: __dirname,
     entry: {
         Main: "./src/index.ts",

@@ -1,9 +1,9 @@
-export const timeseries = (arr: Float32Array, divId) => {
+export const timeseries = (arr: Float32Array, divId: string | HTMLElement) => {
 	const length = arr.length;
-	const div = document.getElementById(divId);
+	const div = divId instanceof HTMLElement ? divId : document.getElementById(divId);
 	if (!div || !div.parentElement) {
- return; 
-}
+		return;
+	}
 	const width = div.parentElement.clientWidth;
 	const height = div.parentElement.clientHeight;
 	let points = "";
