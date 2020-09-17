@@ -1,7 +1,9 @@
 export const timeseries = (arr: Float32Array, divId) => {
 	const length = arr.length;
 	const div = document.getElementById(divId);
-	if (!div || !div.parentElement) return;
+	if (!div || !div.parentElement) {
+ return; 
+}
 	const width = div.parentElement.clientWidth;
 	const height = div.parentElement.clientHeight;
 	let points = "";

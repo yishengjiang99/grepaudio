@@ -14,8 +14,8 @@ describe("upload worker", () => {
 		const ringbuffer = new SharedRingBuffer(sharedBuffer);
 		const osc = osc3(322);
 		const output = new Float32Array(getCtx().sampleRate);
-		const { node, samples } = outputBuffer(osc, {
-			outlet: osc.context.destination,
+		const { node, samples } = outputBuffer(osc.postAmp, {
+			outlet: getCtx().destination,
 			length: getCtx().sampleRate,
 			output,
 			onData: () => {

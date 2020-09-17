@@ -27,9 +27,11 @@ export const ghettoStart = (uplink) => {
 };
 
 uploadWorker.addEventListener("message", ({ data }: MessageEvent) => {
+	if (!data || !data.message) return;
 	const [cmd, arg1, arg2] = data.message.split(" ");
 	if (cmd === "start") {
-		const uplink = arg1 || "https://www.grepawk.com/stdin";
+		const uplink =
+			arg1 || "https://www.grepawk.com/stdin" + "/" + (arg2 || "");
 		sharedArrayBuffer = ghettoStart(uplink);
 		postMessage(
 			{
