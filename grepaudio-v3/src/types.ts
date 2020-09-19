@@ -19,6 +19,8 @@ export type ADSR = [Seconds, Seconds, Percent, Seconds];
 // 	prototype: AudioWorkletProcessor;
 // 	new (options?: AudioWorkletNodeOptions): AudioWorkletProcessor;
 // };
+export type Callback = (Event) => void;
+export type ErrorCallback = (ErrorEvent) => void;
 
 export declare function registerProcessor(
 	name: string,

@@ -1,7 +1,6 @@
 import { getCtx } from "./ctx";
-import { ADSR } from "./types";
-import { envelope } from "./envelope";
-export const whiteNoise = ({ adsr }) => {
+
+export const whiteNoise = () => {
 	const audioCtx = getCtx();
 	// Create an empty three-second stereo buffer at the sample rate of the AudioContext
 	const myArrayBuffer = audioCtx.createBuffer(2, audioCtx.sampleRate * 3, audioCtx.sampleRate);
@@ -27,6 +26,5 @@ export const whiteNoise = ({ adsr }) => {
 	const g = new GainNode(audioCtx, { gain: 2 });
 	source.connect(g);
 	source.start(0);
-	envelope(g.gain, adsr, {}).triggerAttackRelease();
-	return g;
+	return source;
 };

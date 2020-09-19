@@ -1,9 +1,5 @@
 import { expect } from "chai";
-import {
-	metaSection,
-	SharedRingBuffer,
-	timeSection,
-} from "./shared-ring-buffer";
+import { metaSection, SharedRingBuffer, timeSection } from "./shared-ring-buffer";
 
 describe("shared-ring-buffer", () => {
 	it("pretends that it runs on an 80kb ram MCU", () => {
@@ -13,12 +9,11 @@ describe("shared-ring-buffer", () => {
 	it("tracks write ptr", () => {
 		const srb = new SharedRingBuffer(new SharedArrayBuffer(104));
 
-		srb.write(new Float32Array([222, 33, 3, 3, 222, 333]));
-		expect(srb.wPtr).to.equal(6);
-		srb.write(new Float32Array([2]));
+		srb.write(new Float32Array([2, 33, 3, 3, 222, 333]));
+		expect(srb.wPtr).to.equal(6 * 4);
 		const readout = srb.read(3);
 		expect(readout instanceof Float32Array);
-		expect(Object.values(readout)).to.deep.equal([222, 33, 3]);
+		expect(readout).to.deep.equal([222, 33, 3]);
 
 		it("tracks read ptr", () => {
 			const readout2 = srb.read(10);

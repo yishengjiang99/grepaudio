@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import { shareOutputBuffer } from "./share-sound-buffer";
 import { SharedRingBuffer } from "./shared-ring-buffer";
 export const uploadWorker: Worker = self as any;
 

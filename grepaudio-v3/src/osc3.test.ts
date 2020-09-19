@@ -17,9 +17,8 @@ describe("osc3 is a poly synth", () => {
 		const sampleArr = await samplesGot();
 		const div = document.createElement("div");
 		div.id = "viz";
-		document.body.appendChild(div); //document.createElement("div"))
+		document.body.appendChild(div);
 		timeseries(sampleArr, div);
-
 	});
 	it("plays sequence", () => {
 		sequence([
