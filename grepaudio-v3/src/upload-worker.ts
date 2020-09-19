@@ -1,9 +1,18 @@
 /* eslint-disable no-console */
+import { shareOutputBuffer } from "./share-sound-buffer";
 import { SharedRingBuffer } from "./shared-ring-buffer";
 export const uploadWorker: Worker = self as any;
 
-const bufferByteSize = 10240;
 let sharedArrayBuffer: SharedArrayBuffer, sharedRingBuffer: SharedRingBuffer, ws: WebSocket, uploadBuffer: Float32Array;
+
+uploadWorker.addEventListener("message", ({ data }: MessageEvent) => {
+	if (data.sharedRingBuffer) {
+		sharedRingBuffer = data.sharedRingBuffer;
+	} else if (data.pushed) {
+	}
+});
+
+const bufferByteSize = 10240;
 
 export const ghettoStart = (uplink) => {
 	sharedArrayBuffer = new SharedArrayBuffer(bufferByteSize);
