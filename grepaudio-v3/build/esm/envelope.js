@@ -1,9 +1,26 @@
-export function envelope(ctx, attribute, adrs, startTime = ctx.currentTime) {
+import { getCtx } from "./ctx";
+export function envelope(attribute, adrs, opts) {
     const [attack, decay, release, sustain] = adrs;
-    attribute.setValueAtTime(0, startTime);
-    attribute.linearRampToValueAtTime(3, startTime + attack);
-    attribute.linearRampToValueAtTime(sustain, startTime + decay);
-    attribute.exponentialRampToValueAtTime(1.5, startTime + release);
-    attribute.linearRampToValueAtTime(0, startTime + startTime + 5 * release);
+    const maxVolume = opts.maxVolume || 3;
+    const { onRelease, duration } = opts || {};
+    const ctx = getCtx();
+    return {
+        triggerAttack: () => {
+            attribute.linearRampToValueAtTime(maxVolume, ctx.currentTime + attack);
+            attribute.linearRampToValueAtTime(maxVolume * sustain, ctx.currentTime + attack + decay);
+        },
+        triggerRelease: () => {
+            attribute.linearRampToValueAtTime(0, ctx.currentTime + release);
+            onRelease && setTimeout(onRelease, release);
+        },
+        triggerAttackRelease: () => {
+            // attribute.linearRampToValueAtTime(maxVolume, ctx.currentTime + attack);
+            // attribute.linearRampToValueAtTime(maxVolume * sustain, ctx.currentTime + attack + decay);
+            // setTimeout(() => {
+            // 	attribute.linearRampToValueAtTime(0, ctx.currentTime + release);
+            // 	onRelease && setTimeout(onRelease, release);
+            // }, duration * 1000 - attack - decay - release);
+        },
+    };
 }
 //# sourceMappingURL=envelope.js.map

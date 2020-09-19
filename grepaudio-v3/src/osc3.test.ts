@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/indent */
-import { osc3run, osc3, sequence, NodeLength, scale } from "./osc3";
-import { getCtx } from "./ctx";
+import { compose, NodeLength, osc3, osc3run, scale, sequence } from "./osc3";
+import { gc, getCtx } from "./ctx";
 import { expect } from "chai";
 import { outputBuffer } from "./outputBuffer";
 import { timeseries } from "./timeseries";
@@ -20,36 +20,10 @@ describe("osc3 is a poly synth", () => {
 		document.body.appendChild(div);
 		timeseries(sampleArr, div);
 	});
-	it("plays sequence", () => {
-		sequence([
-			{
-				freq: 440,
-				length: NodeLength.n8,
-				start: 1,
-			},
-			{
-				freq: 255,
-				length: NodeLength.n8,
-				start: 0.2,
-			},
-			{
-				freq: 444,
-				length: NodeLength.n8,
-				start: 0.25,
-			},
-			{
-				freq: 333,
-				length: NodeLength.n8,
-				start: 0.33,
-			},
-			{
-				freq: 255,
-				length: NodeLength.n8,
-			},
-		]);
+	it("compose", () => {
+		compose("adgadgaegaeg", 133);
 	});
-
-	it("plays the scale maybe", () => {
-		scale(24);
-	});
+	// it("plays the scale maybe", () => {
+	// 	scale(24);
+	// });
 });

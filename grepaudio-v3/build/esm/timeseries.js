@@ -1,8 +1,9 @@
 export const timeseries = (arr, divId) => {
     const length = arr.length;
-    const div = document.getElementById(divId);
-    if (!div || !div.parentElement)
+    const div = divId instanceof HTMLElement ? divId : document.getElementById(divId);
+    if (!div || !div.parentElement) {
         return;
+    }
     const width = div.parentElement.clientWidth;
     const height = div.parentElement.clientHeight;
     let points = "";

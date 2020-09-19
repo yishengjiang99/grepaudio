@@ -8,17 +8,17 @@ export * from "./osc3";
 import { createElement as h } from "react";
 import { render } from "react-dom";
 import { getCtx } from "./ctx";
-import { osc3run, scale } from "./osc3";
+import { compose, osc3run, scale } from "./osc3";
 import { midiToFreq } from "./types";
-/*eslint no-multiple-empty-lines: ["off", { "max": 22, "maxEOF": 22 }]*/
+/* eslint no-multiple-empty-lines: ["off", { "max": 22, "maxEOF": 22 }] */
 
-const NoteBtn = ({ midi, fn }) => {
+const NoteBtn = ({ midi = 0, fn, text = "" }) => {
 	return h(
 		"button",
 		{
 			onClick: () => getCtx() && fn(),
 		},
-		[midi + ""]
+		[text || midi + ""]
 	);
 };
 export const App = () => {
@@ -39,6 +39,10 @@ export const App = () => {
 	return h("div", {}, [row1, row2]);
 };
 
-document.onload = () => {
-	render(App(), document.querySelector("#output"));
+window.onclick = (e) => {
+	compose("adgadgaeg");
+};
+
+window.onload = () => {
+	render(App(), document.querySelector("#root"));
 };

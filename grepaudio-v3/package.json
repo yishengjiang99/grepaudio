@@ -13,8 +13,6 @@
 		"lint:fix": "eslint --ext ts --fix ./src",
 		"test": "npm run karma:browser",
 		"test:browser": "npm run karma:browser",
-		"test:examples": "node ./test/scripts/test_examples",
-		"test:html": "node ./test/scripts/test_html",
 		"test:watch": "npm run collect:tests && npm run karma:watch",
 		"ts:build": "tsc --project ./scripts/tsconfig.build.json",
 		"watch": "tsc --watch",

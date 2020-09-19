@@ -1,7 +1,7 @@
-import { ADSR, Frequency, Midi, midiToFreq, Percent } from "./types";
+/* eslint-disable no-console */
+import { ADSR, Frequency, frequencyToMidi, keyboardToFreq, Midi, midiToFreq, Percent } from "./types";
 import { envelope, EnvelopeControl } from "./envelope";
-import { getCtx, getInputMixer } from "./ctx";
-export const frequencyToMidi = (f: Frequency): Midi => ~~(12 * Math.log2(f / 440) + 69);
+import { getCtx } from "./ctx";
 export interface OSC3Props {
 	hpf?: Frequency;
 	adsr?: ADSR;
@@ -56,14 +56,15 @@ export const osc3 = (
 		});
 		const gain = new GainNode(ctx, { gain: props.overtoneAttunuate[idx] });
 		osc.connect(gain).connect(merger, 0, idx);
-		osc.start();
+		osc.start(ctx.currentTime + when);
+		osc.stop(ctx.currentTime + when + duration);
 	});
-	const gain = new GainNode(ctx, { gain: 0 });
+	const gain = new GainNode(ctx, { gain: 1 });
 	merger.connect(gain);
 
 	return {
 		postAmp: gain,
-		controller: envelope(gain.gain, props.adsr, {
+		controller: envelope(gain.gain, adsr, {
 			duration: duration,
 			maxVolume: 3.5,
 			onRelease: async () => gain.disconnect(),
@@ -72,12 +73,18 @@ export const osc3 = (
 };
 
 export const osc3run = (baseFrequency: Frequency, when?: number, duration?: number) => {
-	const { postAmp, controller } = osc3(baseFrequency, {
-		duration: duration || 0.25,
-	});
-	getInputMixer().push(postAmp, duration);
+	// getInputMixer().push(postAmp, duration);
+	const ctx = getCtx();
 	setTimeout(() => {
-		controller.triggerAttackRelease();
+		try {
+			const { postAmp, controller } = osc3(baseFrequency, {
+				duration: duration,
+			});
+			postAmp.connect(ctx.destination);
+			// controller.triggerAttack();
+		} catch (e) {
+			console.error(e);
+		}
 	}, when * 1000);
 };
 
@@ -100,7 +107,12 @@ export const sequence = (notes: Note[]) => {
 		start += notes.length * 0.075;
 	}
 };
-
+export const compose = (stave: string, tempo = 120) => {
+	stave.split("").map((chr, idx) => {
+		console.log("playing", chr, "at ", keyboardToFreq(chr, 3), (idx * 60) / tempo);
+		osc3run(keyboardToFreq(chr, 3), (idx * 60) / tempo, 60 / tempo);
+	});
+};
 export const scale = (midi: Midi) => {
 	sequence(
 		[0, 2, 4, 5, 7, 9, 11, 12].map((inc) => {

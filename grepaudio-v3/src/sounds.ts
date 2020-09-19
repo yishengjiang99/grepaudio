@@ -1,5 +1,9 @@
 import { getCtx } from "./ctx";
+<<<<<<< Updated upstream
 
+=======
+import { envelope } from "./envelope";
+>>>>>>> Stashed changes
 export const whiteNoise = () => {
 	const audioCtx = getCtx();
 	// Create an empty three-second stereo buffer at the sample rate of the AudioContext
@@ -23,8 +27,35 @@ export const whiteNoise = () => {
 
 	// set the buffer in the AudioBufferSourceNode
 	source.buffer = myArrayBuffer;
-	const g = new GainNode(audioCtx, { gain: 2 });
+	const g = new GainNode(audioCtx, { gain: 0 });
 	source.connect(g);
+<<<<<<< Updated upstream
 	source.start(0);
+=======
+	source.repeat = true;
+	source.connect(audioCtx.destination);
+>>>>>>> Stashed changes
 	return source;
 };
+
+export function loadURL(url): Promise<AudioBufferSourceNode> {
+	return new Promise((r, reject) => {
+		const ctx = getCtx();
+		const xhr = new XMLHttpRequest();
+		xhr.open("get", url, true);
+		xhr.responseType = "arraybuffer";
+		xhr.setRequestHeader("Range", "Bytes:0-");
+		xhr.onreadystatechange = () => {
+			if (xhr.response) {
+				const source = ctx.createBufferSource();
+				ctx.decodeAudioData(xhr.response, (processed) => {
+					source.buffer = processed;
+
+					r(source);
+				});
+			}
+		};
+		xhr.onerror = reject;
+		xhr.send();
+	});
+}

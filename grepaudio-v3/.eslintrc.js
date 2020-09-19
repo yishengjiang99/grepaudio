@@ -1,5 +1,4 @@
 module.exports = {
-	"includes": ["src"],
 	"parser": '@typescript-eslint/parser',
 	"plugins": [
 		'@typescript-eslint',

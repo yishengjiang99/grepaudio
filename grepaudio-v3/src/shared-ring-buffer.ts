@@ -23,7 +23,17 @@ export class SharedRingBuffer {
 		this.dataBuffer = new Float32Array(sharedBuffer, metaSection + timeSection);
 		this.bufferSize = sharedBuffer.byteLength - metaSection - timeSection;
 	}
+	writeBinurally(left: Float32Array, right: Float32Array) {
+		let wptr = this.wPtr;
 
+		for (let i = 0; left[i] || right[i]; i++) {
+			if (wptr) {
+				left[i] = this.dataBuffer[wptr++ % this.bufferSize] = left[i];
+				right[i] = this.dataBuffer[wptr++ % this.bufferSize] = right[i];
+			}
+		}
+		this.wPtr = wptr;
+	}
 	write(data: Float32Array) {
 		let wptr = this.wPtr;
 		for (let i = 0; i < data.length; i++) {

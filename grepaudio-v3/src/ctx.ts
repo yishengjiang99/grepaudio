@@ -1,7 +1,7 @@
 import { Milliseconds } from "./types";
 
 let ctx;
-let inputMixer: CrossFade[] = [null, null, null, null, null, null];
+const inputMixer: CrossFade[] = [null, null];
 export const getCtx = () => {
 	if (!window) {
 		return null;
@@ -22,7 +22,10 @@ export const getCtx = () => {
 	}
 	return ctx;
 };
-
+export const gc = () => {
+	ctx && ctx.close();
+	ctx = null;
+};
 export class CrossFade {
 	_inputs: [GainNode, GainNode];
 	_entryIndex: number;
@@ -53,7 +56,11 @@ export class CrossFade {
 }
 
 export const getInputMixer = () => {
+<<<<<<< Updated upstream
 	for (let i = 0; i < 3; i++) {
+=======
+	for (let i = 0; i < 2; i++) {
+>>>>>>> Stashed changes
 		if (inputMixer[i] === null) {
 			inputMixer[i] = new CrossFade();
 			return inputMixer[i];
@@ -62,9 +69,13 @@ export const getInputMixer = () => {
 			return inputMixer[i];
 		}
 	}
+<<<<<<< Updated upstream
 	return null;
 };
 
 export const ICP = {
 	uploadNotify: () => new BroadcastChannel("upload"),
+=======
+	return inputMixer[1];
+>>>>>>> Stashed changes
 };
