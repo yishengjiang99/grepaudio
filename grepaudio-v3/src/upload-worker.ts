@@ -3,10 +3,7 @@ import { SharedRingBuffer } from "./shared-ring-buffer";
 export const uploadWorker: Worker = self as any;
 
 const bufferByteSize = 10240;
-let sharedArrayBuffer: SharedArrayBuffer,
-	sharedRingBuffer: SharedRingBuffer,
-	ws: WebSocket,
-	uploadBuffer: Float32Array;
+let sharedArrayBuffer: SharedArrayBuffer, sharedRingBuffer: SharedRingBuffer, ws: WebSocket, uploadBuffer: Float32Array;
 
 export const ghettoStart = (uplink) => {
 	sharedArrayBuffer = new SharedArrayBuffer(bufferByteSize);
@@ -30,8 +27,7 @@ uploadWorker.addEventListener("message", ({ data }: MessageEvent) => {
 	if (!data || !data.message) return;
 	const [cmd, arg1, arg2] = data.message.split(" ");
 	if (cmd === "start") {
-		const uplink =
-			arg1 || "https://www.grepawk.com/stdin" + "/" + (arg2 || "");
+		const uplink = arg1 || "https://www.grepawk.com/stdin" + "/" + (arg2 || "");
 		sharedArrayBuffer = ghettoStart(uplink);
 		postMessage(
 			{

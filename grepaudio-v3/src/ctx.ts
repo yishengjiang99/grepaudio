@@ -53,7 +53,7 @@ export class CrossFade {
 }
 
 export const getInputMixer = () => {
-	for (let i = 0; i < 6; i++) {
+	for (let i = 0; i < 3; i++) {
 		if (inputMixer[i] === null) {
 			inputMixer[i] = new CrossFade();
 			return inputMixer[i];
@@ -62,5 +62,9 @@ export const getInputMixer = () => {
 			return inputMixer[i];
 		}
 	}
-	return inputMixer[3]; //customer always right..
+	return null;
+};
+
+export const ICP = {
+	uploadNotify: () => new BroadcastChannel("upload"),
 };

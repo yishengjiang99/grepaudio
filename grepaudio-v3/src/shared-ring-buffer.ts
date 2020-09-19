@@ -12,26 +12,37 @@ export const metaSection = Uint16Array.BYTES_PER_ELEMENT * 2;
 export const timeSection = Uint32Array.BYTES_PER_ELEMENT * 1;
 
 export class SharedRingBuffer {
-	dataBuffer: Float32Array;
+	dataBuffer: Uint8Array;
 	stateBuffer: Uint16Array;
 	_lastUpdate: Uint32Array;
 	bufferSize: number;
+	writeLock: boolean;
+	dataView: DataView;
 
 	constructor(sharedBuffer: SharedArrayBuffer) {
 		this.stateBuffer = new Uint16Array(sharedBuffer, 0, 2);
 		this._lastUpdate = new Uint32Array(sharedBuffer, metaSection, 1);
-		this.dataBuffer = new Float32Array(
-			sharedBuffer,
-			metaSection + timeSection
-		);
+		this.dataBuffer = new Uint8Array(sharedBuffer, metaSection + timeSection);
 		this.bufferSize = sharedBuffer.byteLength - metaSection - timeSection;
-	}
+		this.writeLock = true;
 
+		// symbolic wrapping no memcp here
+		this.dataView = new DataView(this.dataBuffer.buffer);
+	}
+	writeBinurally(left: Float32Array, right: Float32Array) {
+		let wptr = this.wPtr;
+
+		for (let i = 0; left[i] || right[i]; i++) {
+			left[i] && this.dataView.setFloat32((wptr += 4) % this.bufferSize, left[i]);
+			right[i] && this.dataView.setFloat32((wptr += 4) % this.bufferSize, right[i]);
+		}
+		this.wPtr = wptr;
+	}
 	write(data: Float32Array) {
 		let wptr = this.wPtr;
 		for (let i = 0; i < data.length; i++) {
-			this.dataBuffer[wptr % this.bufferSize] = data[i];
-			wptr++;
+			this.dataView.setFloat32(wptr % this.bufferSize, data[i]);
+			wptr += Float32Array.BYTES_PER_ELEMENT;
 		}
 		this.wPtr = wptr;
 	}
