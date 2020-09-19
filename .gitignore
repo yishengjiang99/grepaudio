@@ -30,5 +30,8 @@ samples/impulses/
 server/nodemon.json
 server/Dr Dre- Still Dre instrumental-JVISRjhXzzM.jpg
 qwerty.js
+<<<<<<< HEAD
 karma.conf.js
 package-lock.json
+=======
+>>>>>>> 8cb36b99ee10b14510f31c80a8638714a44aeedf
