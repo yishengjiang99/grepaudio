@@ -9,29 +9,36 @@ typedef struct
 } SharedRingBuffer;
 */
 export const metaSection = Uint16Array.BYTES_PER_ELEMENT * 2;
-export const timeSection = Uint32Array.BYTES_PER_ELEMENT * 1;
+export const timeSection = Int32Array.BYTES_PER_ELEMENT * 1;
 
 export class SharedRingBuffer {
 	dataBuffer: Float32Array;
 	stateBuffer: Uint16Array;
-	_lastUpdate: Uint32Array;
+	_lastUpdate: Int32Array;
 	bufferSize: number;
 
 	constructor(sharedBuffer: SharedArrayBuffer) {
 		this.stateBuffer = new Uint16Array(sharedBuffer, 0, 2);
-		this._lastUpdate = new Uint32Array(sharedBuffer, metaSection, 1);
-		this.dataBuffer = new Float32Array(
-			sharedBuffer,
-			metaSection + timeSection
-		);
+		this._lastUpdate = new Int32Array(sharedBuffer, metaSection, 1);
+		this.dataBuffer = new Float32Array(sharedBuffer, metaSection + timeSection);
 		this.bufferSize = sharedBuffer.byteLength - metaSection - timeSection;
 	}
-
-	write(data: Float32Array) {
+	writeBinurally(left: Float32Array, right: Float32Array) {
 		let wptr = this.wPtr;
-		for (let i = 0; i < data.length; i++) {
-			this.dataBuffer[wptr % this.bufferSize] = data[i];
-			wptr++;
+
+		for (let i = 0; left[i] || right[i]; i++) {
+			if (wptr) {
+				this.dataBuffer[wptr++ % this.bufferSize] = left[i];
+				this.dataBuffer[wptr++ % this.bufferSize] = right[i];
+			}
+		}
+		this.wPtr = wptr;
+	}
+	write(ab: Float32Array) {
+		let wptr = this.wPtr;
+
+		for (let i = 0; i < ab.length; i++) {
+			this.dataBuffer[wptr++ % this.bufferSize] = ab[i];
 		}
 		this.wPtr = wptr;
 	}
@@ -57,6 +64,7 @@ export class SharedRingBuffer {
 		return Atomics.load(this.stateBuffer, 0);
 	}
 	set wPtr(value: number) {
+		this.logUpdate();
 		Atomics.store(this.stateBuffer, 0, value % this.bufferSize);
 	}
 	get readPtr() {
@@ -74,4 +82,8 @@ export class SharedRingBuffer {
 		const now = new Date().getTime() - 1600235779107;
 		Atomics.store(this._lastUpdate, 0, now);
 	}
+}
+
+if (globalThis) {
+	globalThis.SharedRingBuffer = SharedRingBuffer;
 }

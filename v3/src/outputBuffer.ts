@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/indent */
 import { getCtx } from "./ctx";
+import { SharedRingBuffer } from "./shared-ring-buffer";
 import { Milliseconds } from "./types";
 export interface OutputBufferOptions {
 	length?: Milliseconds;
@@ -54,4 +55,39 @@ export function outputBuffer(
 		proc: proc,
 		samplesGot: async () => await sampleGot,
 	};
+}
+
+export function shareOutputBuffer(
+	node,
+	props: {
+		outlet?: AudioNode | AudioDestinationNode;
+		bufferSize?: number;
+	}
+): SharedRingBuffer {
+	const { bufferSize, outlet } = {
+		...{
+			bufferSize: 1024 * 4,
+			outlet: getCtx().destination,
+		},
+		...props,
+	};
+	const sharedBuffer = new SharedRingBuffer(new SharedArrayBuffer(bufferSize * 8));
+	const proc = node.context.createScriptProcessor(bufferSize, 2, 2);
+	node.connect(proc);
+	outlet && proc.connect(outlet);
+	proc.onaudioprocess = ({ inputBuffer, outputBuffer }: AudioProcessingEvent) => {
+		outputBuffer[0].copyFrom(inputBuffer[0]);
+		outputBuffer[1].copyFrom(inputBuffer[1]);
+		sharedBuffer.writeBinurally(inputBuffer.getChannelData(0), inputBuffer.getChannelData(1));
+	};
+
+	return sharedBuffer;
+}
+
+export async function probe(node: AudioBufferSourceNode) {
+	const ctx = getCtx();
+	await ctx.audioWorklet.addModule("./offline-ctx.ts");
+	const probe = new AudioWorkletNode(ctx, "spl_dba");
+	node.connect(probe);
+	probe.connect(ctx.destination);
 }

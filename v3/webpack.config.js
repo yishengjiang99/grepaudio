@@ -7,31 +7,33 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 // /////////////////////////////////////
 
 const defaults = {
-    mode: "production",
-    context: __dirname,
-    entry: {
-        Main: "./src/index.ts",
-    },
-    output: {
-        path: path.resolve(__dirname, "build"),
-        filename: "[name].js",
-        library: "Main",
-        libraryTarget: "umd",
-        globalObject: "typeof self !== 'undefined' ? self : this",
-    },
-    resolve: {
-        extensions: [".ts", ".js"]
-    },
-    module: {
-        rules: [
-            {
-                test: /\.ts$/,
-                use: "ts-loader",
-                exclude: /(node_modules)/,
-            }
-        ]
-    },
-    devtool: "cheap-source-map",
+	mode: "production",
+	context: __dirname,
+	entry: {
+		Main: "./src/index.ts",
+		About: "./src/about.ts",
+		SBR: "./src/shared-ring-buffer.ts",
+	},
+	output: {
+		path: path.resolve(__dirname, "build"),
+		filename: "[name].js",
+		library: "Main",
+		libraryTarget: "umd",
+		globalObject: "typeof self !== 'undefined' ? self : this",
+	},
+	resolve: {
+		extensions: [".ts", ".js"],
+	},
+	module: {
+		rules: [
+			{
+				test: /\.ts$/,
+				use: "ts-loader",
+				exclude: /(node_modules)/,
+			},
+		],
+	},
+	devtool: "cheap-source-map",
 };
 
 // /////////////////////////////////////
@@ -39,15 +41,15 @@ const defaults = {
 // /////////////////////////////////////
 
 const test = Object.assign({}, defaults, {
-    entry: {
-        test: "./test/test.js",
-    },
-    plugins: [
-        new HtmlWebpackPlugin({
-            filename: "test.html",
-            template: "./test/index.html",
-        })
-    ],
+	entry: {
+		test: "./test/test.js",
+	},
+	plugins: [
+		new HtmlWebpackPlugin({
+			filename: "test.html",
+			template: "./test/index.html",
+		}),
+	],
 });
 
 // /////////////////////////////////////
@@ -55,16 +57,16 @@ const test = Object.assign({}, defaults, {
 // /////////////////////////////////////
 
 const production = Object.assign({}, defaults, {
-    mode: "production",
-    devtool: "source-map",
+	mode: "production",
+	devtool: "source-map",
 });
 
-module.exports = env => {
-    if (env.test) {
-        return test;
-    } else if (env.production) {
-        return production;
-    } else {
-        return scratch;
-    }
+module.exports = (env) => {
+	if (env.test) {
+		return test;
+	} else if (env.production) {
+		return production;
+	} else {
+		return scratch;
+	}
 };

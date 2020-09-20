@@ -28,3 +28,7 @@ describe("getOutputBuffer", () => {
 		}
 	});
 });
+
+describe("probe", () => {
+	it("loads worklet", () => {});
+});

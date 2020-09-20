@@ -1,13 +1,12 @@
 import { expect } from "chai";
 import { loadBase64 } from "./sounds";
-import * as MIDI from "../public/db/FatBoy_acoustic_grand_piano";
-
+import { sleep } from "./types";
 describe("load loadBase64", () => {
-	it("loads base 64 encoded to audio tag", () => {
-		expect(MIDI).to.exist;
-		expect(MIDI.Soundfont.acoustic_grand_piano["C2"]).to.exist;
-		const node = loadBase64(MIDI.Soundfont.acoustic_grand_piano["C2"], "C2");
-		loadBase64(MIDI.Soundfont.acoustic_grand_piano["C3"], "C3");
-		loadBase64(MIDI.Soundfont.acoustic_grand_piano["D3"], "D3");
+	it("loads base 64 encoded to audio tag", async () => {
+		loadBase64("D3");
+		await sleep(125);
+		loadBase64("D5");
+		await sleep(125);
+		loadBase64("D1");
 	});
 });

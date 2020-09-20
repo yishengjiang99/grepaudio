@@ -1,8 +1,9 @@
-import { Milliseconds } from "./types";
-
+import { assert } from "chai";
+import { loadInlineWorklet } from "./offline-ctx";
+import { Milliseconds, CallBack } from "./types";
 let ctx;
-let inputMixer: CrossFade[] = [null, null, null, null, null, null];
-export const getCtx = () => {
+
+export const getCtx = (): AudioContext => {
 	if (!window) {
 		return null;
 	}
@@ -21,48 +22,6 @@ export const getCtx = () => {
 		);
 	}
 	return ctx;
-};
-
-export class CrossFade {
-	_inputs: [GainNode, GainNode];
-	_entryIndex: number;
-	_occupants: [AudioNode, AudioNode];
-	_lease: number;
-
-	isOccupied(): boolean {
-		return ctx.currentTime > this._lease;
-	}
-	constructor() {
-		this._inputs = [new GainNode(ctx, { gain: 1 }), new GainNode(ctx, { gain: 0 })];
-		this._inputs[0].connect(ctx.destination);
-		this._inputs[1].connect(ctx.destination);
-		this._occupants = [null, null];
-		this._lease = 0;
-		this._entryIndex = 0;
-	}
-	push(node: AudioNode, lease: Milliseconds) {
-		this._lease = getCtx().currentTime + lease / 1000;
-		this._occupants[this._entryIndex] && this._occupants[this._entryIndex].disconnect();
-		this._occupants[this._entryIndex] = node;
-		node.connect(this._inputs[this._entryIndex]);
-		const otherIndex = this._entryIndex ? 0 : 1;
-		this._inputs[this._entryIndex].gain.setTargetAtTime(1, ctx.currentTime, 0.01);
-		this._inputs[otherIndex].gain.setTargetAtTime(0, ctx.currentTime, 0.01);
-		this._entryIndex = this._entryIndex++ % 2;
-	}
-}
-
-export const getInputMixer = () => {
-	for (let i = 0; i < 6; i++) {
-		if (inputMixer[i] === null) {
-			inputMixer[i] = new CrossFade();
-			return inputMixer[i];
-		}
-		if (!inputMixer[i].isOccupied()) {
-			return inputMixer[i];
-		}
-	}
-	return inputMixer[3]; //customer always right..
 };
 
 export function ensureDiv(selector) {
