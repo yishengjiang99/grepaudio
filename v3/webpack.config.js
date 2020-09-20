@@ -12,6 +12,7 @@ const defaults = {
 	entry: {
 		Main: "./src/index.ts",
 		About: "./src/about.ts",
+		webworker: "./src/webworkers/upload-worker.ts",
 		SBR: "./src/shared-ring-buffer.ts",
 	},
 	output: {

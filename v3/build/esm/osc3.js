@@ -1,4 +1,3 @@
-import { __awaiter } from "tslib";
 import { midiToFreq } from "./types";
 import { envelope } from "./envelope";
 import { getCtx, getInputMixer } from "./ctx";
@@ -16,7 +15,7 @@ export const defaultOsc3Props = {
     adsr: [0.01, 0.2, 0.3, 0.1],
     detune: [0, 15, 100],
     overtoneAttunuate: [1.2, 0.7, 0.5],
-    types: ["square", "sawtooth", "triangle"],
+    types: ["triangle", "triangle", "square"],
     when: 0,
     duration: 0.125,
 };
@@ -43,7 +42,6 @@ export const osc3 = (baseNote, _props = {}) => {
         controller: envelope(gain.gain, props.adsr, {
             duration: duration,
             maxVolume: 3.5,
-            onRelease: () => __awaiter(void 0, void 0, void 0, function* () { return gain.disconnect(); }),
         }),
     };
 };

@@ -1,6 +1,7 @@
 import { __awaiter } from "tslib";
 /* eslint-disable @typescript-eslint/indent */
 import { getCtx } from "./ctx";
+import { SharedRingBuffer } from "./shared-ring-buffer";
 export const defaultProps = {
     length: 1000,
     output: new Float32Array((length * getCtx().sampleRate) / 1000),
@@ -39,5 +40,30 @@ export function outputBuffer(node, props) {
         proc: proc,
         samplesGot: () => __awaiter(this, void 0, void 0, function* () { return yield sampleGot; }),
     };
+}
+export function shareOutputBuffer(node, props) {
+    const { bufferSize, outlet } = Object.assign({
+        bufferSize: 1024 * 4,
+        outlet: getCtx().destination,
+    }, props);
+    const sharedBuffer = new SharedRingBuffer(new SharedArrayBuffer(bufferSize * 8));
+    const proc = node.context.createScriptProcessor(bufferSize, 2, 2);
+    node.connect(proc);
+    outlet && proc.connect(outlet);
+    proc.onaudioprocess = ({ inputBuffer, outputBuffer }) => {
+        outputBuffer[0].copyFrom(inputBuffer[0]);
+        outputBuffer[1].copyFrom(inputBuffer[1]);
+        sharedBuffer.writeBinurally(inputBuffer.getChannelData(0), inputBuffer.getChannelData(1));
+    };
+    return sharedBuffer;
+}
+export function probe(node) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const ctx = getCtx();
+        yield ctx.audioWorklet.addModule("./offline-ctx.ts");
+        const probe = new AudioWorkletNode(ctx, "spl_dba");
+        node.connect(probe);
+        probe.connect(ctx.destination);
+    });
 }
 //# sourceMappingURL=outputBuffer.js.map

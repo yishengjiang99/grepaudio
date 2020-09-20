@@ -1,6 +1,7 @@
 import { ADSR, Frequency, Midi, midiToFreq, Percent } from "./types";
 import { envelope, EnvelopeControl } from "./envelope";
-import { getCtx, getInputMixer } from "./ctx";
+import { getCtx } from "./ctx";
+import { initInputModule } from "./input-module";
 export const frequencyToMidi = (f: Frequency): Midi => ~~(12 * Math.log2(f / 440) + 69);
 export interface OSC3Props {
 	hpf?: Frequency;
@@ -37,6 +38,7 @@ export const osc3 = (
 	baseNote: Frequency,
 	_props: OSC3Props = {}
 ): {
+	nodes: OscillatorNode[];
 	postAmp: GainNode;
 	controller: EnvelopeControl;
 } => {
@@ -49,7 +51,7 @@ export const osc3 = (
 	const merger = new ChannelMergerNode(ctx, {
 		numberOfInputs: 3,
 	});
-	[baseNote, baseNote * 2, baseNote * 3].map((freq, idx) => {
+	const strings = [baseNote, baseNote * 2, baseNote * 3].map((freq, idx) => {
 		const osc = new OscillatorNode(ctx, {
 			frequency: freq,
 			type: types[idx] || "sine",
@@ -57,11 +59,13 @@ export const osc3 = (
 		const gain = new GainNode(ctx, { gain: props.overtoneAttunuate[idx] });
 		osc.connect(gain).connect(merger, 0, idx);
 		osc.start();
+		return osc;
 	});
 	const gain = new GainNode(ctx, { gain: 0 });
 	merger.connect(gain);
 
 	return {
+		nodes: strings,
 		postAmp: gain,
 		controller: envelope(gain.gain, props.adsr, {
 			duration: duration,
@@ -75,10 +79,12 @@ export const osc3run = (baseFrequency: Frequency, when?: number, duration?: numb
 	const { postAmp, controller } = osc3(baseFrequency, {
 		duration: duration || 0.25,
 	});
-	getInputMixer().push(postAmp, duration);
-	setTimeout(() => {
-		controller.triggerAttackRelease();
-	}, when * 1000);
+	initInputModule().then((input) => {
+		input.connectNode(postAmp);
+		setTimeout(() => {
+			controller.triggerAttackRelease();
+		}, when * 1000);
+	});
 };
 
 export const compression = () => {

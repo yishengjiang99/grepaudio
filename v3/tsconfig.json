@@ -1,10 +1,8 @@
 {
 	"compileOnSave": true,
 	"compilerOptions": {
-		"strictNullChecks": false,
 		"target": "ES6",
 		"module": "ES2015",
-
 		"noImplicitAny": false,
 		"importHelpers": true,
 		"noUnusedLocals": false,

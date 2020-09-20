@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">45.83% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>11/24</span>
+                <span class='fraction'>0/24</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">20% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/5</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>11/22</span>
+                <span class='fraction'>0/22</span>
             </div>
         
             
@@ -101,22 +101,22 @@
 <a name='L42'></a><a href='#L42'>42</a>
 <a name='L43'></a><a href='#L43'>43</a>
 <a name='L44'></a><a href='#L44'>44</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -125,10 +125,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -144,22 +144,22 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/* eslint-disable no-console */
-import { SharedRingBuffer } from "./shared-ring-buffer";
-export const uploadWorker: Worker = self as any;
+<span class="cstat-no" title="statement not covered" >import { SharedRingBuffer } from "./shared-ring-buffer";</span>
+export const <span class="cstat-no" title="statement not covered" >uploadWorker: Worker = self as any;</span>
 &nbsp;
-const bufferByteSize = 10240;
+const bufferByteSize = <span class="cstat-no" title="statement not covered" >10240;</span>
 let sharedArrayBuffer: SharedArrayBuffer,
 	sharedRingBuffer: SharedRingBuffer,
 	ws: WebSocket,
 	uploadBuffer: Float32Array;
 &nbsp;
-export const ghettoStart = (uplink) =&gt; {
-	sharedArrayBuffer = new SharedArrayBuffer(bufferByteSize);
+export const <span class="cstat-no" title="statement not covered" >ghettoStart = <span class="fstat-no" title="function not covered" >(u</span>plink) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >	sharedArrayBuffer = new SharedArrayBuffer(bufferByteSize);</span>
 &nbsp;
-	sharedRingBuffer = new SharedRingBuffer(sharedArrayBuffer);
-	uploadBuffer = new Float32Array(bufferByteSize);
-	ws = new WebSocket("wss://www.grepawk.com/stdin");
-	ws.onopen = <span class="fstat-no" title="function not covered" >() =</span>&gt; {
+<span class="cstat-no" title="statement not covered" >	sharedRingBuffer = new SharedRingBuffer(sharedArrayBuffer);</span>
+<span class="cstat-no" title="statement not covered" >	uploadBuffer = new Float32Array(bufferByteSize);</span>
+<span class="cstat-no" title="statement not covered" >	ws = new WebSocket("wss://www.grepawk.com/stdin");</span>
+<span class="cstat-no" title="statement not covered" >	ws.onopen = <span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
 <span class="cstat-no" title="statement not covered" >		ws.onmessage = <span class="fstat-no" title="function not covered" >(m</span>sg) =&gt; <span class="cstat-no" title="statement not covered" >console.log(msg);</span></span>
 		function <span class="fstat-no" title="function not covered" >loop(</span>) {
 <span class="cstat-no" title="statement not covered" >			sharedRingBuffer.readToBuffer(uploadBuffer);</span>
@@ -168,10 +168,10 @@ export const ghettoStart = (uplink) =&gt; {
 		}
 <span class="cstat-no" title="statement not covered" >		loop();</span>
 	};
-	return sharedArrayBuffer;
+<span class="cstat-no" title="statement not covered" >	return sharedArrayBuffer;</span>
 };
 &nbsp;
-uploadWorker.addEventListener("message", <span class="fstat-no" title="function not covered" >({</span> data }: MessageEvent) =&gt; {
+<span class="cstat-no" title="statement not covered" >uploadWorker.addEventListener("message", <span class="fstat-no" title="function not covered" >({</span> data }: MessageEvent) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >	if (!data || !data.message) <span class="cstat-no" title="statement not covered" >return;</span></span>
 	const [cmd, arg1, arg2] = <span class="cstat-no" title="statement not covered" >data.message.split(" ");</span>
 <span class="cstat-no" title="statement not covered" >	if (cmd === "start") {</span>
@@ -193,7 +193,7 @@ uploadWorker.addEventListener("message", <span class="fstat-no" title="function 
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank">istanbul</a>
-                at Sat Sep 19 2020 03:33:09 GMT-0700 (Pacific Daylight Time)
+                at Sat Sep 19 2020 15:48:07 GMT-0700 (Pacific Daylight Time)
             </div>
         </div>
         <script src="prettify.js"></script>

@@ -5,20 +5,6 @@ etc/csr.pem
 etc/key.pem
 .DS_Store
 dist
-simulate/helpers/webaudiox.absolutenormalizer.js
-simulate/helpers/webaudiox.adaptativenormalizer.js
-simulate/helpers/webaudiox.analyser2canvas.js
-simulate/helpers/webaudiox.analyser2volume.js
-simulate/helpers/webaudiox.analyserbeatdetector.js
-simulate/helpers/webaudiox.analyserbeatdetectordatgui.js
-simulate/helpers/webaudiox.binaural.js
-simulate/helpers/webaudiox.bytetonormalizedfloat32array.js
-simulate/helpers/webaudiox.gamesounds.js
-simulate/helpers/webaudiox.jsfx.js
-simulate/helpers/webaudiox.lineout.js
-simulate/helpers/webaudiox.loadbuffer.js
-simulate/helpers/webaudiox.shim.js
-simulate/helpers/webaudiox.three.js
 web-audio-examples
 cert.pem
 fullchain.pem
@@ -30,8 +16,32 @@ samples/impulses/
 server/nodemon.json
 server/Dr Dre- Still Dre instrumental-JVISRjhXzzM.jpg
 qwerty.js
-<<<<<<< HEAD
 karma.conf.js
 package-lock.json
-=======
->>>>>>> 8cb36b99ee10b14510f31c80a8638714a44aeedf
+v3/build/*
+v3/build/esm/*
+v3/coverage/*
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/ctx.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/envelope.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/index.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/index.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/osc3.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/outputBuffer.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/shared-ring-buffer.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/sounds.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/timeseries.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/types.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/upload-worker.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/ctx.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/envelope.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/index.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/index.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/osc3.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/outputBuffer.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/shared-ring-buffer.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/sounds.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/timeseries.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/types.ts.html
+v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/upload-worker.ts.html
+v3/build/esm/ctx.js
+v3/build/**/*
