@@ -1,7 +1,6 @@
 import { ADSR, Frequency, Midi, midiToFreq, Percent } from "./types";
 import { envelope, EnvelopeControl } from "./envelope";
 import { getCtx } from "./ctx";
-import { initInputModule } from "./input-module";
 export const frequencyToMidi = (f: Frequency): Midi => ~~(12 * Math.log2(f / 440) + 69);
 export interface OSC3Props {
 	hpf?: Frequency;
@@ -79,12 +78,7 @@ export const osc3run = (baseFrequency: Frequency, when?: number, duration?: numb
 	const { postAmp, controller } = osc3(baseFrequency, {
 		duration: duration || 0.25,
 	});
-	initInputModule().then((input) => {
-		input.connectNode(postAmp);
-		setTimeout(() => {
-			controller.triggerAttackRelease();
-		}, when * 1000);
-	});
+	controller.triggerAttackRelease();
 };
 
 export const compression = () => {

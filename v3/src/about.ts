@@ -1,12 +1,13 @@
 // import { render } from "react-dom";
-import { getCtx } from "./ctx";
-import { loadInlineWorklet } from "./offline-ctx";
+import { ensureDiv, getCtx } from "./ctx";
+import { loadInlineWorklet, inlineJSLib } from "./offline-ctx";
 import { osc3 } from "./osc3";
 import { h as createElement, Component } from "react";
 import * as React from "react";
 import { render } from "react-dom";
 import { readableTimeseries } from "./timeseries";
 import { midiToFreq } from "./types";
+import { SharedRingBuffer } from "./shared-ring-buffer";
 window.onload = () => {
 	//	readableTimeseries();
 
@@ -44,6 +45,7 @@ window.onload = () => {
 	}
 	const app = React.createElement(App, { msg1: "1", msg2: "2" }, []);
 	const container = document.getElementById("container");
+	if (!container) ensureDiv("container");
 	let mid = 38;
 
 	container.onmousedown = async (e: MouseEvent) => {
@@ -56,8 +58,9 @@ window.onload = () => {
 				});
 				webworker.postMessage({ msg: "init" });
 				const sharedBuffer = await sharedBufferPromise;
-
+				debugger;
 				node = await loadInlineWorklet({
+					inlineJSLib: inlineJSLib,
 					className: "Upload",
 					classDesc: "upload-processor",
 					onInit: `   this.port.postMessage({msg: "[processor] int"});`,
@@ -101,6 +104,7 @@ window.onload = () => {
 			osc.controller.triggerAttack();
 		} catch (e) {
 			console.log(e);
+			throw e;
 		}
 	};
 	container.onmousemove = async (e: MouseEvent) => {

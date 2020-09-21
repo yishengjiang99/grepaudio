@@ -11,13 +11,8 @@ describe("loadInlineWorklet", () => {
 			node = await loadInlineWorklet({
 				className: "Upload",
 				classDesc: "upload-processor",
-				onInit: `() => {
-				   this.port.postMessage({msgg:"[processor] int"})
-				}`,
-				onMessage: `({ cmd, args }) => {
-			   
-				}`,
-				onProc: `(wctx, input) =>  this.wctx.write(input)`,
+				onInit: ` this.port.postMessage({msg:"[processor] int"})}`,
+				onMessage: `this.port.postMessage({msg:"pong"})`,
 			});
 			expect(node).to.exist;
 			osc3(333).postAmp.connect(node);

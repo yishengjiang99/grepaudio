@@ -1,7 +1,7 @@
 import { createDiv, ensureDiv, getCtx } from "./ctx";
 import { ADSR } from "./types";
 import { envelope } from "./envelope";
-import { A3, B3, C3, D3, G3, F3, Bb3 } from "../public/db/FatBoy_acoustic_grand_piano";
+// import { A3, B3, C3, D3, G3, F3, Bb3 } from "../public/db/FatBoy_acoustic_grand_piano";
 export const whiteNoise = ({ adsr }) => {
 	const audioCtx = getCtx();
 	// Create an empty three-second stereo buffer at the sample rate of the AudioContext
@@ -32,16 +32,17 @@ export const whiteNoise = ({ adsr }) => {
 	return g;
 };
 export const loadBase64 = (midiString: string) => {
-	const ctx = getCtx();
-	const audioTag = createDiv(`audio`);
-	const source = new MediaElementAudioSourceNode(ctx, { mediaElement: audioTag });
-	source.connect(ctx.destination);
-	audioTag.controls = true;
-	audioTag.src = A3;
-	audioTag.autoplay = true;
-	return source;
+	// const ctx = getCtx();
+	// const audioTag = createDiv(`audio`);
+	// const source = new MediaElementAudioSourceNode(ctx, { mediaElement: audioTag });
+	// source.connect(ctx.destination);
+	// audioTag.controls = true;
+	// audioTag.src = A3;
+	// audioTag.autoplay = true;
+	// return source;
 };
-function loadBuffer(url, ctx) {
+
+export function loadBuffer(url, ctx) {
 	return new Promise((resolve, reject) => {
 		const xhr = new XMLHttpRequest();
 		const ctx = getCtx();

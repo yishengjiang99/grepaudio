@@ -19,7 +19,7 @@ module.exports = function (config) {
 		frameworks: ["mocha", "karma-typescript"],
 
 		// list of files / patterns to load in the browser
-		files: ["test/**/*.ts", "src/**/*.ts"],
+		files: ["src/**/*.ts"],
 
 		// Karma Typescript compiler options
 		karmaTypescriptConfig: {
@@ -47,19 +47,18 @@ module.exports = function (config) {
 		},
 
 		// list of files to exclude
-		exclude: ["node_modules/*"],
+		exclude: ["node_modules/*", "build", "coverage", "scripts", "test"],
 
 		// preprocess matching files before serving them to the browser
 		// available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
 		preprocessors: {
 			"**/*.ts": "karma-typescript",
-			// "Tone/**/*.ts": "coverage",
 		},
 
 		// test results reporter to use
 		// possible values: 'dots', 'progress'
 		// available reporters: https://npmjs.org/browse/keyword/karma-reporter
-		reporters: ["dots", "karma-typescript"],
+		reporters: ["dots", "coverage", "karma-typescript"],
 
 		// coverageReporter : {
 		// 	type : "lcov",
@@ -69,11 +68,9 @@ module.exports = function (config) {
 		// plugins
 		plugins: [
 			"karma-typescript",
-			// "karma-coverage",
+			"karma-coverage",
 			"karma-mocha",
 			"karma-chrome-launcher",
-			"karma-firefox-launcher",
-			"karma-safari-launcher",
 			// "karma-sourcemap-loader",
 		],
 
@@ -97,10 +94,10 @@ module.exports = function (config) {
 
 		// level of logging
 		// possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-		logLevel: config.LOG_ERROR,
+		logLevel: config.LOG_DEBUG,
 
 		// enable / disable watching file and executing tests whenever any file changes
-		autoWatch: false,
+		autoWatch: true,
 		// restartOnFileChange : true,
 
 		// start these browsers
