@@ -1,0 +1,37 @@
+class AFilter extends Transform {
+	constructor() {
+		super();
+	}
+	_transform(chunk, enc, cb) {
+		cb(null, chunk);
+	}
+}
+class Adder extends PassThrough {
+	currentFrame: number;
+	buffers: ArrayBuffer[];
+
+	constructor() {
+		super();
+		this.buffers = [Buffer.alloc(AU_SIZE * 2 * 4), Buffer.alloc(AU_SIZE * 2 * 4)];
+		this.currentFrame = 0;
+	}
+	_transform(chunk, enc, callback) {
+		console.log(chunk.byteLength, this.currentFrame)
+		const currentBuffer = this.buffers[this.currentFrame % 2];
+		const incoming: Float32Array = new Float32Array(chunk.buffer);
+		for (let i = 0; i < 128; i++) {
+			const sum = f32touint8(this.float32View[i] + incoming[i]);
+			let k = 0;
+			currentBuffer[i * 4 + k] = sum[k++];
+			currentBuffer[i * 4 + k] = sum[k++];
+			currentBuffer[i * 4 + k] = sum[k++];
+			currentBuffer[i * 4 + k] = sum[k++];
+		}
+		callback(null, currentBuffer);
+		this.currentFrame++;
+	}
+	get float32View() {
+		return new Float32Array(this.buffers[this.currentFrame % 2]);
+	}
+}
+const adder = new Adder();

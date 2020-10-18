@@ -1,0 +1,2 @@
+type ToString<T extends string | number | boolean | bigint> = `${T}`;
+type RFC6455DataFrame<S extends string> = S extends  `\x${A}\x${B}\x${C}\0` ?  [`${A & 0x80}`] : unknown;
