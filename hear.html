@@ -15,12 +15,16 @@
     <span id="cplink"></span>
     <video playsinline id="rtv" controls muted autoplay></video>
     <br />
-    <select id="devices"> </select>
-    <select id="cam"> </select>
+    <select id="devices"></select>
+    <select id="cam"></select>
     <br />
     <button class="btn btn-primary">
       <i class="fa fa-microphone"></i>LARGE BUTTON</button
-    >.
+    >
+        <button id='butDirectory' class="btn btn-primary">
+      <i class="fa fa-microphone"></i>files BUTTON</button
+    >
+    <input type=file></input>
     <div id="std1"></div>
     <div id="console"></div>
     <script type="module">
@@ -30,6 +34,14 @@
       const button = document.querySelector("button");
       button.onclick = (e) => getUserMedia(e);
 
+      
+const butDir = document.getElementById('butDirectory');
+butDir.addEventListener('click', async () => {
+  const dirHandle = await window.showDirectoryPicker();
+  for await (const entry of dirHandle.values()) {
+    console.log(entry.kind, entry.name);
+  }
+});
       _console.log("init");
 
       // std1;
