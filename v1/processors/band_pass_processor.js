@@ -54,7 +54,7 @@ class BandPassLRCProcessor extends AudioWorkletProcessor {
     return { a0, a1, b0, b1 };
   }
 
-  last_two_frames() {
+  get last_two_frames() {
     switch (this.n % 2) {
       case 0:
         return { i0: 1, i1: 0 };
@@ -69,7 +69,7 @@ class BandPassLRCProcessor extends AudioWorkletProcessor {
     const output = outputs[0];
     var z_params = this.zparams;
 
-    const { i0, i1 } = this.last_two_frames();
+    const { i0, i1 } = this.last_two_frames;
     var sum = 0;
     var ns = 0;
     var sumin = 0;

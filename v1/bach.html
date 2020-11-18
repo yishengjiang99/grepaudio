@@ -19,6 +19,7 @@
     </tone-content>
           <piano-keyboard> </piano-keyboard>
 
+    <input type=file></input>
 
     <script>
     var asdr={
@@ -27,12 +28,11 @@
       sustain: 0.1,
       release: 0.01, //0.01
     }
-    const piano = document.querySelector("piano-keyboard");
+   const piano = document.querySelector("piano-keyboard"); 
    document.querySelector("tone-slider#attack").shadowRoot.querySelector("input[type=range]").oninput=function(e){
-     debugger;
      piano.attack =parseFloat(e.target.value)
    }
-    // document.querySelector("piano-keyboard");
+    
     </script>
   </body>
 </html>
