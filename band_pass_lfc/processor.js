@@ -1,4 +1,5 @@
 import { Q, HZ_LIST, DEFAULT_PRESET_GAINS } from "../constants.js";
+
 class BandPassLRCProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
@@ -28,6 +29,39 @@ class BandPassLRCProcessor extends AudioWorkletProcessor {
       self.port.postMessage({ ztransform: self.zparams });
     };
   }
+  static get parameterDescriptor() {
+    {
+      return [
+        {
+          name: "presetGains",
+          default: [0.375, 0.375, 0.375, 0.375, 0.375, 0.375, 0, 0, 0, 0],
+        },
+        {
+          name: "bands",
+          default: [31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000],
+        },
+      ];
+    }
+  }
+
+  paramtersForCenterFrequency(fc) {
+    var th = 2 * Math.PI * fc;
+    var C = 1 - Math.tan((th * Q) / 2) / (1 + Math.tan(th * Q) / 2);
+    var a0 = (1 + C) * Math.cos(th);
+    var a1 = -C;
+    var b0 = (1 - C) / 2;
+    var b1 = -1.005;
+    return { a0, a1, b0, b1 };
+  }
+
+  get last_two_frames() {
+    switch (this.n % 2) {
+      case 0:
+        return { i0: 1, i1: 0 };
+      case 1:
+        return { i0: 0, i1: 1 };
+    }
+  }
 
   process(inputs, outputs, params) {
     const bands = params.bands || HZ_LIST;
@@ -35,7 +69,7 @@ class BandPassLRCProcessor extends AudioWorkletProcessor {
     const output = outputs[0];
     var z_params = this.zparams;
 
-    const { i0, i1 } = this.last_two_frames();
+    const { i0, i1 } = this.last_two_frames;
     var sum = 0;
     var ns = 0;
     var sumin = 0;
@@ -52,7 +86,9 @@ class BandPassLRCProcessor extends AudioWorkletProcessor {
           var v1 = this.ring_buffer[i1][channel * k] || 0;
           var coef = z_params[k];
           var wq = coef.b0 * v + coef.a0 * v0 + v1 * coef.a1;
-          v += (wq + v1 * coef.b1) * (Math.pow(10, this.gains[k] / 20) - 1);
+          v +=
+            (wq + v1 * coef.b1) *
+            (Math.pow(10, convert_val(this.gains[k]) / 12) - 1);
           this.ring_buffer[this.n % 2][channel * k] = wq;
         }
         sum += v * v;

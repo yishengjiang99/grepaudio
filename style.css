@@ -1,35 +1,43 @@
+td {
+  min-width: 25px;
+}
+body {
+  display: grid;
+  grid-template:
+    "header header header header header header"
+    "menu main main main right right"
+    "menu footer footer footer footer footer";
+}
+#header {
+  grid-area: header;
+}
+#menu {
+  grid-area: menu;
+}
+#main {
+  height: 40000px;
+  overflow-y: scroll;
+  grid-area: main;
+}
+#right {
+  grid-area: right;
+}
+#footer {
+  grid-area: footer;
+}
 
-td{
-  min-width:25px;
-}
-body{
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-    -webkit-touch-callout: none; /* iOS Safari */
-      -webkit-user-select: none; /* Safari */
-       -khtml-user-select: none; /* Konqueror HTML */
-         -moz-user-select: none; /* Old versions of Firefox */
-          -ms-user-select: none; /* Internet Explorer/Edge */
-              user-select: none; /* Non-prefixed version, currently
-                                    supported by Chrome, Opera and Firefox */
-  
-}
-.footer{
+.footer {
   position: fixed;
   bottom: 0;
   left: 10vw;
   width: 90vw;
-  height:5vh;
-  color:black;
-  background-color:white;
+  height: 5vh;
+  color: black;
+  background-color: white;
 }
-#audio2{
-width:100px;
-height:30px;
+#audio2 {
+  width: 100px;
+  height: 30px;
 }
 .center {
   display: block;
@@ -37,33 +45,32 @@ height:30px;
   margin-right: auto;
   width: 40%;
 }
-.relative{
-  position:relative;
+.relative {
+  position: relative;
 }
 #overlay {
   position: fixed; /* Sit on top of the page content */
-  display: 'block'; /* Hidden by default */
+  display: "block"; /* Hidden by default */
   width: 100%; /* Full width (cover the whole page) */
   height: 100%; /* Full height (cover the whole page) */
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0,0,0,0.9); /* Black background with opacity */
+  background-color: rgba(0, 0, 0, 0.9); /* Black background with opacity */
   z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
   cursor: pointer; /* Add a pointer on hover */
 }
 
-
-#overlay .text{
-  position:absolute;
-  top:20%;
-  left:50%;
-  font-size:50px;
-  color:white;
-  user-select:none;
-  transform:translate(-50%,-50%);
-  -ms-transform:translate(-50%,-50%)
+#overlay .text {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  font-size: 50px;
+  color: white;
+  user-select: none;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
 }
 .panel {
   -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -72,20 +79,29 @@ height:30px;
 .panel-default > .panel-heading {
   background-image: -webkit-linear-gradient(top, #f5f5f5 0%, #e8e8e8 100%);
   background-image: -o-linear-gradient(top, #f5f5f5 0%, #e8e8e8 100%);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#f5f5f5), to(#e8e8e8));
+  background-image: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    from(#f5f5f5),
+    to(#e8e8e8)
+  );
   background-image: linear-gradient(to bottom, #f5f5f5 0%, #e8e8e8 100%);
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff5f5f5', endColorstr='#ffe8e8e8', GradientType=0);
   background-repeat: repeat-x;
 }
-body{color: #C0C0C0;background-color:#35363a;/* position: fixed; *//* overflow-x:hidden; *//* position:fixed; *//* overflow-y:scroll; */width:100%;}
-table{
-    display: table-row-group;
+body {
+  color: #c0c0c0;
+  background-color: #35363a; /* position: fixed; */ /* overflow-x:hidden; */ /* position:fixed; */ /* overflow-y:scroll; */
+  width: 100%;
+}
+table {
+  display: table-row-group;
   vertical-align: top;
   border-color: inherit;
-
 }
-td{
-  vertical-align:top;
+td {
+  vertical-align: top;
 }
 
 .sidebar {
@@ -104,9 +120,9 @@ td{
   padding: 16px;
   text-decoration: none;
 }
- 
+
 .sidebar a.active {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
 
@@ -127,8 +143,12 @@ div.content {
     height: auto;
     position: relative;
   }
-  .sidebar a {float: left;}
-  div.content {margin-left: 0;}
+  .sidebar a {
+    float: left;
+  }
+  div.content {
+    margin-left: 0;
+  }
 }
 
 @media screen and (max-width: 400px) {
@@ -137,38 +157,38 @@ div.content {
     float: none;
   }
 }
-.simple-console{
+.simple-console {
   display: fixed;
   flex: 1;
   flex-direction: column;
   font-family: sans-serif;
   position: fixed;
-  opacity:1;
+  opacity: 1;
   bottom: 20px;
-  right:10px;
+  right: 10px;
   overflow-y: scroll;
   width: 30vw;
   /* background-color:black; */
-  color:white;
+  color: white;
 }
-.badge{
+.badge {
   display: inline-block;
-  padding: .25em .4em;
+  padding: 0.25em 0.4em;
   font-size: 75%;
   font-weight: 700;
   line-height: 1;
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
-  border-radius: .25rem;
+  border-radius: 0.25rem;
 }
-.simple-console-output{
-  min-height:20vh;
-  max-height:30vh;
-  overflow-y:scroll;
+.simple-console-output {
+  min-height: 20vh;
+  max-height: 30vh;
+  overflow-y: scroll;
   /* background-color: rgba(0,0,0,0.9); */
-  color:white;
-  font-size:1.2em;
+  color: white;
+  font-size: 1.2em;
   opacity: 0.2;
   bottom: 20px;
 }
@@ -184,7 +204,7 @@ div.content {
   padding: 10px;
   cursor: move;
   z-index: 10;
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: #fff;
 }
 span.twitter-typeahead .tt-menu,
@@ -252,7 +272,9 @@ span.twitter-typeahead {
 .input-group span.twitter-typeahead .tt-dropdown-menu {
   top: 32px !important;
 }
-.input-group span.twitter-typeahead:not(:first-child):not(:last-child) .form-control {
+.input-group
+  span.twitter-typeahead:not(:first-child):not(:last-child)
+  .form-control {
   border-radius: 0;
 }
 .input-group span.twitter-typeahead:first-child .form-control {

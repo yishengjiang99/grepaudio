@@ -1,53 +1,47 @@
 window.requestAnimFrame = (function () {
-  return window.requestAnimationFrame ||
+  return (
+    window.requestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
     window.mozRequestAnimationFrame ||
     function (callback, element) {
       window.setTimeout(callback, 1000 / 60);
-    };
+    }
+  );
 })();
 window.AudioContext = (function () {
-  return window.webkitAudioContext || window.AudioContext || window.mozAudioContext;
+  return (
+    window.webkitAudioContext || window.AudioContext || window.mozAudioContext
+  );
 })();
 
-
-var con = new SimpleConsole({
+var simpleConsole = new SimpleConsole({
   placeholder: "",
   id: "console",
   handleCommand: function (command) {
     try {
       var resp = index_stdin(command);
-      con.log(resp)
+      simpleConsole.log(resp);
     } catch (error) {
-      con.log(error);
+      simpleConsole.log(error);
     }
   },
   autofocus: true, // if the console is to be the primary interface of the page
   storageID: "app-console", // or e.g. "simple-console-#1" or "workspace-1:javascript-console"
-})
-document.getElementById("console") ? document.getElementById("console").append(con.element) : document.body.append(con.element);
-
-window.con = con;
+});
+document.body.append(simpleConsole.element);
+window.simpleConsole = simpleConsole;
 // add the console to the page
 
-window.log = con.log;
-window.logErr = con.logError;
+window.log = simpleConsole.log;
+window.logErr = simpleConsole.logError;
 
 window.onerror = function (msg, url, lineNo, columnNo, error) {
-  con.log([msg, url, lineNo, columnNo, error].join(', '))
+  simpleConsole.log([msg, url, lineNo, columnNo, error].join(", "));
+};
 
-}
-window.log = (txt) => con.log(txt);;
-
-
-window.logErr = function (text) {
-  if (typeof text === 'object') text = JSON.stringify(text, null, '\n');
-  window.log(text);
-
-}
 document.onload = function () {
   const allRanges = document.querySelectorAll(".range-wrap");
-  allRanges.forEach(wrap => {
+  allRanges.forEach((wrap) => {
     const range = wrap.querySelector(".range");
     const bubble = wrap.querySelector(".bubble");
 
@@ -56,13 +50,14 @@ document.onload = function () {
     });
     setBubble(range, bubble);
 
-
-
-    document.querySelectorAll(".draggable").forEach( elem=>{
+    document.querySelectorAll(".draggable").forEach((elem) => {
       dragElement(elem);
     });
     function dragElement(elmnt) {
-      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      var pos1 = 0,
+        pos2 = 0,
+        pos3 = 0,
+        pos4 = 0;
       elmnt.onmousedown = function (e) {
         e = e || window.event;
         e.preventDefault();
@@ -70,11 +65,11 @@ document.onload = function () {
         pos3 = e.clientX;
         pos4 = e.clientY;
         document.onmouseup = closeDragElement;
-        log("drag mouse down")
+        log("drag mouse down");
         // call a function whenever the cursor moves:
         document.onmousemove = elementDrag;
-      }
-    
+      };
+
       function elementDrag(e) {
         e = e || window.event;
         e.preventDefault();
@@ -84,10 +79,10 @@ document.onload = function () {
         pos3 = e.clientX;
         pos4 = e.clientY;
         // set the element's new position:
-        elmnt.style.top = (elmnt.top - pos2) + "px";
-        elmnt.style.left = (elmnt.left - pos1) + "px";
+        elmnt.style.top = elmnt.top - pos2 + "px";
+        elmnt.style.left = elmnt.left - pos1 + "px";
       }
-    
+
       function closeDragElement() {
         /* stop moving when mouse button is released:*/
         document.onmouseup = null;
@@ -106,24 +101,32 @@ document.onload = function () {
     // Sorta magic numbers based on size of the native UI thumb
     bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15}px))`;
   }
-}
+};
 function wrap(el, wrapper) {
   el.parentNode.insertBefore(wrapper, el);
   wrapper.appendChild(el);
 }
 HTMLElement.prototype.wrap = function (parent_tag) {
   let p = document.createElement(parent_tag);
-  p.appendChild(this)
+  p.appendChild(this);
   return p;
-}
+};
 
-function xinspect(o,i){
-  if(typeof i=='undefined')i='';
-  if(i.length>50)return '[MAX ITERATIONS]';
-  var r=[];
-  for(var p in o){
-      var t=typeof o[p];
-      r.push(i+'"'+p+'" ('+t+') => '+(t=='object' ? 'object:'+xinspect(o[p],i+'  ') : o[p]+''));
+function xinspect(o, i) {
+  if (typeof i == "undefined") i = "";
+  if (i.length > 50) return "[MAX ITERATIONS]";
+  var r = [];
+  for (var p in o) {
+    var t = typeof o[p];
+    r.push(
+      i +
+        '"' +
+        p +
+        '" (' +
+        t +
+        ") => " +
+        (t == "object" ? "object:" + xinspect(o[p], i + "  ") : o[p] + "")
+    );
   }
-  return r.join(i+'\n');
+  return r.join(i + "\n");
 }
