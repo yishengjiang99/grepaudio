@@ -14,7 +14,7 @@
 		"lint:fix": "eslint --ext ts --fix ./src",
 		"tes2t": "cross-var karma start ./test/karma.conf.js --auto-watch --browsers OnlineChrome --file",
 		"test:browser": "npm start ./test/karma.conf.js --browsers Chrome karma:browser",
-		"test": "cross-var karma start ./test/karma.conf.js --file upload-worker",
+		"test": "cross-var karma start ./test/karma.conf.js --auto-watch --browsers OnlineChrome --file",
 		"test:watch": "npm run collect:tests && npm run karma:watch",
 		"ts:build": "tsc --project ./scripts/tsconfig.build.json",
 		"watch": "tsc --watch",

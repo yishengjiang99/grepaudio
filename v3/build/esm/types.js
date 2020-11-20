@@ -23,4 +23,15 @@ export function eventEmitter() {
         },
     };
 }
+// https://github.com/Microsoft/TypeScript/issues/20595#issuecomment-351030256
+export const globalObject = (function () {
+    if (typeof window !== "undefined") {
+        // window is defined in browsers
+        return window;
+    }
+    else if (typeof self !== "undefined") {
+        // self is defined in WebWorkers
+        return self;
+    }
+})();
 //# sourceMappingURL=types.js.map

@@ -58,7 +58,6 @@ window.onload = () => {
 				});
 				webworker.postMessage({ msg: "init" });
 				const sharedBuffer = await sharedBufferPromise;
-				debugger;
 				node = await loadInlineWorklet({
 					inlineJSLib: inlineJSLib,
 					className: "Upload",

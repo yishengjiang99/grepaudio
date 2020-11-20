@@ -1,3 +1,27 @@
+import { __awaiter } from "tslib";
+export const readableTimeseries = () => {
+    const rs = new ReadableStream({
+        start: (controller) => __awaiter(void 0, void 0, void 0, function* () {
+            while (true) {
+                yield new Promise((resolve) => {
+                    controller.enqueue(new Date().toLocaleString());
+                    setTimeout(resolve, 10);
+                });
+            }
+        }),
+        pull: (controller) => { },
+        cancel: () => { },
+    });
+    let data = [];
+    const reader = rs.getReader();
+    reader.read().then(function process({ done, value }) {
+        console.log(value, done);
+        if (done)
+            return;
+        else
+            return reader.read().then(process);
+    });
+};
 export const timeseries = (arr, divId) => {
     const length = arr.length;
     const div = divId instanceof HTMLElement ? divId : document.getElementById(divId);

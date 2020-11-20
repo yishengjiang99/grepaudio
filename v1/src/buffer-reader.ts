@@ -1,11 +1,9 @@
-/// <reference lib="dom" />
-
 type FetchBlobFn = (url: string) => Promise<ArrayBuffer>;
 type DecodeResponseFunction = (
   xhrResponse: ArrayBuffer,
   ctx: AudioContext,
   offlineCtx: OfflineAudioContext
-) => Promise<AudioBufferSourceNode>;
+) => Promise<AudioBuffer>;
 
 interface BufferReaderProps {
   renderBufferSizeMS?: number;
@@ -18,14 +16,21 @@ const defaultProps: BufferReaderProps = {
   autoPlay: true,
 };
 
-export function bufferReader(url: string, audioContext?: AudioContext, props?: BufferReaderProps) {
-  let { renderBufferSizeMS, downSampleRatio, autoPlay } = { ...defaultProps, ...(props || {}) };
+export async function bufferReader(
+  url: string,
+  audioContext?: AudioContext,
+  props?: BufferReaderProps
+) {
+  let { renderBufferSizeMS, downSampleRatio, autoPlay } = props;
   const ctx = audioContext || new AudioContext();
-  const offlineCtx = new OfflineAudioContext(2, (ctx.sampleRate * renderBufferSizeMS) / 1000, ctx.sampleRate * downSampleRatio);
-
-  return fetchBlob(url)
+  const offlineCtx = new OfflineAudioContext(
+    2,
+    (ctx.sampleRate * renderBufferSizeMS) / 1000,
+    ctx.sampleRate * downSampleRatio
+  );
+  const rbs = await fetchBlob(url)
     .then((resp) => decodeResponse(resp, ctx, offlineCtx))
-    .then((bs) => offlineRender(bs, ctx))
+    .then((bs) => offlineRender(bs, offlineCtx))
     .then((renderedSource: AudioBufferSourceNode) => {
       if (autoPlay) {
         renderedSource.start();
@@ -38,23 +43,24 @@ export const fetchBlob: FetchBlobFn = (url: string) =>
   new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
-
     xhr.open("GET", url, true);
-    xhr.responseType = "blob";
-    xhr.onloadstart = () => xhr.response && resolve(xhr.response.toArrayBuffer());
-    xhr.onload = () => xhr.response && resolve(xhr.response.toArrayBuffer());
+    xhr.responseType = "arraybuffer";
+    xhr.onloadstart = () => xhr.response && resolve(xhr.response);
+    xhr.onload = () => xhr.response && resolve(xhr.response);
     xhr.onerror = reject;
     xhr.send();
   });
 
-export const decodeResponse: DecodeResponseFunction = (xhrResponse, ctx, offlineCtx) =>
+export const decodeResponse: DecodeResponseFunction = (
+  xhrResponse,
+  ctx,
+  offlineCtx
+) =>
   new Promise((resolve, reject) => {
-    const bufferSource = offlineCtx.createBufferSource();
-    ctx.decodeAudioData(
+    offlineCtx.decodeAudioData(
       xhrResponse,
       function (buffer) {
-        bufferSource.buffer = buffer;
-        resolve(bufferSource);
+        resolve(buffer);
       },
       function (err) {
         reject(err);
@@ -62,20 +68,25 @@ export const decodeResponse: DecodeResponseFunction = (xhrResponse, ctx, offline
     );
   });
 
-export const offlineRender = (bufferSource: AudioBufferSourceNode, ctx: AudioContext) =>
+export const offlineRender = (
+  buffer: AudioBuffer,
+  ctx: AudioContext,
+  offlineContext: OfflineAudioContext
+) =>
   new Promise((resolve, reject) => {
-    const offlineContext: OfflineAudioContext = bufferSource.context;
-    bufferSource.connect(offlineContext.destination);
+    const bfs = new AudioBufferSourceNode(offlineContext, { buffer: buffer });
+    bfs.connect(offlineContext.destination);
     offlineContext
       .startRendering()
       .then(function (renderedBuffer) {
-        const renderedBufferSource = ctx.createBufferSource();
-        renderedBufferSource.buffer = renderedBuffer;
+        const renderedBufferSource = new AudioBufferSourceNode(ctx, {
+          buffer: renderedBuffer,
+        });
         renderedBufferSource.connect(ctx.destination);
+        renderedBufferSource.start();
         resolve(renderedBufferSource);
       })
       .catch((e) => {
         throw new Error("rendering failed " + e.message);
       });
-    bufferSource.start(0);
   });

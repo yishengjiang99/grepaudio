@@ -14,8 +14,8 @@ const postMessage = globalObject.postMessage;
 	postMessage({ sharedBuffer });
 	await new Promise((resolve) => (self.onmessage = resolve));
 	signal_listen_non_block(self);
-	//const wss = new WebSocket("ws://localhost:5150");
-	const wss = new WebSocket("wss://www.grepawk.com/stdin");
+	const wss = new WebSocket("ws://localhost:5150");
+	//const wss = new WebSocket("wss://www.grepawk.com/stdin");
 
 	await new Promise((resolve) => (wss.onopen = () => resolve()));
 	postMessage({ msg: "wsOpen" });

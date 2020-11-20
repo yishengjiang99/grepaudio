@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/yishengjiang99/grepaudio#readme",
   "dependencies": {
+    "@types/mocha": "^8.0.4",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0"
   },
@@ -27,5 +28,10 @@
     "karma-jasmine": "^4.0.1",
     "karma-mocha": "^2.0.1",
     "karma-requirejs": "file:node_modules/karma-requirejs"
-  }
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "keywords": []
 }

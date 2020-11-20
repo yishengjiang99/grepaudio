@@ -22,6 +22,5 @@ describe("ReadableStream", () => {
 			if (done) return data;
 			else return reader.read().then(process);
 		});
-		expect(data[5]).to.equal(5);
 	});
 });

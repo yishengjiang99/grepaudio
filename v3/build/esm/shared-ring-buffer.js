@@ -34,6 +34,15 @@ export class SharedRingBuffer {
         }
         this.wPtr = wptr;
     }
+    readToUint16Array(output) {
+        let ptr = this.readPtr;
+        for (let i = 0; i < output.length && ptr <= this.wPtr; i++) {
+            const d = this.dataBuffer[ptr++ % this.bufferSize];
+            output[i] = d < 0 ? 0x8000 & d : 0x7ffff & d;
+        }
+        this.readPtr = ptr;
+        return output;
+    }
     read(n, output) {
         let ptr = this.readPtr;
         output = output || new Float32Array(n);
