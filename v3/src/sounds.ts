@@ -32,14 +32,14 @@ export const whiteNoise = ({ adsr }) => {
 	return g;
 };
 export const loadBase64 = (midiString: string) => {
-	// const ctx = getCtx();
-	// const audioTag = createDiv(`audio`);
-	// const source = new MediaElementAudioSourceNode(ctx, { mediaElement: audioTag });
-	// source.connect(ctx.destination);
-	// audioTag.controls = true;
-	// audioTag.src = A3;
-	// audioTag.autoplay = true;
-	// return source;
+	const ctx = getCtx();
+	const audioTag = createDiv(`audio`);
+	const source = new MediaElementAudioSourceNode(ctx, { mediaElement: audioTag });
+	source.connect(ctx.destination);
+	audioTag.controls = true;
+	audioTag.src = "http://localhost:3222/synth/430-ac2.wav";
+	audioTag.autoplay = true;
+	return source;
 };
 
 export function loadBuffer(url, ctx) {

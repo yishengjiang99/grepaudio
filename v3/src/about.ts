@@ -95,7 +95,8 @@ window.onload = () => {
 					data.msg && globalThis.updateMsg2(data.msg);
 				};
 			}
-			mid = (e.offsetX / 1400) * 55 + 38;
+			mid = (e.offsetX / 800) * 55 + 38;
+			globalThis.updateMesg1("FREQ " + mid + " " + midiToFreq(mid));
 			// const x = e.clientX - e.target.getComputedStyle.left;
 			osc.nodes.map((o, idx) =>
 				o.frequency.linearRampToValueAtTime(midiToFreq(mid), o.context.currentTime + 0.01)

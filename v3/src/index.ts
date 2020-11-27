@@ -7,10 +7,10 @@ export * from "./osc3";
 import { createElement as h } from "react";
 import { render } from "react-dom";
 import { getCtx } from "./ctx";
-import { osc3run, scale } from "./osc3";
+import { osc3, osc3run, scale } from "./osc3";
 import { midiToFreq } from "./types";
-/*eslint no-multiple-empty-lines: ["off", { "max": 22, "maxEOF": 22 }]*/
-
+import { playMidi } from "./mixer";
+import { App } from "./app";
 const NoteBtn = ({ midi, fn }) => {
 	return h(
 		"button",
@@ -20,11 +20,11 @@ const NoteBtn = ({ midi, fn }) => {
 		[midi + ""]
 	);
 };
-export const App = () => {
+export const gg = () => {
 	if (!window) {
 		return null;
 	}
-	const midis = [...Array(12).keys()].map((i) => i + 24);
+	const midis = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map((i) => i + 24);
 	const row1 = h(
 		"div",
 		{},
@@ -35,9 +35,12 @@ export const App = () => {
 		{},
 		midis.map((midi) => NoteBtn({ midi, fn: () => scale(midiToFreq(midi)) }))
 	);
-	return h("div", {}, [row1, row2]);
+	return h("div", {}, [
+		h("button", { onClick: () => playMidi("midi.csv"), style: { width: 100, height: 100 } }),
+		row1,
+		row2,
+	]);
 };
+const app = h(App, { msg1: "1", msg2: "2" }, [gg()]);
 
-document.onload = () => {
-	render(App(), document.querySelector("#output"));
-};
+render(app, document.querySelector("#output"));
