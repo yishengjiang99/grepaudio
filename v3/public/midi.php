@@ -1,28 +1,21 @@
-<?
+<?php
+$file = isset($_GET['file']) && $_GET['file'] || "./song.mid";
+$fd=fopen('/Users/yisheng/grepawk3/grepaudio/v3/public/song.mid',"rb");
 
+$offset=0;
+$str='';
+$str.=chr(fgetc($fd));
+$str.=chr(fgetc($fd));
+$str.=chr(fgetc($fd));
+$str.=chr(fgetc($fd));
 
-echo file_get_contents("db/midi.csv",'r');
-  
-//   echo "event: ping\n";
-//   $curDate = date(DATE_ISO8601);
-//   echo 'data: {"time": "' . $curDate . '"}';
-//   echo "\n\n";
-  
-//   // Send a simple message at random intervals.
-  
-//   $counter--;
-  
-//   if (!$counter) {
-//     echo 'data: This is a message at time ' . $curDate . "\n\n";
-//     $counter = rand(1, 10);
-//   }
-  
-//   ob_end_flush();
-//   flush();
+echo fgetc($fd);
 
-//   // Break the loop if the client aborted the connection (closed the page)
-
-//   if ( connection_aborted() ) break;
-
-//   sleep(1);
-// }
+function getString($n){
+	global $fd, $offset;
+	$str='';
+	while($n--){
+		$str.=chr(fgetc($fd));
+	}
+	return $str;
+}

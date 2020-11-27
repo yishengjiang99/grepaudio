@@ -1,24 +1,15 @@
 {
-	"compileOnSave": true,
 	"compilerOptions": {
-		"target": "ES6",
-		"module": "ES2015",
+		"baseUrl": "src",
+		"outDir": "./build/",
 		"noImplicitAny": false,
-		"importHelpers": true,
-		"noUnusedLocals": false,
-		"removeComments": false,
-		"outDir": "./build/esm",
 		"sourceMap": true,
+		"module": "es6",
+		"target": "es2017",
 		"moduleResolution": "node",
 		"jsx": "react",
-		"downlevelIteration": true,
-		"allowJs": true,
-		"checkJs": false,
-		"experimentalDecorators": true,
-		"lib": ["es6", "dom", "es2015", "esnext"],
-		"baseUrl": "./",
-		"esModuleInterop": false
+		"allowJs": true
 	},
-	"include": ["./src"],
-	"exclude": ["./public"]
+	"exclude": ["./public", "node_modules"],
+	"include": ["./src/**/*"]
 }
