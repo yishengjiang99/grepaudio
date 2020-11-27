@@ -21,27 +21,6 @@ package-lock.json
 v3/build/*
 v3/build/esm/*
 v3/coverage/*
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/ctx.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/envelope.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/index.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/index.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/osc3.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/outputBuffer.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/shared-ring-buffer.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/sounds.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/timeseries.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/types.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/upload-worker.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/ctx.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/envelope.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/index.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/index.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/osc3.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/outputBuffer.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/shared-ring-buffer.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/sounds.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/timeseries.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/types.ts.html
-v3/coverage/Chrome 85.0.4183.102 (Mac OS 10.15.4)/html/upload-worker.ts.html
 v3/build/esm/ctx.js
 v3/build/**/*
+v1/build/**/*
