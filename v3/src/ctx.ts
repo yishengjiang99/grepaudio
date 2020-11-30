@@ -1,27 +1,10 @@
 import { assert } from "chai";
 import { loadInlineWorklet } from "./offline-ctx";
 import { Milliseconds, CallBack } from "./types";
-let ctx;
+globalThis.ctx = new AudioContext();
 
 export const getCtx = (): AudioContext => {
-	if (!window) {
-		return null;
-	}
-	if (ctx && ctx.state === "running") {
-		return ctx;
-	}
-	try {
-		ctx = new AudioContext();
-	} catch (e) {
-		window.addEventListener(
-			"mousemove",
-			() => {
-				ctx.resume();
-			},
-			{ once: true }
-		);
-	}
-	return ctx;
+	return globalThis.ctx;
 };
 
 export function ensureDiv(selector) {

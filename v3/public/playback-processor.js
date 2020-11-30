@@ -8,23 +8,23 @@ class PlaybackProcessor extends AudioWorkletProcessor {
 		this.buffers = [];
 		this.started = false;
 		// this.port.postMessage("initialized");
-		// this.port.onmessage = async ({ data: { readable } }) => {
-		//   let reader = await readable.getReader();
-		//   let that = this;
-		//   reader.read().then(function process({ done, value }) {
-		//     if (done) {
-		//       that.port.postMessage({ done: 1 });
-		//       return;
-		//     }
-		//     let offset = 0;
-		//     while (value.length >= 128 * 2) {
-		//       that.buffers.push(value.slice(0, 128 * 2));
-		//       value = value.slice(128 * 2);
-		//     }
-		//     that.started = true;
-		//     reader.read().then(process);
-		//   });
-		// };
+		this.port.onmessage = async ({ data: { readable } }) => {
+		  let reader = await readable.getReader();
+		  let that = this;
+		  reader.read().then(function process({ done, value }) {
+		    if (done) {
+		      that.port.postMessage({ done: 1 });
+		      return;
+		    }
+		    let offset = 0;
+		    while (value.length >= 128 * 2) {
+		      that.buffers.push(value.slice(0, 128 * 2));
+		      value = value.slice(128 * 2);
+		    }
+		    that.started = true;
+		    reader.read().then(process);
+		  });
+		};
 	}
 
 	process(inputs, outputs, parameters) {

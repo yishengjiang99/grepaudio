@@ -55,13 +55,14 @@ export const loadInlineWorklet: loadInlineWorkletFunction = async (props) => {
 				}
             }
             if(send){
-                ${onProc};
+                ${onProc}
             }
             return true;
         }
 	}
 	registerProcessor( "${classDesc}",${className});
 `;
+	console.log(template);
 	const blobUrl = URL.createObjectURL(new Blob([template], { type: "text/javascript" }));
 	const ctx = getCtx();
 	await ctx.audioWorklet.addModule(blobUrl);

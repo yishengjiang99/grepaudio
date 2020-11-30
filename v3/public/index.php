@@ -25,5 +25,6 @@ if($_GET['file']){
 	}
 }?>
 </pre>
+<script src='build/Sequence.js'></script>
 </body>
 </html>

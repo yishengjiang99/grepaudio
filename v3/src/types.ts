@@ -13,6 +13,14 @@ export type Milliseconds = number;
 export const sleep = async function (ms) {
 	new Promise((resolve) => setTimeout(resolve, ms));
 };
+export const cdiv = (tag: string, attributes: { [k: string]: string }, children: HTMLElement[] = []) => {
+	const div = document.createElement(tag);
+	Object.keys(attributes).map((k) => {
+		div[k] = attributes[k];
+	});
+	children.map((c) => div.append(c));
+	return div;
+};
 // https://rjzaworski.com/2019/10/event-emitters-in-typescript
 type EventMap = Record<string, any>;
 

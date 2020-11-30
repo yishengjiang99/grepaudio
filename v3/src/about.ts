@@ -45,7 +45,7 @@ window.onload = () => {
 	}
 	const app = React.createElement(App, { msg1: "1", msg2: "2" }, []);
 	const container = document.getElementById("container");
-	if (!container) ensureDiv("container");
+	if (!container) return;
 	let mid = 38;
 
 	container.onmousedown = async (e: MouseEvent) => {

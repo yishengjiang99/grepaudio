@@ -1,5 +1,5 @@
 import { createDiv, ensureDiv, getCtx } from "./ctx";
-import { ADSR } from "./types";
+import { ADSR, midiToFreq } from "./types";
 import { envelope } from "./envelope";
 // import { A3, B3, C3, D3, G3, F3, Bb3 } from "../public/db/FatBoy_acoustic_grand_piano";
 export const whiteNoise = ({ adsr }) => {
@@ -37,7 +37,7 @@ export const loadBase64 = (midiString: string) => {
 	const source = new MediaElementAudioSourceNode(ctx, { mediaElement: audioTag });
 	source.connect(ctx.destination);
 	audioTag.controls = true;
-	audioTag.src = "http://localhost:3222/synth/430-ac2.wav";
+	audioTag.src = "http://localhost/synth.php?f=" + midiToFreq(midiString);
 	audioTag.autoplay = true;
 	return source;
 };
@@ -60,4 +60,10 @@ export function loadBuffer(url, ctx) {
 
 		xhr.send();
 	});
+}
+export function load32() {
+	let ab = fetch("/f32le-0.5.pcm")
+		.then((resp) => resp.arrayBuffer())
+		.then((_ab) => (ab = _ab));
+	return ab;
 }

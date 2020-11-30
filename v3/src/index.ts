@@ -8,7 +8,7 @@ import { createElement as h } from "react";
 import { render } from "react-dom";
 import { getCtx } from "./ctx";
 import { osc3, osc3run, scale } from "./osc3";
-import { midiToFreq } from "./types";
+import { cdiv, midiToFreq } from "./types";
 import { playMidi } from "./mixer";
 import { App } from "./app";
 const NoteBtn = ({ midi, fn }) => {
@@ -42,5 +42,5 @@ export const gg = () => {
 	]);
 };
 const app = h(App, { msg1: "1", msg2: "2" }, [gg()]);
-
-render(app, document.querySelector("#output"));
+const div = cdiv("div", { id: "app" });
+render(app, div);

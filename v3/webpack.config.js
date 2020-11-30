@@ -1,21 +1,71 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
-module.exports = {
-	entry: "./src/index.ts",
+// /////////////////////////////////////
+// Defaults
+// /////////////////////////////////////
+
+const defaults = {
+	mode: "production",
+	context: __dirname,
+	entry: {
+		Main: "./src/index.ts",
+		Sequence: "./src/sequence.ts",
+	},
+	output: {
+		path: path.resolve(__dirname, "build"),
+		filename: "[name].js",
+		library: "Main",
+		libraryTarget: "umd",
+		globalObject: "typeof self !== 'undefined' ? self : this",
+	},
+	resolve: {
+		extensions: [".ts", ".js"],
+	},
 	module: {
 		rules: [
 			{
-				test: /\.tsx?$/,
+				test: /\.ts$/,
 				use: "ts-loader",
-				exclude: /node_modules/,
+				exclude: /(node_modules)/,
 			},
 		],
 	},
-	resolve: {
-		extensions: [".tsx", ".ts", ".js"],
+	devtool: "cheap-source-map",
+};
+
+// /////////////////////////////////////
+// Tests
+// /////////////////////////////////////
+
+const test = Object.assign({}, defaults, {
+	entry: {
+		test: "./test/test.js",
 	},
-	output: {
-		filename: "bundle.js",
-		path: path.resolve(__dirname, "dist"),
-	},
+	plugins: [
+		new HtmlWebpackPlugin({
+			filename: "test.html",
+			template: "./test/index.html",
+		}),
+	],
+});
+
+// /////////////////////////////////////
+// Production
+// /////////////////////////////////////
+
+const production = Object.assign({}, defaults, {
+	mode: "production",
+	devtool: "source-map",
+});
+
+module.exports = (env) => {
+	if (env.test) {
+		return test;
+	} else if (env.production) {
+		return production;
+	} else {
+		return scratch;
+	}
 };

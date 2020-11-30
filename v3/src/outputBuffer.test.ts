@@ -7,7 +7,7 @@ import { expect } from "chai";
 describe("getOutputBuffer", () => {
 	it("it is an script processor", async () => {
 		const { postAmp, controller } = osc3(322);
-		postAmp.connect(getCtx().destination);
+		postAmp.connect(postAmp.context.destination);
 		const output = new Float32Array(getCtx().sampleRate);
 		const { proc, samplesGot } = outputBuffer(postAmp, {
 			outlet: postAmp.context.destination,
