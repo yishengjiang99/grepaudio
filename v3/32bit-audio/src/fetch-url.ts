@@ -1,7 +1,7 @@
 const HTTP_PARTIAL_CONTENT = 206;
 const HTTP_PARTIAL_RANGE_NOT_SATISFIED = 406;
 const HTTP_PARTIAL_RANGE_NOT_SATISFIED_BUT_HERES_SOME_DATA = 416;
-export const fetchLoader = (config: PlaybackOptions, port2: MessagePort) => {
+export const fetchLoader = (url:string,sampleRate:number=44100, port2?: MessagePort) => {
 	const queue: Queue = [];
 	const fetchGenerator = async function* (queue: Queue, writable: WritableStream<Uint8Array>) {
 		let bytesLoaded = 0;
@@ -29,14 +29,6 @@ export const fetchLoader = (config: PlaybackOptions, port2: MessagePort) => {
 				default:
 					break;
 			}
-
-			// (
-			// 	const {body,resp}=await fetch(url, {
-			// 		headers: {
-			// 			range: rangeHeader,
-			// 		},
-			// 	});
-			// ).body?.pipeTo(writable);
 		}
 	};
 
@@ -44,9 +36,9 @@ export const fetchLoader = (config: PlaybackOptions, port2: MessagePort) => {
 		let offset = 0;
 		const { writable, readable } = new TransformStream<Uint8Array, Uint8Array>();
 		if (url) {
-			[1 / 2, 1, 3, 5, 10].map((byteRange) => {
+			[1,2,5,8, 12,14,20].map((byteRange) => {
 				const start = offset;
-				const end = start + byteRange * config.sampleRate;
+				const end = start + byteRange * sampleRate ||44100
 				offset = end;
 				queue.push({ url, start, end });
 				return `bytes=${start}-${end}`; // - (offset + byteRange * config.sampleRate)}`;
@@ -68,5 +60,9 @@ export const fetchLoader = (config: PlaybackOptions, port2: MessagePort) => {
 
 	return {
 		queueUrl,
+		preflight: async (url: string):Promise< Headers>{
+			return (await fetch(url, { method: "OPTION" })).headers;
+		},
+		status:()=>{};
 	};
 };

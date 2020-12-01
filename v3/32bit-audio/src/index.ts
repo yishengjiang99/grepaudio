@@ -1,6 +1,6 @@
 ///<reference path="types.d.ts" />;
 
-import { procURL } from "./playback-proc.js";
+import { procURL } from "./playback-proc";
 
 let node: AudioWorkletNode, worker: Worker, ctx: AudioContext;
 const defaultConfig: PlaybackOptions = { sampleRate: 48000, nchannels: 2, bitdepth: 32 };
