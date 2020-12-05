@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mocha</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="mocha.css" />
+  </head>
+  <body>
+    <script type="module">
+      const saveFile = async (blob) => {
+        try {
+          const handle = await window.showSaveFilePicker({
+            types: [
+              {
+                accept: {
+                  // Omitted
+                },
+              },
+            ],
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          return handle;
+        } catch (err) {
+          console.error(err.name, err.message);
+        }
+      };
+
+      const openFile = () => {
+        let fh;
+        const btn = document.createElement("button");
+
+        btn.addEventListener("click", async () => {
+          // Destructure the one-element array.
+          [fh] = await window.showOpenFilePicker();
+          // Do something with the file handle.
+          const rd = fh.getFile().then((f) => f.stream().getReader());
+        });
+        btn.innerHTML = "start";
+        document.body.appendChild(btn);
+      };
+      openFile();
+    </script>
+  </body>
+</html>

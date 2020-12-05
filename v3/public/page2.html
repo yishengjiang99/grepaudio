@@ -1,0 +1,17 @@
+<html>
+<script>
+const ws = new WebSocket("ws://localhost:5150");
+ws.onconnection=()=>{
+  ws.onmessage=({data})=>{
+  console.log(data.byteLength);
+ }
+    window.addEventListener("keydown", (e) => {
+      ws.send(e.key);
+    });
+    window.addEventListener("keypress", (e) => {
+    });
+    window.addEventListener("keyup", (e) => {
+    });
+}
+</script>
+</body>

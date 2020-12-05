@@ -1,0 +1,24 @@
+
+		<html>
+		<head>
+		</head>
+		<body>
+		<div id='container'>
+			<div id='menu'>
+				<li><button href='synth/440/-ac2-f32le.wav'>-ac2-f32le.wav</button><li><li><button href='synth/440/-ac2-s16le.wav'>-ac2-s16le.wav</button><li><li><button href='samples/billie-ac2-ar-44100-s16le.pcm'>billie-ac2-ar-44100-s16le.pcm</button><li><li><button href='https://grepmusic.blob.core.windows.net/%24web/midifiles%2FAnother-Day-In-Paradise-1.mid'>midifiles%2FAnother-Day-In-Paradise-1.mid</button><li><li><button href='https://grepmusic.blob.core.windows.net/%24web/midifiles%2FBeethoven-Symphony5-1.mid'>midifiles%2FBeethoven-Symphony5-1.mid</button><li><li><button href='https://grepmusic.blob.core.windows.net/%24web/midifiles%2FBohemian-Rhapsody-1.mid'>midifiles%2FBohemian-Rhapsody-1.mid</button><li><li><button href='https://grepmusic.blob.core.windows.net/%24web/midifiles%2FDr%20Dre%20-%20Dre%20Day.mid'>midifiles%2FDr%20Dre%20-%20Dre%20Day.mid</button><li><li><button href='https://grepmusic.blob.core.windows.net/%24web/midifiles%2FJingle-Bells-1.mid'>midifiles%2FJingle-Bells-1.mid</button><li><li><button href='https://grepmusic.blob.core.windows.net/%24web/midifiles%2FQueen%20-%20Bohemian%20Rhapsody.mid'>midifiles%2FQueen%20-%20Bohemian%20Rhapsody.mid</button><li><li><button href='https://grepmusic.blob.core.windows.net/%24web/midifiles%2FSimpsons.mid'>midifiles%2FSimpsons.mid</button><li><li><button href='https://grepmusic.blob.core.windows.net/%24web/midifiles%2FThe%20Legend%20of%20Zelda%20Ocarina%20of%20Time%20-%20Song%20of%20Time.mid'>midifiles%2FThe%20Legend%20of%20Zelda%20Ocarina%20of%20Time%20-%20Song%20of%20Time.mid</button><li><li><button href='https://grepmusic.blob.core.windows.net/%24web/midifiles%2Fparadise-4.mid'>midifiles%2Fparadise-4.mid</button><li><li><button href='https://grepmusic.blob.core.windows.net/%24web/midifiles%2Fsimpsons-3.mid'>midifiles%2Fsimpsons-3.mid</button><li>
+			</div>
+
+			<div id='stdout'></div>
+			<input type='file' value='sele'>input</input>
+			<input size=80 autofocus ></input>
+		</div>
+		<div id='rx'>
+			<div id='rx1'></div>
+			<div id='rx2'></div>
+		</div>
+    <script src='./build/templateUI.js' type='module'>
+
+		</script>
+		</body>
+		</html>
+		

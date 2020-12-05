@@ -1,6 +1,3 @@
-import { assert } from "chai";
-import { loadInlineWorklet } from "./offline-ctx";
-import { Milliseconds, CallBack } from "./types";
 globalThis.ctx = new AudioContext();
 
 export const getCtx = (): AudioContext => {

@@ -7,7 +7,8 @@ $chunk=128*2*4;
 $stream = fopen('somedoubts.pcm', 'rb');
 
 while (1) {
-    echo stream_get_contents($stream, $chunk,$offset);
+    
+  echo stream_get_contents($stream, $chunk,$offset);
 
 
   $offset+=$chunk;

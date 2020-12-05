@@ -45,3 +45,14 @@ export const playMidi = async (csv) => {
 	})()) {
 	}
 };
+const ws = new WebSocket("ws://localhost:5150");
+ws.onopen = () => {
+	ws.onmessage = ({ data }) => {
+		console.log(data.byteLength);
+	};
+	window.addEventListener("keydown", (e) => {
+		ws.send(e.key);
+	});
+	window.addEventListener("keypress", (e) => {});
+	window.addEventListener("keyup", (e) => {});
+};

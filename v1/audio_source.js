@@ -5,7 +5,6 @@ function PlayableAudioSource(ctx) {
   const TYPE_WAVE_FORM = 4;
   const TYPE_WAVE_ARRAY_BUFFER = 5;
 
-
   function from() {
     switch (type) {
       case TYPE_AUDIO_TAG:
@@ -18,14 +17,16 @@ function PlayableAudioSource(ctx) {
 
   async function getAudioDevice(deviceId) {
     if (!navigator.mediaDevices) {
-      throw new Error("web rtc not available")
+      throw new Error("web rtc not available");
     }
     try {
-      var stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId, echoCancellation: true } });
+      var stream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: deviceId, echoCancellation: true },
+      });
 
-      var audio = document.createElement("audio")
+      var audio = document.createElement("audio");
       audio.srcObject = stream;
-      
+
       audio.onloadedmetadata = function (e) {
         audio.muted = true;
         audio.control = true;
@@ -41,7 +42,11 @@ function PlayableAudioSource(ctx) {
 
   function random_noise(audioCtx) {
     // Create an empty three-second stereo buffer at the sample rate of the AudioContext
-    var myArrayBuffer = audioCtx.createBuffer(2, audioCtx.sampleRate * 3, audioCtx.sampleRate);
+    var myArrayBuffer = audioCtx.createBuffer(
+      2,
+      audioCtx.sampleRate * 3,
+      audioCtx.sampleRate
+    );
 
     // Fill the buffer with white noise;
     //just random values between -1.0 and 1.0
@@ -52,7 +57,6 @@ function PlayableAudioSource(ctx) {
         // Math.random() is in [0; 1.0]
         // audio needs to be in [-1.0; 1.0]
         nowBuffering[i] = i >> 2;
-
       }
     }
     var source = audioCtx.createBufferSource();
@@ -63,14 +67,10 @@ function PlayableAudioSource(ctx) {
     return source;
   }
 
- 
-
   return {
     random_noise,
-    getAudioDevice    
-  }
-
+    getAudioDevice,
+  };
 }
-
 
 export default PlayableAudioSource;

@@ -10,14 +10,11 @@ const defaults = {
 	mode: "production",
 	context: __dirname,
 	entry: {
-		Main: "./src/index.ts",
 		Sequence: "./src/sequence.ts",
 	},
 	output: {
 		path: path.resolve(__dirname, "build"),
-		filename: "[name].js",
-		library: "Main",
-		libraryTarget: "umd",
+
 		globalObject: "typeof self !== 'undefined' ? self : this",
 	},
 	resolve: {

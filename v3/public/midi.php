@@ -1,21 +1,39 @@
 <?php
-$file = isset($_GET['file']) && $_GET['file'] || "./song.mid";
-$fd=fopen('/Users/yisheng/grepawk3/grepaudio/v3/public/song.mid',"rb");
+header("Access-Control-Allow-Origin: * ");
 
-$offset=0;
-$str='';
-$str.=chr(fgetc($fd));
-$str.=chr(fgetc($fd));
-$str.=chr(fgetc($fd));
-$str.=chr(fgetc($fd));
+header("Content-Type: text/event-stream");
+$r = $_GET;
+$tm = isset($r['t'] )  ? explode("-",$_GET['t']) : [0,10000];
+$mm=intval($tm[1]);
 
-echo fgetc($fd);
+if($_GET['file']){
+	$fd=fopen($_GET['file'],'r');
+ 	$tm =isset( $_GET->t) && explode("-",$_GET['t']);
 
-function getString($n){
-	global $fd, $offset;
-	$str='';
-	while($n--){
-		$str.=chr(fgetc($fd));
+	$t0 = microtime(true);
+
+	while($line=fgets($fd)){
+		usleep(40)	;
+		$line = trim($line);
+		$t = explode(",",$line);
+		$time = $t[4];
+		$elapsed = microtime(true) - $t0;
+		if($elapsed > $tm[0]) break;
+		if(!$t0) $t0=microtime(true);
+
+		while($elapsed<$time){
+			usleep(10);
+			$elapsed = microtime(true) - $t0;
+		}
+		echo $line;
+		echo "event: note\n";
+		echo "data: ".json_encode($t)."\n\n";
+		reallyflush();
 	}
-	return $str;
+}
+function reallyflush(){
+	while (ob_get_level() > 0) {
+		ob_end_flush();
+	  }
+	  flush();
 }
