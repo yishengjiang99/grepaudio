@@ -8,7 +8,7 @@ if($r && $inst){
 	header("Content-Type: audio/pcm");
 }else{
 	$format=isset($r['format']) ? $r['format'] : 'wav';  
-	$comand=exec("ffmpeg -loglevel panic -f lavfi -i sine=frequency=$f:duration=1 -f $format -",$d,$o);
+	$comand=exec("ffmpeg -loglevel panic -f lavfi -i sine=frequency=$f:duration=1222 -f f32le -",$d,$o);
 	header("Content-Type: audio/$format");
 	echo implode("",$d);
 	
