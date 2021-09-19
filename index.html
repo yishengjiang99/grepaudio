@@ -21,12 +21,7 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <link rel="stylesheet" href="./simple-console.css">
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-    crossorigin="anonymous"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
-  <script src='typeahead.bundle.min.js'></script>
   <!-- Google Analytics -->
   <script>
     (function (i, s, o, g, r, a, m) {
@@ -43,7 +38,7 @@
 </head>
 
 <body>
-  <div id="overlay" style="z-index:10; display: block; 100vh">
+  <!-- <div id="overlay" style="z-index:10; display: block; 100vh">
     <div class="text page-header">
       GrepAwk Audio is a shared DSP-over-webrtc tool.
       <br>
@@ -53,33 +48,10 @@
       <button type="button" class="btn btn-primary btn-block">
         <a class="btn btn-primary" href='/api/spotify/login'>Login with Spotify Premium</a></button>
       <button type="button" id='dre' class="btn btn-primary btn-block">start Audio Context. </button>
-      <video width=320 id='rtc' controls playsinline></video> <audio width=320 id='audio2' controls playsinline
-        src='/samples/song.mp3'></audio>
 
-      <audio width=320 id='audio1' controls playsinline src='/samples/song.mp3'></audio>
     </div>
-  </div>
-  <nav class="navbar navbar-dark bg-dark text-light flex-md-nowrap p-0 shadow">
-    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">GrepAwk DSP</a>
-    <input id='ytsearch' class="type-ahead form-control form-control-dark w-59" type="text" placeholder="Search Music"
-      aria-label="Search">
-    <ul class="navbar-nav px-3">
-      <li class="nav-item text-nowrap dropdown">
-        <div class="dropdown">
-          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
-            aria-haspopup="true" aria-expanded="false">
-            Listen
-          </button>
-          <div id='listen-menu' class="dropdown-menu" aria-labelledby="dropdownMenuButton"
-            style='position:absolute; top:100%;right:0px;'>
-          </div>
-        </div>
-      </li>
-      <li class="nav-item text-nowrap">
-        <div><button id=obs>Broadcast</button> </div>
-      </li>
-    </ul>
-  </nav>
+  </div> -->
+
   <div draggable class="container-fluid bg-dark text-white">
     <div class="row">
       <nav class="navbar sidebar col-md-3">
@@ -131,7 +103,10 @@
       <span id='rdownload'></span>
     </div>
     <div class=col-md-3>
-      <div class="range-wrap">
+      <div class="range-wrap"> <video width=320 id='rtc' controls playsinline></video> <audio width=320 id='audio2'
+          controls playsinline src='./samples/song.mp3'></audio>
+
+        <audio width=320 id='audio1' controls playsinline src='./samples/song.mp3'></audio>
         <output id=threshold_l> Noise Gate: Gate: </output><output class="bubble"></output>
         <input aria-labelledby='threshold_l' type="range" min='-100' max='0' value='-80' class="range" name='threshold'>
       </div>

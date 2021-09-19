@@ -1,5 +1,3 @@
-var $j = jQuery.noConflict();
-
 import Mixer from "./Mixer.js";
 import NoiseGate from "./NoiseGate/NoiseGate.js";
 import { split_band } from "./splitband.js";
@@ -11,34 +9,20 @@ import { selector, slider, numeric } from "./functions.js";
 import https_rtc_client from "./dsp_rtc/https_rtc_client.js";
 import DrawEQ from "./draw.js";
 
-$j(".dropdown-toggle").dropdown();
 let audioCtx, audioTag, eq;
-const overlay = document.getElementById("overlay");
+// const overlay = document.getElementById("overlay");
 const std1 = (str) => (document.getElementById("std1").innerHTML = str);
 
-document.getElementById("dre").onclick = main;
+// document.getElementById("dre").onclick = main;
 main();
 async function main(e) {
-  overlay.style.display = "none";
-
   audioCtx = new AudioContext();
   await BandPassFilterNode.init(audioCtx);
 
   window.g_audioCtx = audioCtx;
 
   var audioTag = await Mixer(audioCtx, "ctrls");
-  var ytSearch = new Bloodhound({
-    datumTokenizer: Bloodhound.tokenizers.obj.whitespace("value"),
-    queryTokenizer: Bloodhound.tokenizers.whitespace,
-    prefetch: "/samples/yt.json",
-    remote: {
-      url: "/api/yt/%QUERY",
-      wildcard: "%QUERY",
-    },
-  });
 
-  ytSearch.initialize();
-  const template = Handlebars.compile($j("#result-template").html());
   audioTag.add_audio_tag("audio1", 0);
   const audio1 = $("#audio1");
   window.g_audioTag = audioTag;
@@ -173,40 +157,6 @@ async function main(e) {
     }
   };
 
-  $("#overlay").style.zIndex = -99;
-
-  var ytSearch = new Bloodhound({
-    datumTokenizer: Bloodhound.tokenizers.obj.whitespace("value"),
-    queryTokenizer: Bloodhound.tokenizers.whitespace,
-    prefetch: "/samples/yt.json",
-    remote: {
-      url: "/api/yt/%QUERY",
-      wildcard: "%QUERY",
-    },
-  });
-
-  ytSearch.initialize();
-  $j("#ytsearch")
-    .typeahead(
-      { hint: true, highlight: true, minLength: 1 },
-      {
-        name: "ytmusic",
-        templates: {
-          empty: ['<div class="empty-message">', "not found", "</div>"].join(
-            "\n"
-          ),
-          suggestion: template,
-        },
-        displayKey: "title",
-        source: ytSearch,
-      }
-    )
-    .on("typeahead:selected", function (evt, item) {
-      audio1.src = "/api/" + item.vid + ".mp3";
-
-      return item;
-    });
-
   window.vfs = [
     group,
     audioTag,
@@ -277,10 +227,3 @@ window.copylink = function () {
   document.copy();
   this.innerText = "copied";
 };
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/service-worker.js").then((reg) => {
-      console.log("Service worker registered.", reg);
-    });
-  });
-}
