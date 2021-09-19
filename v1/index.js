@@ -1,28 +1,44 @@
+var $j = jQuery.noConflict();
+
 import Mixer from "./Mixer.js";
 import NoiseGate from "./NoiseGate/NoiseGate.js";
 import { split_band } from "./splitband.js";
 import AnalyzerView from "./AnalyzerView.js";
-import loadBandPassFilters from "./band_pass_lfc/index.js";
+import BandPassFilterNode from "./band_pass_lfc/BandPassFilterNode.js";
 import BroadcasterClient from "./twitch/BroadcastClient.js";
 import BoardcastViewerClient from "./twitch/BroadcastViewerClient.js";
 import { selector, slider, numeric } from "./functions.js";
 import https_rtc_client from "./dsp_rtc/https_rtc_client.js";
 import DrawEQ from "./draw.js";
 
+$j(".dropdown-toggle").dropdown();
 let audioCtx, audioTag, eq;
+const overlay = document.getElementById("overlay");
 const std1 = (str) => (document.getElementById("std1").innerHTML = str);
 
-document.body.onload = async () => {
+document.getElementById("dre").onclick = main;
+main();
+async function main(e) {
+  overlay.style.display = "none";
+
   audioCtx = new AudioContext();
-  const bandpassFilterNode = await loadBandPassFilters(
-    audioCtx,
-    "band_pass_filter"
-  );
+  await BandPassFilterNode.init(audioCtx);
 
   window.g_audioCtx = audioCtx;
 
   var audioTag = await Mixer(audioCtx, "ctrls");
+  var ytSearch = new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.obj.whitespace("value"),
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    prefetch: "/samples/yt.json",
+    remote: {
+      url: "/api/yt/%QUERY",
+      wildcard: "%QUERY",
+    },
+  });
 
+  ytSearch.initialize();
+  const template = Handlebars.compile($j("#result-template").html());
   audioTag.add_audio_tag("audio1", 0);
   const audio1 = $("#audio1");
   window.g_audioTag = audioTag;
@@ -32,6 +48,7 @@ document.body.onload = async () => {
     log(JSON.stringify(evt.data));
   };
   audioTag.outputNode.connect(noiseGate.input);
+  var bandpassFilterNode = new BandPassFilterNode(audioCtx);
   noiseGate.output.connect(bandpassFilterNode);
 
   var cursor = bandpassFilterNode;
@@ -42,18 +59,10 @@ document.body.onload = async () => {
     knee: 10,
   });
 
-  var group = split_band(audioCtx, [
-    31.25,
-    62.5,
-    125,
-    250,
-    500,
-    1000,
-    2000,
-    4000,
-    8000,
-    16000,
-  ]);
+  var group = split_band(
+    audioCtx,
+    [31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
+  );
   bandpassFilterNode.connect(compressor).connect(group.input);
 
   $("#eq_update_form").appendChild(group.UI_EQ(bandpassFilterNode, compressor));
@@ -121,67 +130,6 @@ document.body.onload = async () => {
     label: "Local Playback gain",
   });
 
-  var bv = BoardcastViewerClient({
-    onEvent: log,
-    mediaObjectReady: function (stream) {
-      var streamsource = audioCtx.createMediaStreamSource(stream);
-      streamsource.connect(ctv.analyzer);
-      rtcViewer.srcObject = stream;
-      rtcViewer.autoplay = true;
-    },
-  });
-
-  if (location.hash && location.hash.substr(1)) {
-    var cmd = location.hash.substr(1).split("/")[0];
-    var arg1 = location.hash.substr(1).split("/")[1];
-    switch (cmd) {
-      case "watch":
-      case "listen":
-        std1("connecting to " + arg1);
-
-        bv.watchChannel(arg1);
-
-        break;
-      default:
-        break;
-    }
-  }
-
-  bv.listChannels().then((channels) => {
-    for (const channel of Object.values(channels)) {
-      var a = document.createElement("a");
-      a.className = "dropdown-item";
-      a.onclick = function () {
-        bv.watchChannel(channel.name);
-      };
-      a.href = "#listen:" + channel.name;
-      a.innerText = channel.name;
-      $("#listen-menu").append(a);
-    }
-  });
-  $("#obs").onclick = function (e) {
-    var userId =
-      window.location.search.replace("?", "") ||
-      prompt("enter display name", localStorage.getItem("displayName") || "") ||
-      "user_" + Math.floor(Math.random() * 10);
-
-    var peer = audioCtx.createMediaStreamDestination();
-    playbackGain.gain.exponentialRampToValueAtTime(
-      0.001,
-      audioCtx.currentTime + 0.1
-    );
-    playbackGainSlider.value = "0.001";
-    recorderProcessor.connect(peer);
-    localStorage.setItem("displayName", userId);
-    BroadcasterClient({
-      onEvent: window.log,
-    }).broadcastAudio(userId, peer.stream);
-    std1(
-      `Broadcasting now to <input type=text id=urlinput size=80 value='https://dsp.grepawk.com/#listen/${userId}'>`
-    );
-    document.getElementById("cplink").style.display = "inline";
-  };
-
   const audio22 = $("video#rtc");
 
   $("#recorder").onclick = function (e) {
@@ -225,6 +173,40 @@ document.body.onload = async () => {
     }
   };
 
+  $("#overlay").style.zIndex = -99;
+
+  var ytSearch = new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.obj.whitespace("value"),
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    prefetch: "/samples/yt.json",
+    remote: {
+      url: "/api/yt/%QUERY",
+      wildcard: "%QUERY",
+    },
+  });
+
+  ytSearch.initialize();
+  $j("#ytsearch")
+    .typeahead(
+      { hint: true, highlight: true, minLength: 1 },
+      {
+        name: "ytmusic",
+        templates: {
+          empty: ['<div class="empty-message">', "not found", "</div>"].join(
+            "\n"
+          ),
+          suggestion: template,
+        },
+        displayKey: "title",
+        source: ytSearch,
+      }
+    )
+    .on("typeahead:selected", function (evt, item) {
+      audio1.src = "/api/" + item.vid + ".mp3";
+
+      return item;
+    });
+
   window.vfs = [
     group,
     audioTag,
@@ -254,7 +236,7 @@ document.body.onload = async () => {
       case "terminal":
       case "term":
         $("#app1").style.display = "none";
-        simpleConsole.element.style.height = "100vh";
+        con.element.style.height = "100vh";
         return true;
       case "ls":
         var str = window.vfs
@@ -270,15 +252,15 @@ document.body.onload = async () => {
     }
   };
 
-  simpleConsole.element.style.zIndex = 99;
-  simpleConsole.element.addEventListener("click", function () {
-    this.querySelector("input").focus();
-  });
-  window.onkeydown = function (evt) {
-    if (evt.code == "Enter") {
-      simpleConsole.element.querySelector("input").focus();
-    }
-  };
+  // con.element.style.zIndex = 99;
+  // con.element.addEventListener("click", function () {
+  //   this.querySelector("input").focus();
+  // });
+  // window.onkeydown = function (evt) {
+  //   if (evt.code == "Enter") {
+  //     con.element.querySelector("input").focus();
+  //   }
+  // };
 
   var blobbb = window.URL || window.webkitURL;
 
@@ -288,7 +270,7 @@ document.body.onload = async () => {
     $("#audio2").src = fileURL;
     $("#audio2").autoplay = true;
   });
-};
+}
 window.copylink = function () {
   document.getElementbyId("urlinput").select();
   document.select();
