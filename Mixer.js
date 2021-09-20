@@ -152,11 +152,10 @@ export default async function (ctx, containerId) {
       select.setAttribute("tabindex", index);
       select.innerHTML = song_db
         .filter((t) => t.trim() !== "")
-        .map((t) => "samples/" + t.trim())
-        .map((n) => {
-          var url = n.split(",")[0];
-          var name = (n.split(",")[1] || url).split("/").pop();
-          return `<option value='${encodeURIComponent(url)}'>${name}</option>`;
+        .map((t) => "samples/pcms/" + t.trim())
+        .map((url) => {
+          var name = url.split("/").pop();
+          return `<option value='${url}'>${name}</option>`;
         });
       select.setAttribute("data-chord", 1);
       var buttons = "<button value='samples/piano'>piano</input>";

@@ -10,7 +10,7 @@ export default function Envelope(
   this.min = min; //
   this.max = max;
   this.attack = attack;
-  this.releaseTimeConstant = release;
+  this.rtime = release;
   this.sustain = sustain;
   this.decay = decay;
   this.param = param;
@@ -20,7 +20,7 @@ Envelope.prototype.trigger = function (time) {
   this.attackTime = time + this.attack; //reach attach val at attackTime
   this.decayTime = time + this.attack + this.decay; //reach decay val at decayTime
   this.sustainTime = time + this.attack + this.decay + this.sustain;
-  this.rt = time + this.attack + this.decay + this.sustain + this.release;
+  this.rt = time + this.attack + this.decay + this.sustain + this.rtime;
 
   this.param.linearRampToValueAtTime(this.max, this.attackTime);
   this.param.linearRampToValueAtTime(this.max * 0.5, this.decayTime);
@@ -28,5 +28,5 @@ Envelope.prototype.trigger = function (time) {
 };
 
 Envelope.prototype.release = function (time) {
-  this.param.exponentialRampToValueAtTime(0, time + this.release);
+  this.param.exponentialRampToValueAtTime(0, time + this.rtime);
 };
