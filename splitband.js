@@ -26,7 +26,7 @@ export function split_band(ctx, hz_list) {
           new BiquadFilterNode(ctx, {
             type: "highshelf",
             frequency: hz,
-            gain: 1,
+            gain: 0,
             Q: 1,
             detune: 0,
           })
@@ -37,7 +37,7 @@ export function split_band(ctx, hz_list) {
             type: "lowshelf",
             frequency: hz,
             gain: 0,
-            Q: 1,
+            Q: 1 / 3,
             detune: 0,
           })
         );
@@ -47,7 +47,7 @@ export function split_band(ctx, hz_list) {
             type: "peaking",
             frequency: hz,
             gain: 0,
-            Q: 1,
+            Q: 1 / 3,
             detune: 0,
           })
         );
@@ -59,15 +59,15 @@ export function split_band(ctx, hz_list) {
 
     input.connect(c);
   } else {
-    input.connect(output);
-    hz_list.forEach((hz, index) => {
-      if (index == 0) {
-        bands.push(new Band(input, output, null, hz));
-      } else {
-        bands.push(new Band(input, output, hz_list[index - 1], hz));
-      }
-    });
-    bands.push(new Band(input, output, hz_list[hz_list.length - 1], null));
+    // input.connect(output);
+    // hz_list.forEach((hz, index) => {
+    //   if (index == 0) {
+    //     bands.push(new Band(input, output, null, hz));
+    //   } else {
+    //     bands.push(new Band(input, output, hz_list[index - 1], hz));
+    //   }
+    // });
+    // bands.push(new Band(input, output, hz_list[hz_list.length - 1], null));
   }
 
   function UI_Canvas() {
@@ -160,7 +160,7 @@ export function split_band(ctx, hz_list) {
     table.className = "text-white";
     table.setAttribute("border", "1");
     const header = document.createElement("tr");
-    header.innerHTML = `<tr><td>hz</td><td>gain</td>
+    header.innerHTML = `<tr><td>hz</td>
     <td>type</td><td>gain</td> <td>rolloff (Q)</td><td>detune</td>
     <td>opts</td></tr>`;
     table.appendChild(header);
@@ -177,17 +177,17 @@ export function split_band(ctx, hz_list) {
       const row = document.createElement("tr");
       row.innerHTML += `<td>${band.frequency.value}</td>`;
 
-      slider(row, {
-        className: "bandpass",
-        value: Object.values(DEFAULT_PRESET_GAINS)[index],
-        min: "-12",
-        max: "12",
-        oninput: function (e) {
-          bandpassFilterNode.port.postMessage({
-            gainUpdate: { index: index, value: e.target.value },
-          });
-        },
-      });
+      // slider(row, {
+      //   className: "bandpass",
+      //   value: Object.values(DEFAULT_PRESET_GAINS)[index],
+      //   min: "-12",
+      //   max: "12",
+      //   oninput: function (e) {
+      //     bandpassFilterNode.port.postMessage({
+      //       gainUpdate: { index: index, value: e.target.value },
+      //     });
+      //   },
+      // });
       var emitter = () => {
         emt.emit("filterChanged", input);
       };
@@ -216,9 +216,9 @@ export function split_band(ctx, hz_list) {
       });
       slider(row, {
         prop: band.Q,
-        min: 0.01,
-        max: 22,
-        step: 0.1,
+        min: 0,
+        max: 1 / 3,
+        value: 1 / 3,
         index: index,
         eventEmitter: emitter,
       });

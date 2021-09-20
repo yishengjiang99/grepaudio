@@ -31,7 +31,6 @@ async function main(e) {
   noiseGate.port.onmessage = (evt) => {
     log(JSON.stringify(evt.data));
   };
-  audioTag.outputNode.connect(noiseGate.input);
   var bandpassFilterNode = new BandPassFilterNode(audioCtx);
   noiseGate.output.connect(bandpassFilterNode);
 
@@ -47,7 +46,10 @@ async function main(e) {
     audioCtx,
     [31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
   );
-  bandpassFilterNode.connect(compressor).connect(group.input);
+  audioTag.outputNode
+    .connect(bandpassFilterNode)
+    .connect(compressor)
+    .connect(group.input);
 
   $("#eq_update_form").appendChild(group.UI_EQ(bandpassFilterNode, compressor));
   cursor = group.output;
