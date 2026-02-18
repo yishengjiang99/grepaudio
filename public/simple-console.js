@@ -65,8 +65,6 @@ var SimpleConsole = function(options) {
 
     var add_popup_button = function(update_popup) {
 
-        var popup = document.createElement("popup-menu");
-
         var popup = document.createElement("div");
         popup.className = "popup-menu";
         popup.setAttribute("role", "menu");
