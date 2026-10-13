@@ -33,7 +33,6 @@ export default async function (ctx, containerId) {
       const xhr = new XMLHttpRequest();
       xhr.open("get", url, true);
       xhr.responseType = "arraybuffer";
-      // xhr.setRequestHeader("Range", "Bytes:0-");
       var counter = 0;
 
       xhr.onreadystatechange = function () {
@@ -81,7 +80,6 @@ export default async function (ctx, containerId) {
     inputs[i].connect(controls[i]).connect(masterGain);
     audioPlayer.oncanplay = function () {
       audioPlayer.play();
-      // this.[i].play();
     };
 
     return source;
@@ -94,27 +92,34 @@ export default async function (ctx, containerId) {
   }
   var cp = document.getElementById(containerId);
 
-  [
+  // Only real, existing sources. CSV sample banks are missing and were injecting HTML.
+  const sources = [
     "YT_SEARCH",
     "RTC",
     "Microphone",
-    "notes.csv",
-    "waves.csv",
-    "songs.csv",
-  ].forEach(async (indexfile, index) => {
+  ];
+
+  sources.forEach(async (indexfile, index) => {
     var container = document.createElement("div");
-    container.className = "text-white bg-secondary mb-2";
+    container.className = "text-white bg-secondary mb-2 p-2";
     var title = document.createElement("div");
+    title.className = "font-weight-bold mb-1";
     title.innerText = indexfile;
     var panel = document.createElement("div");
     container.append(title);
     container.append(panel);
+
+    let select = null;
+
     if (indexfile == "YT_SEARCH") {
       var audio1 = document.querySelector("audio#audio1");
-      panel.append(audio1);
+      if (audio1) panel.append(audio1);
     } else if (indexfile == "RTC") {
       var videoRtc = document.createElement("video");
       videoRtc.id = "rtc";
+      videoRtc.setAttribute("controls", "");
+      videoRtc.setAttribute("playsinline", "");
+      videoRtc.style.width = "100%";
 
       var source = ctx.createMediaElementSource(videoRtc);
       inputs[index] = source;
@@ -124,109 +129,32 @@ export default async function (ctx, containerId) {
       };
       panel.appendChild(videoRtc);
     } else if (indexfile == "Microphone") {
-      var select = document.createElement("select");
+      select = document.createElement("select");
+      select.className = "form-control form-control-sm mb-1";
       select.setAttribute("tabindex", index);
       select.setAttribute("data-userMedia", "audio");
-      navigator.mediaDevices &&
+      if (navigator.mediaDevices) {
         navigator.mediaDevices
           .enumerateDevices()
           .then(function (devices) {
             select.innerHTML = devices
               .filter((device) => device.kind == "audioinput")
               .map(function (device) {
-                return `<option value='${device.deviceId}'>${device.label}</option>`;
+                return `<option value='${device.deviceId}'>${device.label || "Mic"}</option>`;
               })
-              .join("");
+              .join("") || "<option>No mics</option>";
           })
           .catch(function (err) {
-            select.innerHTML = err.message;
+            select.innerHTML = `<option>${err.message}</option>`;
           });
-    } else if (indexfile === "waves.csv") {
-      const song_db = await fetch(
-        "./samples/" + indexfile + "?t=" + ctx.currentTime
-      )
-        .then((res) => res.text())
-        .then((text) => text.split("\n"));
-      var select = document.createElement("form");
-      var select = document.createElement("select");
-      select.setAttribute("tabindex", index);
-      select.innerHTML = song_db
-        .filter((t) => t.trim() !== "")
-        .map((t) => "samples/pcms/" + t.trim())
-        .map((url) => {
-          var name = url.split("/").pop();
-          return `<option value='${url}'>${name}</option>`;
-        });
-      select.setAttribute("data-chord", 1);
-      var buttons = "<button value='samples/piano'>piano</input>";
-      panel.appendstr(buttons);
-      container.querySelectorAll("button").forEach((button) =>
-        button.addEventListener("click", (e) => {
-          loadURL(e);
-        })
-      );
-    } else if (indexfile === "notes.csv") {
-      const song_db = await fetch("samples/" + indexfile)
-        .then((res) => res.text())
-        .then((text) => text.split("\n"));
-      var select = document.createElement("div");
-
-      select.innerHTML =
-        "<div style='width:200px' class='btn-toolbar'>" +
-        song_db
-          .filter((t) => t.trim() !== "")
-          .map((n, j) => {
-            var url = "samples/" + n;
-            var name = n.replace(".mp3", "");
-            return `<button class="btn btn-secondary" value='${url}'>${name}</button>`;
-          })
-          .join("") +
-        "</div>";
-
-      select.querySelectorAll("button").forEach((button) =>
-        button.addEventListener("click", (e) => {
-          var url = e.target.value;
-          loadURLTo(url, index);
-        })
-      );
-    } else {
-      const song_db = await fetch("samples/" + indexfile)
-        .then((res) => res.text())
-        .then((text) => text.split("\n"));
-      var select = document.createElement("select");
-      select.setAttribute("tabindex", index);
-      select.innerHTML = song_db
-        .filter((t) => t.trim() !== "")
-        .map((t) => "samples/" + t.trim())
-        .map((n) => {
-          var url = n.split(",")[0];
-          var name = (n.split(",")[1] || url).split("/").pop();
-          return `<option value='${encodeURIComponent(url)}'>${name}</option>`;
-        });
-    }
-
-    var apply = document.createElement("button");
-    apply.innerHTML = "go";
-    var nowPlayingLabel = document.createElement("label");
-
-    var stop = document.createElement("button");
-    stop.innerHTML = "stop";
-    if (select) {
+      }
       panel.appendChild(select);
-      select.querySelectorAll("button").forEach((button) =>
-        button.addEventListener("click", (e) => {
-          var url = e.target.value;
-          loadURLTo(url, index);
-        })
-      );
-
-      select.addEventListener("input", (e) => {
-        if (e.target.type !== "text") {
-          loadURL(e);
-        }
-      });
     }
-    panel.appendChild(nowPlayingLabel.wrap("div"));
+
+    var nowPlayingLabel = document.createElement("div");
+    nowPlayingLabel.className = "small text-muted mb-1";
+    panel.appendChild(nowPlayingLabel);
+
     slider(panel, {
       prop: controls[index].gain,
       step: "0.01",
@@ -234,61 +162,39 @@ export default async function (ctx, containerId) {
       min: "0",
       wrapper: "span",
     });
-    container.append(panel);
-    cp.appendChild(container);
+
+    var apply = document.createElement("button");
+    apply.className = "btn btn-sm btn-light ml-1";
+    apply.innerHTML = "go";
+    var stop = document.createElement("button");
+    stop.className = "btn btn-sm btn-light ml-1";
+    stop.innerHTML = "stop";
+
     panel.appendChild(apply);
     panel.appendChild(stop);
+
     stop.onclick = (e) => {
       if (inputs[index] instanceof MediaStreamAudioSourceNode) {
         inputs[index].disconnect();
-      } else {
+      } else if (inputs[index] && inputs[index].stop) {
         inputs[index].stop();
       }
-      //  ]    inputs[index] instanceof MediaStreamAudioSourceNode  ?  inputs[index].disconnect() : inputs[index].stop();
-      inputs[index].disconnect();
+      if (inputs[index]) inputs[index].disconnect();
       inputs[index] = null;
-      inputs[index] instanceof MediaStreamAudioSourceNode
-        ? inputs[index].disconnect()
-        : inputs[index].stop();
     };
 
-    async function loadURL(e) {
-      var url = select.value;
-      log("loading " + url);
-      if (select.getAttribute("data-chord")) {
-        inputs[index] = await chord(url);
-        inputs[index].connect(controls[index]);
-        return false;
-      } else if (select.getAttribute("data-host")) {
-        url = select
-          .getAttribute("data-host")
-          .replace("::QUERY::", select.value);
-        audioPlayer.src = url;
-        audioPlayer.oncanplay = function (evt) {
-          audioPlayer.play();
-        };
-        inputs[index] = inputs[5];
-        return;
-      } else if (select.getAttribute("data-userMedia")) {
-        url = "user-audio";
-        var deviceId = select.value;
-        loadURLTo(url, index, deviceId);
-        return;
-      } else {
-        url = select.value;
-      }
-
-      if (inputs[index] !== null) {
-        await inputs[index].stop();
-        inputs[index] = null;
-      }
-      nowPlayingLabel.innerHTML = "Loading.." + url + " channel " + index;
-      loadURLTo(url, index);
-      stop.style.display = "inline";
+    if (select) {
+      select.addEventListener("change", (e) => {
+        if (select.getAttribute("data-userMedia")) {
+          loadURLTo("user-audio", index, select.value);
+        }
+      });
     }
+
+    cp.appendChild(container);
     nowPlayingLabels[index] = nowPlayingLabel;
-    return false;
   });
+
   return {
     inputs,
     outputNode,
