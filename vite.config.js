@@ -25,6 +25,8 @@ export default defineConfig({
           resolve('band_pass_lfc/processor.js'),
           resolve(destDir, 'processor.js')
         );
+        // processor.js imports "../constants.js" (resolves to /constants.js)
+        copyFileSync(resolve('constants.js'), resolve('dist/constants.js'));
       }
     }
   ],
