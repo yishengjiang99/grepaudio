@@ -14,6 +14,19 @@ export default async function (ctx, containerId) {
   var nowPlayingLabels = [];
   [0, 1, 2, 3, 4, 5].forEach((i) => controls[i].connect(masterGain));
 
+  // Resume AudioContext on first user gesture (required by browsers)
+  const unlock = () => {
+    if (ctx.state === "suspended") ctx.resume();
+  };
+  document.addEventListener("click", unlock, { once: true });
+  document.addEventListener("keydown", unlock, { once: true });
+
+  const safePlay = (el) => {
+    if (!el) return;
+    const p = el.play();
+    if (p && p.catch) p.catch(() => {});
+  };
+
   const loadURLTo = async function (url, index, deviceId) {
     if (url == "user-audio") {
       var source = await PlayableAudioSource(ctx).getAudioDevice(deviceId);
@@ -44,9 +57,10 @@ export default async function (ctx, containerId) {
               source.buffer = processed;
               source.connect(controls[index]);
               counter--;
-              source.start();
+              // only start after user gesture
+              if (ctx.state === "running") source.start();
             });
-            source.autoplay = true;
+            source.autoplay = false;
           }
         }
       };
@@ -78,9 +92,8 @@ export default async function (ctx, containerId) {
     var source = ctx.createMediaElementSource(audioPlayer);
     inputs[i] = source;
     inputs[i].connect(controls[i]).connect(masterGain);
-    audioPlayer.oncanplay = function () {
-      audioPlayer.play();
-    };
+    // do not auto-play; wait for user click on "go"
+    audioPlayer.oncanplay = null;
 
     return source;
   };
@@ -92,7 +105,6 @@ export default async function (ctx, containerId) {
   }
   var cp = document.getElementById(containerId);
 
-  // Only real, existing sources. CSV sample banks are missing and were injecting HTML.
   const sources = [
     "YT_SEARCH",
     "RTC",
@@ -110,10 +122,14 @@ export default async function (ctx, containerId) {
     container.append(panel);
 
     let select = null;
+    let mediaEl = null;
 
     if (indexfile == "YT_SEARCH") {
       var audio1 = document.querySelector("audio#audio1");
-      if (audio1) panel.append(audio1);
+      if (audio1) {
+        panel.append(audio1);
+        mediaEl = audio1;
+      }
     } else if (indexfile == "RTC") {
       var videoRtc = document.createElement("video");
       videoRtc.id = "rtc";
@@ -124,10 +140,9 @@ export default async function (ctx, containerId) {
       var source = ctx.createMediaElementSource(videoRtc);
       inputs[index] = source;
       inputs[index].connect(controls[index]).connect(masterGain);
-      videoRtc.oncanplay = function () {
-        videoRtc.play();
-      };
+      // no auto-play
       panel.appendChild(videoRtc);
+      mediaEl = videoRtc;
     } else if (indexfile == "Microphone") {
       select = document.createElement("select");
       select.className = "form-control form-control-sm mb-1";
@@ -173,7 +188,13 @@ export default async function (ctx, containerId) {
     panel.appendChild(apply);
     panel.appendChild(stop);
 
+    apply.onclick = () => {
+      unlock();
+      if (mediaEl) safePlay(mediaEl);
+    };
+
     stop.onclick = (e) => {
+      if (mediaEl && mediaEl.pause) mediaEl.pause();
       if (inputs[index] instanceof MediaStreamAudioSourceNode) {
         inputs[index].disconnect();
       } else if (inputs[index] && inputs[index].stop) {
