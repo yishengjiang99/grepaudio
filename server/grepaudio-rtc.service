@@ -1,0 +1,20 @@
+[Unit]
+Description=grepaudio WebRTC signaling server
+After=network.target
+
+[Service]
+Type=simple
+User=grepaudio-rtc
+Group=grepaudio-rtc
+WorkingDirectory=/opt/grepaudio-rtc
+Environment=PORT=3021 HOST=127.0.0.1 NODE_ENV=production
+ExecStart=/usr/bin/env node /opt/grepaudio-rtc/server.js
+Restart=always
+RestartSec=2
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
