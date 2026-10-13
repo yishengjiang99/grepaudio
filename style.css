@@ -1,305 +1,118 @@
-td {
-  min-width: 25px;
-}
 body {
-  display: grid;
-  grid-template:
-    "header header header header header header"
-    "menu main main main right right"
-    "menu footer footer footer footer footer";
-}
-#header {
-  grid-area: header;
-}
-#menu {
-  grid-area: menu;
-}
-#main {
-  height: 40000px;
-  overflow-y: scroll;
-  grid-area: main;
-}
-#right {
-  grid-area: right;
-}
-#footer {
-  grid-area: footer;
-}
-
-.footer {
-  position: fixed;
-  bottom: 0;
-  left: 10vw;
-  width: 90vw;
-  height: 5vh;
-  color: black;
-  background-color: white;
-}
-#audio2 {
-  width: 100px;
-  height: 30px;
-}
-.center {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  width: 40%;
-}
-.relative {
-  position: relative;
-}
-#overlay {
-  position: fixed; /* Sit on top of the page content */
-  display: "block"; /* Hidden by default */
-  width: 100%; /* Full width (cover the whole page) */
-  height: 100%; /* Full height (cover the whole page) */
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.9); /* Black background with opacity */
-  z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
-  cursor: pointer; /* Add a pointer on hover */
-}
-
-#overlay .text {
-  position: absolute;
-  top: 20%;
-  left: 50%;
-  font-size: 50px;
-  color: white;
-  user-select: none;
-  transform: translate(-50%, -50%);
-  -ms-transform: translate(-50%, -50%);
-}
-.panel {
-  -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-.panel-default > .panel-heading {
-  background-image: -webkit-linear-gradient(top, #f5f5f5 0%, #e8e8e8 100%);
-  background-image: -o-linear-gradient(top, #f5f5f5 0%, #e8e8e8 100%);
-  background-image: -webkit-gradient(
-    linear,
-    left top,
-    left bottom,
-    from(#f5f5f5),
-    to(#e8e8e8)
-  );
-  background-image: linear-gradient(to bottom, #f5f5f5 0%, #e8e8e8 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff5f5f5', endColorstr='#ffe8e8e8', GradientType=0);
-  background-repeat: repeat-x;
-}
-body {
+  margin: 0;
   color: #c0c0c0;
-  background-color: #35363a; /* position: fixed; */ /* overflow-x:hidden; */ /* position:fixed; */ /* overflow-y:scroll; */
-  width: 100%;
+  background-color: #35363a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
 }
-table {
-  display: table-row-group;
-  vertical-align: top;
-  border-color: inherit;
+
+.container-fluid {
+  padding: 0;
 }
-td {
-  vertical-align: top;
+
+.row {
+  margin: 0;
+  display: flex;
+  min-height: 100vh;
 }
 
 .sidebar {
-  margin: 0;
-  padding: 0;
-  /* width: 100px; */
-  /* background-color: #f1f1f1; */
-  position: fixed;
-  height: 100%;
-  overflow: auto;
+  position: relative;
+  width: 280px;
+  min-width: 240px;
+  max-width: 320px;
+  height: 100vh;
+  overflow-y: auto;
+  background: #2a2b2e;
+  padding: 12px;
+  border-right: 1px solid #444;
+  flex-shrink: 0;
 }
 
-.sidebar a {
-  display: block;
-  color: black;
+#ctrls > div {
+  background: #3a3b3f;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+#ctrls audio,
+#ctrls video {
+  max-width: 100%;
+  height: auto;
+}
+
+main {
+  flex: 1;
   padding: 16px;
-  text-decoration: none;
+  overflow-x: auto;
+  min-width: 0;
 }
 
-.sidebar a.active {
-  background-color: #4caf50;
-  color: white;
+#chart {
+  width: 100% !important;
+  max-width: 100%;
+  height: 280px;
+  background: #2a2b2e;
+  border-radius: 6px;
+  margin-bottom: 12px;
 }
 
-.sidebar a:hover:not(.active) {
-  background-color: #555;
-  color: white;
+#eq_update_form {
+  overflow-x: auto;
 }
 
-div.content {
-  margin-left: 200px;
-  padding: 1px 16px;
-  height: 1000px;
+#eq_update_form table {
+  width: 100%;
+  font-size: 13px;
 }
 
-@media screen and (max-width: 700px) {
+#eq_update_form td {
+  padding: 2px 4px;
+  vertical-align: middle;
+}
+
+#eq_update_form input[type="range"] {
+  width: 80px;
+}
+
+.footer {
+  position: relative;
+  width: 100%;
+  background: #2a2b2e;
+  border-top: 1px solid #444;
+  padding: 8px 16px;
+  margin-top: 16px;
+}
+
+.simple-console {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  width: 280px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.85);
+  color: #eee;
+  font-size: 12px;
+  padding: 8px;
+  border-radius: 6px;
+  z-index: 100;
+}
+
+@media (max-width: 768px) {
+  .row {
+    flex-direction: column;
+  }
   .sidebar {
     width: 100%;
+    max-width: none;
     height: auto;
-    position: relative;
+    max-height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid #444;
   }
-  .sidebar a {
-    float: left;
+  main {
+    padding: 8px;
   }
-  div.content {
-    margin-left: 0;
-  }
-}
-
-@media screen and (max-width: 400px) {
-  .sidebar a {
-    text-align: center;
-    float: none;
-  }
-}
-.simple-console {
-  display: fixed;
-  flex: 1;
-  flex-direction: column;
-  font-family: sans-serif;
-  position: fixed;
-  opacity: 1;
-  bottom: 20px;
-  right: 10px;
-  overflow-y: scroll;
-  width: 30vw;
-  /* background-color:black; */
-  color: white;
-}
-.badge {
-  display: inline-block;
-  padding: 0.25em 0.4em;
-  font-size: 75%;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: baseline;
-  border-radius: 0.25rem;
-}
-.simple-console-output {
-  min-height: 20vh;
-  max-height: 30vh;
-  overflow-y: scroll;
-  /* background-color: rgba(0,0,0,0.9); */
-  color: white;
-  font-size: 1.2em;
-  opacity: 0.2;
-  bottom: 20px;
-}
-
-.draggable {
-  position: absolute;
-  background-color: #f1f1f1;
-  text-align: center;
-  border: 1px solid #d3d3d3;
-}
-
-.draggable {
-  padding: 10px;
-  cursor: move;
-  z-index: 10;
-  background-color: #2196f3;
-  color: #fff;
-}
-span.twitter-typeahead .tt-menu,
-span.twitter-typeahead .tt-dropdown-menu {
-  cursor: pointer;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
-  display: none;
-  float: left;
-  min-width: 160px;
-  padding: 5px 0;
-  margin: 2px 0 0;
-  list-style: none;
-  font-size: 14px;
-  text-align: left;
-  background-color: #ffffff;
-  border: 1px solid #cccccc;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 4px;
-  -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
-  background-clip: padding-box;
-}
-span.twitter-typeahead .tt-suggestion {
-  display: block;
-  padding: 3px 20px;
-  clear: both;
-  font-weight: normal;
-  line-height: 1.42857143;
-  color: #333333;
-  white-space: nowrap;
-}
-span.twitter-typeahead .tt-suggestion.tt-cursor,
-span.twitter-typeahead .tt-suggestion:hover,
-span.twitter-typeahead .tt-suggestion:focus {
-  color: #ffffff;
-  text-decoration: none;
-  outline: 0;
-  background-color: #337ab7;
-}
-.input-group.input-group-lg span.twitter-typeahead .form-control {
-  height: 46px;
-  padding: 10px 16px;
-  font-size: 18px;
-  line-height: 1.3333333;
-  border-radius: 6px;
-}
-.input-group.input-group-sm span.twitter-typeahead .form-control {
-  height: 30px;
-  padding: 5px 10px;
-  font-size: 12px;
-  line-height: 1.5;
-  border-radius: 3px;
-}
-span.twitter-typeahead {
-  width: 100%;
-}
-.input-group span.twitter-typeahead {
-  display: block !important;
-  height: 34px;
-}
-.input-group span.twitter-typeahead .tt-menu,
-.input-group span.twitter-typeahead .tt-dropdown-menu {
-  top: 32px !important;
-}
-.input-group
-  span.twitter-typeahead:not(:first-child):not(:last-child)
-  .form-control {
-  border-radius: 0;
-}
-.input-group span.twitter-typeahead:first-child .form-control {
-  border-top-left-radius: 4px;
-  border-bottom-left-radius: 4px;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-}
-.input-group span.twitter-typeahead:last-child .form-control {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-}
-.input-group.input-group-sm span.twitter-typeahead {
-  height: 30px;
-}
-.input-group.input-group-sm span.twitter-typeahead .tt-menu,
-.input-group.input-group-sm span.twitter-typeahead .tt-dropdown-menu {
-  top: 30px !important;
-}
-.input-group.input-group-lg span.twitter-typeahead {
-  height: 46px;
-}
-.input-group.input-group-lg span.twitter-typeahead .tt-menu,
-.input-group.input-group-lg span.twitter-typeahead .tt-dropdown-menu {
-  top: 46px !important;
 }
